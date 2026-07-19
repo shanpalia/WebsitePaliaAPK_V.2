@@ -3,82 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaliaAPK HUB - Premium App Store</title>
+    <title>PaliaAPK HUB | Premium Android Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .swiper-slide { border-radius: 24px; overflow: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .gradient-bg { background: linear-gradient(135deg, #16a34a, #22c55e); }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body class="bg-gray-50 text-slate-800">
 
-    <!-- Navbar -->
-    <nav class="bg-white p-4 shadow-sm sticky top-0 z-50">
+    <!-- Header -->
+    <nav class="glass sticky top-0 z-50 border-b border-gray-100 p-4">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold text-green-600 flex items-center gap-2">
-                <div class="bg-green-600 text-white w-8 h-8 rounded-lg flex items-center justify-center font-bold">P</div> PaliaAPK HUB
-            </h1>
-            <div class="bg-gray-100 rounded-full px-4 py-2 w-1/2 flex items-center">
-                <i class="fa fa-search text-gray-400"></i>
-                <input type="text" placeholder="Search apps, games..." class="bg-transparent ml-2 outline-none w-full text-sm">
+            <div class="flex items-center gap-2">
+                <div class="gradient-bg text-white w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-lg shadow-lg">P</div>
+                <h1 class="text-xl font-black tracking-tighter">PaliaAPK<span class="text-green-600">HUB</span></h1>
             </div>
-            <button class="bg-gray-100 p-2 rounded-full w-10 h-10"><i class="fa fa-user"></i></button>
+            <div class="hidden md:flex bg-gray-100 rounded-full px-6 py-2 w-96 items-center">
+                <i class="fa fa-search text-gray-400"></i>
+                <input type="text" placeholder="Search apps..." class="bg-transparent ml-3 outline-none w-full text-sm">
+            </div>
+            <button class="bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-bold shadow-lg">Login</button>
         </div>
     </nav>
 
-    <main class="container mx-auto p-4">
-        <!-- Slider Section -->
-        <div class="swiper mySwiper w-full h-64 my-6">
+    <main class="container mx-auto p-4 md:p-8">
+        
+        <!-- 10 Slides Swiper -->
+        <div class="swiper mySwiper w-full h-[350px] md:h-[450px] rounded-3xl overflow-hidden shadow-2xl mb-12">
             <div class="swiper-wrapper">
-                <div class="swiper-slide bg-green-500 text-white p-8 flex flex-col justify-end">
-                    <h2 class="text-3xl font-bold">Verdant</h2>
-                    <p>Mindful moments, beautifully designed.</p>
-                </div>
-                <div class="swiper-slide bg-blue-500 text-white p-8 flex flex-col justify-end">
-                    <h2 class="text-3xl font-bold">Featured App 2</h2>
-                    <p>Description of second featured app.</p>
-                </div>
+                <!-- 10 Slides Example (Add more here) -->
+                <div class="swiper-slide bg-green-600 flex items-center justify-center text-white text-3xl font-bold">App Slide 1</div>
+                <div class="swiper-slide bg-blue-600 flex items-center justify-center text-white text-3xl font-bold">App Slide 2</div>
+                <div class="swiper-slide bg-purple-600 flex items-center justify-center text-white text-3xl font-bold">App Slide 3</div>
+                <div class="swiper-slide bg-orange-600 flex items-center justify-center text-white text-3xl font-bold">App Slide 4</div>
+                <div class="swiper-slide bg-red-600 flex items-center justify-center text-white text-3xl font-bold">App Slide 5</div>
+                <div class="swiper-slide bg-teal-600 flex items-center justify-center text-white text-3xl font-bold">App Slide 6</div>
+                <div class="swiper-slide bg-yellow-600 flex items-center justify-center text-white text-3xl font-bold">App Slide 7</div>
+                <div class="swiper-slide bg-pink-600 flex items-center justify-center text-white text-3xl font-bold">App Slide 8</div>
+                <div class="swiper-slide bg-indigo-600 flex items-center justify-center text-white text-3xl font-bold">App Slide 9</div>
+                <div class="swiper-slide bg-gray-800 flex items-center justify-center text-white text-3xl font-bold">App Slide 10</div>
             </div>
             <div class="swiper-pagination"></div>
         </div>
 
-        <!-- Categories -->
-        <div class="flex space-x-4 overflow-x-auto no-scrollbar py-4">
-            <button class="bg-green-600 text-white px-6 py-2 rounded-full font-medium whitespace-nowrap">Games</button>
-            <button class="bg-white border px-6 py-2 rounded-full whitespace-nowrap">Social</button>
-            <button class="bg-white border px-6 py-2 rounded-full whitespace-nowrap">AI</button>
-            <button class="bg-white border px-6 py-2 rounded-full whitespace-nowrap">Tools</button>
-            <button class="bg-white border px-6 py-2 rounded-full whitespace-nowrap">Utilities</button>
-            <button class="bg-white border px-6 py-2 rounded-full whitespace-nowrap">Education</button>
+        <!-- Expanded Categories -->
+        <div class="mb-12">
+            <h3 class="text-2xl font-bold mb-6">Browse Categories</h3>
+            <div class="flex space-x-4 overflow-x-auto no-scrollbar pb-4">
+                <button class="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold whitespace-nowrap">All Apps</button>
+                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Games</button>
+                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Social</button>
+                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Tools</button>
+                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Photography</button>
+                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Music</button>
+                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Video</button>
+                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Finance</button>
+                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Education</button>
+            </div>
         </div>
 
-        <!-- Trending Section -->
-        <section class="mt-8">
-            <h2 class="text-xl font-bold mb-4">Trending Now</h2>
-            <div id="app-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                <!-- App Card -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border">
-                    <div class="w-full h-24 bg-gray-200 rounded-xl mb-3"></div>
-                    <h3 class="font-bold text-sm">App Name</h3>
-                    <p class="text-xs text-gray-500">Version 1.0</p>
-                    <button class="mt-3 w-full bg-green-50 text-green-600 py-2 rounded-lg text-sm font-bold">Install</button>
-                </div>
+        <!-- Trending Grid -->
+        <h2 class="text-2xl font-bold mb-6">Trending Apps</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            <!-- App Card -->
+            <div class="bg-white p-4 rounded-3xl border border-gray-100 hover:shadow-xl transition">
+                <div class="w-full h-32 bg-gray-200 rounded-2xl mb-4"></div>
+                <h3 class="font-bold">App Name</h3>
+                <p class="text-xs text-gray-400 mb-4">Version 2.0</p>
+                <button class="w-full bg-green-50 text-green-700 py-3 rounded-xl font-bold text-sm">Download</button>
             </div>
-        </section>
+        </div>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t mt-16 py-10">
-        <div class="container mx-auto px-6 text-center">
-            <h2 class="text-xl font-bold text-green-600 mb-4">PaliaAPK HUB</h2>
-            <div class="flex justify-center space-x-6 mb-6">
-                <a href="#" class="text-sm text-gray-600">Home</a>
-                <a href="#" class="text-sm text-gray-600">Contact Us</a>
-                <a href="#" class="text-sm text-gray-600">Feedback</a>
-            </div>
-            <p class="text-xs text-gray-400">&copy; 2026 PaliaAPK HUB | Developed by ShanPalia</p>
+    <footer class="bg-slate-900 text-gray-400 py-16 mt-20">
+        <div class="container mx-auto px-8 grid md:grid-cols-3 gap-12 text-center md:text-left">
+            <div><h2 class="text-white font-black text-2xl mb-4">PaliaAPK HUB</h2><p class="text-sm">Premium Android Store.</p></div>
+            <div class="flex flex-col gap-2"><h4 class="text-white font-bold mb-2">Support</h4><a href="#">Home</a><a href="#">Contact Us</a><a href="#">Feedback</a></div>
+            <div class="md:text-right"><p>&copy; 2026 PaliaAPK HUB</p><p class="text-xs">Developed by ShanPalia</p></div>
         </div>
     </footer>
 
@@ -87,7 +93,9 @@
         var swiper = new Swiper(".mySwiper", { 
             pagination: { el: ".swiper-pagination" }, 
             autoplay: { delay: 3000 }, 
-            loop: true 
+            loop: true,
+            slidesPerView: 1,
+            spaceBetween: 20
         });
     </script>
 </body>
