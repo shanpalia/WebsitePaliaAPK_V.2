@@ -35,3 +35,21 @@ async function fetchApps() {
 
 // Page load hote hi apps load karein
 fetchApps();
+// Admin Security Page Logic
+let clickCount = 0;
+const adminTrigger = document.getElementById('admin-trigger');
+
+adminTrigger.addEventListener('click', () => {
+    clickCount++;
+    
+    if (clickCount === 5) {
+        // 5 clicks hone par admin page par le jayega
+        window.location.href = 'admin.html';
+        clickCount = 0; // reset
+    }
+});
+
+// Optional: Agar user 3 second tak click na kare to count reset ho jaye
+setTimeout(() => {
+    clickCount = 0;
+}, 3000);
