@@ -3,57 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | PaliaAPK HUB</title>
+    <title>PaliaAPK Admin | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-        
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
 
-        window.uploadApp = async () => {
-            const appData = {
-                name: document.getElementById('name').value,
-                package_name: document.getElementById('pkg').value,
-                version: document.getElementById('ver').value,
-                category: document.getElementById('cat').value,
-                description: document.getElementById('desc').value,
-                icon_url: document.getElementById('icon').value,
-                apk_url: document.getElementById('apk').value,
-                featured: document.getElementById('feat').checked,
-                trending: document.getElementById('trend').checked
-            };
-
-            const { data, error } = await supabase.from('apps').insert([appData]);
+        // Analytics Load Karein
+        async function loadStats() {
+            const { data, count } = await supabase.from('apps').select('*', { count: 'exact' });
+            document.getElementById('total-apps').innerText = count;
             
-            if (error) alert("Error: " + error.message);
-            else alert("App Successfully Uploaded!");
+            // Total Downloads Calculate (Assuming 'downloads' column is int)
+            const totalDownloads = data.reduce((acc, app) => acc + (app.downloads || 0), 0);
+            document.getElementById('total-downloads').innerText = totalDownloads;
+            
+            // List Apps
+            const tbody = document.getElementById('app-list');
+            tbody.innerHTML = data.map(app => `
+                <tr class="border-b">
+                    <td class="p-3">${app.name}</td>
+                    <td class="p-3">${app.downloads || 0}</td>
+                    <td class="p-3">
+                        <button onclick="deleteApp('${app.id}')" class="text-red-500 font-bold">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.deleteApp = async (id) => {
+            await supabase.from('apps').delete().eq('id', id);
+            location.reload();
         };
+
+        window.logout = () => {
+            // Firebase Auth Logout (Agar use kar rahe hain)
+            window.location.href = 'index.html';
+        };
+
+        loadStats();
     </script>
 </head>
-<body class="bg-gray-100 p-8">
+<body class="bg-gray-100 p-6">
 
-    <div class="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-lg">
-        <h2 class="text-2xl font-black text-green-600 mb-6">Upload New App</h2>
-        
-        <div class="grid grid-cols-2 gap-4">
-            <input type="text" id="name" placeholder="App Name" class="p-3 border rounded-xl">
-            <input type="text" id="pkg" placeholder="Package Name" class="p-3 border rounded-xl">
-            <input type="text" id="ver" placeholder="Version" class="p-3 border rounded-xl">
-            <input type="text" id="cat" placeholder="Category" class="p-3 border rounded-xl">
+    <!-- Header Stats -->
+    <div class="grid grid-cols-2 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-2xl shadow">
+            <h3 class="text-gray-500">Total Apps</h3>
+            <p id="total-apps" class="text-3xl font-black">0</p>
         </div>
-        
-        <textarea id="desc" placeholder="Description" class="w-full p-3 border rounded-xl mt-4"></textarea>
-        <input type="text" id="icon" placeholder="Icon URL" class="w-full p-3 border rounded-xl mt-4">
-        <input type="text" id="apk" placeholder="APK URL" class="w-full p-3 border rounded-xl mt-4">
-
-        <div class="flex gap-6 mt-4">
-            <label><input type="checkbox" id="feat"> Featured</label>
-            <label><input type="checkbox" id="trend"> Trending</label>
+        <div class="bg-white p-6 rounded-2xl shadow">
+            <h3 class="text-gray-500">Total Downloads</h3>
+            <p id="total-downloads" class="text-3xl font-black">0</p>
         </div>
+    </div>
 
-        <button onclick="uploadApp()" class="w-full mt-6 bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-slate-900 transition">
-            Publish to Store
-        </button>
+    <!-- Actions -->
+    <div class="flex justify-between mb-6">
+        <h2 class="text-xl font-bold">Manage Apps</h2>
+        <div class="flex gap-4">
+            <button onclick="window.location.href='index.html'" class="bg-gray-800 text-white px-4 py-2 rounded-xl">Home</button>
+            <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-xl">Logout</button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-3xl shadow overflow-hidden">
+        <table class="w-full text-left">
+            <thead class="bg-gray-50 border-b">
+                <tr><th class="p-3">App Name</th><th class="p-3">Downloads</th><th class="p-3">Action</th></tr>
+            </thead>
+            <tbody id="app-list"></tbody>
+        </table>
     </div>
 
 </body>
