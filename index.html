@@ -3,51 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaliaAPK HUB - Play Store Style</title>
+    <title>PaliaAPK HUB</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* PlayStore jaisa rounded look */
-        .app-card { border-radius: 20px; transition: transform 0.2s; }
-        .app-card:hover { transform: scale(1.02); }
+        /* Horizontal scrollbar hide karne ke liye */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-white pb-20"> <!-- Bottom padding for mobile nav -->
+<body class="bg-gray-50">
 
-    <!-- Top Search Bar (Playstore Style) -->
-    <header class="sticky top-0 bg-white p-4 shadow-sm z-50">
-        <div class="flex items-center bg-gray-100 rounded-full px-4 py-2">
-            <i class="fa fa-search text-gray-500 mr-3"></i>
-            <input type="text" placeholder="Search for apps & games" class="bg-transparent w-full outline-none text-sm">
+    <!-- Header -->
+    <header class="bg-white shadow-sm p-4 sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-extrabold text-green-600">PaliaAPK HUB</h1>
+            <button class="text-gray-600 text-xl"><i class="fa fa-search"></i></button>
         </div>
     </header>
 
-    <!-- Content -->
-    <main class="p-4">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Recommended for you</h2>
+    <main class="container mx-auto p-4">
         
+        <!-- Banner Slider -->
+        <div class="w-full h-40 bg-green-500 rounded-2xl mb-6 flex items-center justify-center text-white font-bold shadow-lg">
+            Slider Banner (Ads/Featured)
+        </div>
+
+        <!-- Categories (Horizontal Scroll) -->
+        <div class="flex space-x-3 overflow-x-auto no-scrollbar mb-6">
+            <button class="bg-green-600 text-white px-5 py-2 rounded-full whitespace-nowrap text-sm">All</button>
+            <button class="bg-white border border-gray-200 px-5 py-2 rounded-full whitespace-nowrap text-sm">Games</button>
+            <button class="bg-white border border-gray-200 px-5 py-2 rounded-full whitespace-nowrap text-sm">Social</button>
+            <button class="bg-white border border-gray-200 px-5 py-2 rounded-full whitespace-nowrap text-sm">Tools</button>
+            <button class="bg-white border border-gray-200 px-5 py-2 rounded-full whitespace-nowrap text-sm">Photography</button>
+        </div>
+
         <!-- App Grid -->
+        <h2 class="text-lg font-bold text-gray-800 mb-4">Trending Apps</h2>
         <div id="app-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             
-            <!-- App Card -->
-            <div class="app-card border border-gray-100 p-2 shadow-sm">
-                <img src="https://via.placeholder.com/150" class="rounded-2xl w-full h-32 object-cover" alt="App">
-                <div class="mt-2">
-                    <h3 class="font-semibold text-sm truncate">WhatsApp Messenger</h3>
-                    <p class="text-xs text-gray-500">Meta Platforms</p>
-                    <p class="text-xs text-green-600 font-medium">4.8 ★</p>
-                </div>
+            <!-- Sample Card -->
+            <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+                <img src="https://via.placeholder.com/100" class="rounded-xl w-full h-24 object-cover mb-2" alt="App">
+                <h3 class="font-bold text-sm truncate">App Name</h3>
+                <p class="text-xs text-gray-500 mb-2">Category</p>
+                <button class="w-full bg-gray-100 text-green-600 py-1 rounded-lg text-xs font-bold hover:bg-green-50">Install</button>
             </div>
-
+            
         </div>
     </main>
-
-    <!-- Bottom Navigation (Mobile Playstore Style) -->
-    <nav class="fixed bottom-0 w-full bg-white border-t flex justify-around p-3 text-gray-500">
-        <button class="flex flex-col items-center text-green-600"><i class="fa fa-gamepad"></i><span class="text-[10px]">Games</span></button>
-        <button class="flex flex-col items-center"><i class="fa fa-th-large"></i><span class="text-[10px]">Apps</span></button>
-        <button class="flex flex-col items-center"><i class="fa fa-bookmark"></i><span class="text-[10px]">Library</span></button>
-    </nav>
 
     <script src="script.js"></script>
 </body>
