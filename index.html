@@ -3,56 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaliaAPK HUB</title>
+    <title>PaliaAPK HUB - Premium App Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Swiper CSS for Sliding -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
     <style>
-        /* Horizontal scrollbar hide karne ke liye */
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .app-card:hover { transform: translateY(-5px); transition: 0.3s; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 pb-10">
 
     <!-- Header -->
-    <header class="bg-white shadow-sm p-4 sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-extrabold text-green-600">PaliaAPK HUB</h1>
-            <button class="text-gray-600 text-xl"><i class="fa fa-search"></i></button>
-        </div>
+    <header class="bg-white p-4 shadow-sm sticky top-0 z-50 flex justify-between items-center">
+        <h1 class="text-2xl font-black text-green-600 tracking-tight">PaliaAPK HUB</h1>
+        <button class="bg-gray-100 p-2 rounded-full w-10 h-10"><i class="fa fa-search"></i></button>
     </header>
 
     <main class="container mx-auto p-4">
         
-        <!-- Banner Slider -->
-        <div class="w-full h-40 bg-green-500 rounded-2xl mb-6 flex items-center justify-center text-white font-bold shadow-lg">
-            Slider Banner (Ads/Featured)
-        </div>
-
-        <!-- Categories (Horizontal Scroll) -->
-        <div class="flex space-x-3 overflow-x-auto no-scrollbar mb-6">
-            <button class="bg-green-600 text-white px-5 py-2 rounded-full whitespace-nowrap text-sm">All</button>
-            <button class="bg-white border border-gray-200 px-5 py-2 rounded-full whitespace-nowrap text-sm">Games</button>
-            <button class="bg-white border border-gray-200 px-5 py-2 rounded-full whitespace-nowrap text-sm">Social</button>
-            <button class="bg-white border border-gray-200 px-5 py-2 rounded-full whitespace-nowrap text-sm">Tools</button>
-            <button class="bg-white border border-gray-200 px-5 py-2 rounded-full whitespace-nowrap text-sm">Photography</button>
-        </div>
-
-        <!-- App Grid -->
-        <h2 class="text-lg font-bold text-gray-800 mb-4">Trending Apps</h2>
-        <div id="app-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            
-            <!-- Sample Card -->
-            <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
-                <img src="https://via.placeholder.com/100" class="rounded-xl w-full h-24 object-cover mb-2" alt="App">
-                <h3 class="font-bold text-sm truncate">App Name</h3>
-                <p class="text-xs text-gray-500 mb-2">Category</p>
-                <button class="w-full bg-gray-100 text-green-600 py-1 rounded-lg text-xs font-bold hover:bg-green-50">Install</button>
+        <!-- Sliding Banners (Swiper) -->
+        <div class="swiper mySwiper w-full h-48 mb-8 rounded-2xl overflow-hidden shadow-lg">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide bg-blue-500 flex items-center justify-center text-white text-xl">Banner 1</div>
+                <div class="swiper-slide bg-green-500 flex items-center justify-center text-white text-xl">Banner 2</div>
+                <div class="swiper-slide bg-purple-500 flex items-center justify-center text-white text-xl">Banner 3</div>
+                <div class="swiper-slide bg-orange-500 flex items-center justify-center text-white text-xl">Banner 4</div>
             </div>
-            
+        </div>
+
+        <!-- Categories -->
+        <div class="mb-8">
+            <h3 class="text-sm font-bold text-gray-400 uppercase mb-3">Categories</h3>
+            <div class="flex space-x-3 overflow-x-auto no-scrollbar">
+                <button class="bg-green-600 text-white px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap">All</button>
+                <button class="bg-white border px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap">Games</button>
+                <button class="bg-white border px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap">Social</button>
+                <button class="bg-white border px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap">Tools</button>
+                <button class="bg-white border px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap">Photography</button>
+                <button class="bg-white border px-6 py-2 rounded-full text-sm font-medium whitespace-nowrap">Finance</button>
+            </div>
+        </div>
+
+        <!-- App Sections -->
+        <section class="mb-8">
+            <h2 class="text-lg font-bold mb-4">Latest Apps</h2>
+            <div id="latest-apps" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Data here -->
+            </div>
+        </section>
+
+        <!-- Share Website Section -->
+        <div class="bg-white p-6 rounded-3xl shadow-sm text-center border mt-10">
+            <h3 class="font-bold text-lg mb-2">Share PaliaAPK HUB</h3>
+            <p class="text-gray-500 text-sm mb-4">Support us by sharing this store with your friends!</p>
+            <button onclick="shareWebsite()" class="bg-green-600 text-white w-full py-3 rounded-xl font-bold">
+                <i class="fa fa-share-alt mr-2"></i> Share Now
+            </button>
         </div>
     </main>
 
-    <script src="script.js"></script>
+    <!-- Swiper JS Script -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        var swiper = new Swiper(".mySwiper", { autoplay: { delay: 3000 }, loop: true });
+        
+        function shareWebsite() {
+            if (navigator.share) {
+                navigator.share({ title: 'PaliaAPK HUB', url: window.location.href });
+            } else {
+                alert("Link copied to clipboard!");
+            }
+        }
+    </script>
 </body>
 </html>
