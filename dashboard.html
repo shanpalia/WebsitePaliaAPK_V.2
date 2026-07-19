@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | PaliaAPK HUB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+        
+        const supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
+
+        window.uploadApp = async () => {
+            const appData = {
+                name: document.getElementById('name').value,
+                package_name: document.getElementById('pkg').value,
+                version: document.getElementById('ver').value,
+                category: document.getElementById('cat').value,
+                description: document.getElementById('desc').value,
+                icon_url: document.getElementById('icon').value,
+                apk_url: document.getElementById('apk').value,
+                featured: document.getElementById('feat').checked,
+                trending: document.getElementById('trend').checked
+            };
+
+            const { data, error } = await supabase.from('apps').insert([appData]);
+            
+            if (error) alert("Error: " + error.message);
+            else alert("App Successfully Uploaded!");
+        };
+    </script>
+</head>
+<body class="bg-gray-100 p-8">
+
+    <div class="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-lg">
+        <h2 class="text-2xl font-black text-green-600 mb-6">Upload New App</h2>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <input type="text" id="name" placeholder="App Name" class="p-3 border rounded-xl">
+            <input type="text" id="pkg" placeholder="Package Name" class="p-3 border rounded-xl">
+            <input type="text" id="ver" placeholder="Version" class="p-3 border rounded-xl">
+            <input type="text" id="cat" placeholder="Category" class="p-3 border rounded-xl">
+        </div>
+        
+        <textarea id="desc" placeholder="Description" class="w-full p-3 border rounded-xl mt-4"></textarea>
+        <input type="text" id="icon" placeholder="Icon URL" class="w-full p-3 border rounded-xl mt-4">
+        <input type="text" id="apk" placeholder="APK URL" class="w-full p-3 border rounded-xl mt-4">
+
+        <div class="flex gap-6 mt-4">
+            <label><input type="checkbox" id="feat"> Featured</label>
+            <label><input type="checkbox" id="trend"> Trending</label>
+        </div>
+
+        <button onclick="uploadApp()" class="w-full mt-6 bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-slate-900 transition">
+            Publish to Store
+        </button>
+    </div>
+
+</body>
+</html>
