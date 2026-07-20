@@ -26,7 +26,7 @@ async function fetchApps() {
                 <img src="${app.icon_url}" class="w-full h-32 object-cover rounded-2xl mb-4" alt="${app.name}">
                 <h3 class="font-bold">${app.name}</h3>
                 <p class="text-xs text-gray-400 mb-4">v${app.version}</p>
-                <a href="${app.download_url}" class="block text-center w-full bg-green-50 text-green-700 py-3 rounded-xl font-bold text-sm">Download</a>
+                <a href="${app.apk_url}" class="block text-center w-full bg-green-50 text-green-700 py-3 rounded-xl font-bold text-sm">Download</a>
             </div>
         `;
         appGrid.innerHTML += card;
@@ -34,6 +34,7 @@ async function fetchApps() {
 }
 
 // Page load hote hi apps load karein
+fetchFeaturedApps();
 fetchApps();
 // Admin Security Page Logic
 let clickCount = 0;
@@ -81,3 +82,100 @@ alert("Website link copied.");
 setTimeout(() => {
     clickCount = 0;
 }, 3000);
+async function fetchFeaturedApps(){
+
+const {data,error}=await supabase
+
+.from("apps")
+
+.select("*")
+
+.eq("featured",true)
+
+.limit(5);
+
+if(error){
+
+console.error(error);
+
+return;
+
+}
+
+const slider=document.getElementById("featured-slider");
+
+slider.innerHTML="";
+
+data.forEach(app=>{
+
+const image=app.banner_url || (app.screenshots?.[0]) || app.icon_url;
+
+slider.innerHTML+=`
+
+<div class="swiper-slide">
+
+<div class="relative h-[430px] rounded-[32px] overflow-hidden">
+
+<img src="${image}"
+
+class="w-full h-full object-cover">
+
+<div class="absolute inset-0 bg-black/50"></div>
+
+<div class="absolute left-10 bottom-10 text-white max-w-xl">
+
+<img src="${app.icon_url}"
+
+class="w-20 h-20 rounded-3xl mb-4">
+
+<h2 class="text-5xl font-black">
+
+${app.name}
+
+</h2>
+
+<p class="mt-2">
+
+${app.description}
+
+</p>
+
+<div class="flex gap-6 mt-4">
+
+<span>⭐ ${app.rating}</span>
+
+<span>⬇ ${app.downloads}</span>
+
+<span>📦 ${app.size}</span>
+
+</div>
+
+<a href="${app.apk_url}"
+
+class="download-btn inline-block mt-6">
+
+Download Now
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+new Swiper(".mySwiper",{
+
+loop:true,
+
+autoplay:{delay:4000},
+
+pagination:{el:".swiper-pagination"}
+
+});
+
+}
