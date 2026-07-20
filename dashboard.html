@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>PaliaAPK HUB Admin Dashboard</title>
+<title>PaliaAPK HUB - Admin Dashboard</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
@@ -14,14 +13,46 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 <style>
 
 body{
-background:#f5f7fb;
+background:#f3f6fb;
 font-family:Arial,sans-serif;
+}
+
+.sidebar{
+width:250px;
+position:fixed;
+left:0;
+top:0;
+bottom:0;
+background:#ffffff;
+box-shadow:0 0 20px rgba(0,0,0,.08);
+}
+
+.sidebar a{
+display:flex;
+align-items:center;
+gap:12px;
+padding:16px 22px;
+font-weight:700;
+color:#555;
+transition:.3s;
+border-left:4px solid transparent;
+}
+
+.sidebar a:hover{
+background:#ecfdf5;
+color:#16a34a;
+border-left:4px solid #16a34a;
+}
+
+.main{
+margin-left:250px;
+padding:30px;
 }
 
 .card{
 background:#fff;
-border-radius:20px;
-box-shadow:0 10px 25px rgba(0,0,0,.08);
+border-radius:22px;
+box-shadow:0 8px 20px rgba(0,0,0,.06);
 }
 
 </style>
@@ -30,15 +61,13 @@ box-shadow:0 10px 25px rgba(0,0,0,.08);
 
 <body>
 
-<div class="max-w-7xl mx-auto p-6">
+<!-- Sidebar -->
 
-<!-- HEADER -->
+<div class="sidebar">
 
-<div class="card p-6 flex items-center justify-between">
+<div class="p-6 border-b">
 
-<div>
-
-<h1 class="text-4xl font-black text-green-600">
+<h1 class="text-3xl font-black text-green-600">
 
 PaliaAPK HUB
 
@@ -52,37 +81,69 @@ Admin Dashboard
 
 </div>
 
-<div class="flex gap-4">
+<a href="#" id="dashboardBtn">
 
-<button
-id="homeBtn"
-class="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold">
+<i class="fa-solid fa-chart-line"></i>
+
+Dashboard
+
+</a>
+
+<a href="#" id="addAppBtn">
+
+<i class="fa-solid fa-plus"></i>
+
+Add New App
+
+</a>
+
+<a href="#" id="manageBtn">
+
+<i class="fa-solid fa-mobile-screen-button"></i>
+
+Manage Apps
+
+</a>
+
+<a href="index.html">
 
 <i class="fa-solid fa-house"></i>
 
 Home
 
-</button>
+</a>
 
-<button
-id="logoutBtn"
-class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold">
+<a href="#" id="logoutBtn">
 
 <i class="fa-solid fa-right-from-bracket"></i>
 
 Logout
 
-</button>
+</a>
 
 </div>
 
-</div>
+<!-- Main -->
 
-<!-- DASHBOARD CARDS -->
+<div class="main">
 
-<div class="grid grid-cols-2 gap-6 mt-8">
+<h1 class="text-4xl font-black">
 
-<div class="card p-8">
+Dashboard
+
+</h1>
+
+<p class="text-gray-500 mt-2">
+
+Welcome to PaliaAPK HUB Admin Panel
+
+</p>
+
+<!-- Cards -->
+
+<div class="grid grid-cols-4 gap-6 mt-8">
+
+<div class="card p-6">
 
 <p class="text-gray-500">
 
@@ -92,7 +153,7 @@ Total Apps
 
 <h2
 id="totalApps"
-class="text-5xl font-black mt-3">
+class="text-5xl font-black mt-3 text-green-600">
 
 0
 
@@ -100,7 +161,7 @@ class="text-5xl font-black mt-3">
 
 </div>
 
-<div class="card p-8">
+<div class="card p-6">
 
 <p class="text-gray-500">
 
@@ -110,7 +171,43 @@ Total Downloads
 
 <h2
 id="totalDownloads"
-class="text-5xl font-black mt-3">
+class="text-5xl font-black mt-3 text-blue-600">
+
+0
+
+</h2>
+
+</div>
+
+<div class="card p-6">
+
+<p class="text-gray-500">
+
+Total Users
+
+</p>
+
+<h2
+id="totalUsers"
+class="text-5xl font-black mt-3 text-purple-600">
+
+0
+
+</h2>
+
+</div>
+
+<div class="card p-6">
+
+<p class="text-gray-500">
+
+Total Site Visits
+
+</p>
+
+<h2
+id="totalVisits"
+class="text-5xl font-black mt-3 text-orange-500">
 
 0
 
@@ -120,69 +217,23 @@ class="text-5xl font-black mt-3">
 
 </div>
 
-<!-- ACTION BUTTONS -->
+<!-- Content -->
 
-<div class="flex gap-4 mt-8">
-
-<button
-id="addAppBtn"
-class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-2xl font-bold">
-
-<i class="fa-solid fa-plus"></i>
-
-Add New App
-
-</button>
-
-</div>
-
-<!-- MANAGE APPS -->
-
-<div class="card mt-8 overflow-hidden">
-
-<div class="p-6 border-b">
+<div
+id="contentArea"
+class="card mt-8 p-8">
 
 <h2 class="text-2xl font-black">
 
-Manage Apps
+Dashboard Ready
 
 </h2>
 
-</div>
+<p class="text-gray-500 mt-3">
 
-<table class="w-full">
+Next step me yahin Add App Form aur Manage Apps Table aayega.
 
-<thead class="bg-gray-100">
-
-<tr>
-
-<th class="p-4">Icon</th>
-
-<th class="p-4">App Name</th>
-
-<th class="p-4">Version</th>
-
-<th class="p-4">Action</th>
-
-</tr>
-
-</thead>
-
-<tbody id="app-list">
-
-<tr>
-
-<td colspan="4" class="text-center p-12 text-gray-400">
-
-No Apps Found
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
+</p>
 
 </div>
 
