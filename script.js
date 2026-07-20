@@ -139,7 +139,7 @@ async function fetchFeaturedApps() {
     const { data, error } = await supabase
         .from("apps")
         .select("*")
-        .eq("featured", true)
+       
         .order("created_at", { ascending: false })
         .limit(5);
 
@@ -188,7 +188,7 @@ async function fetchFeaturedApps() {
 
 <img
 src="${image}"
-class="w-full h-full object-cover"
+class="w-full h-36 object-contain bg-white p-3 rounded-2xl"
 alt="${escapeHTML(app.name)}">
 
 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
@@ -199,7 +199,8 @@ alt="${escapeHTML(app.name)}">
 
 <img
 src="${app.icon_url}"
-class="w-24 h-24 rounded-[28px] bg-white p-2 object-contain shadow-2xl mb-5">
+alt="${escapeHTML(app.name)}"
+class="w-24 h-24 rounded-[28px] bg-white p-3 object-contain shadow-2xl mb-5 border border-white">
 
 <h2 class="text-5xl font-black">
 
@@ -271,7 +272,7 @@ Download Now
 
     new Swiper(".mySwiper", {
 
-        loop: data.length > 1,
+       loop: false,
 
         autoplay: {
 
@@ -334,7 +335,7 @@ async function fetchApps() {
 
 <img
 src="${app.icon_url}"
-class="w-full h-36 object-cover rounded-2xl"
+class="w-full h-36 object-contain bg-white p-3 rounded-2xl"
 alt="${escapeHTML(app.name)}">
 
 <div class="p-4">
