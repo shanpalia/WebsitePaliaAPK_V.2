@@ -48,7 +48,35 @@ adminTrigger.addEventListener('click', () => {
         clickCount = 0; // reset
     }
 });
+async function shareWebsite(){
 
+const url=window.location.href;
+
+if(navigator.share){
+
+try{
+
+await navigator.share({
+
+title:"PaliaAPK HUB",
+
+text:"Premium Android Store",
+
+url:url
+
+});
+
+}catch(e){}
+
+}else{
+
+navigator.clipboard.writeText(url);
+
+alert("Website link copied.");
+
+}
+
+}
 // Optional: Agar user 3 second tak click na kare to count reset ho jaye
 setTimeout(() => {
     clickCount = 0;
