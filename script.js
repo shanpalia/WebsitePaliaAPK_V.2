@@ -90,7 +90,7 @@ const {data,error}=await supabase
 
 .select("*")
 
-.eq("featured",true)
+
 
 .limit(5);
 
