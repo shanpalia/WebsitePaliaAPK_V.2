@@ -18,18 +18,25 @@ font-family:Arial,sans-serif;
 }
 
 .sidebar{
-width:280px;
-position:fixed;
-left:-280px;
-top:0;
-bottom:0;
-background:#fff;
-transition:.3s;
-z-index:9999;
+    width:280px;
+    position:fixed;
+    top:0;
+    left:-280px;
+    height:100vh;
+    background:#fff;
+    box-shadow:0 0 20px rgba(0,0,0,.15);
+    transition:left .3s ease;
+    z-index:1000;
 }
 
 .sidebar.active{
-left:0;
+    left:0;
+}
+
+.main{
+    margin-left:0;
+    padding:30px;
+    padding-top:90px;
 }
 
 .sidebar a{
@@ -66,7 +73,12 @@ box-shadow:0 8px 20px rgba(0,0,0,.06);
 </head>
 
 <body>
+<button id="menuBtn"
+class="fixed top-5 left-5 z-[1100] w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center">
 
+<i class="fa-solid fa-bars text-2xl"></i>
+
+</button>
 <!-- Sidebar -->
 
 <div class="sidebar">
@@ -245,17 +257,23 @@ class="text-5xl font-black mt-3 text-orange-500">
 
 <script>
 
-const sidebar = document.querySelector(".sidebar");
 const menuBtn = document.getElementById("menuBtn");
+const sidebar = document.querySelector(".sidebar");
 
-menuBtn.onclick = () => {
+menuBtn.addEventListener("click",()=>{
+
     sidebar.classList.toggle("active");
-};
 
-document.querySelectorAll(".sidebar a").forEach(link => {
-    link.onclick = () => {
+});
+
+document.querySelectorAll(".sidebar a").forEach(link=>{
+
+    link.addEventListener("click",()=>{
+
         sidebar.classList.remove("active");
-    };
+
+    });
+
 });
 
 </script>
