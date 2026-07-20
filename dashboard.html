@@ -50,8 +50,8 @@ border-left:4px solid #16a34a;
 }
 
 .main{
-margin-left:0;
 padding:30px;
+padding-top:90px;
 transition:.3s;
 }
 
@@ -136,10 +136,11 @@ Logout
 
 <div class="flex items-center gap-4">
 
-<button id="menuBtn"
-class="text-3xl">
+<button
+id="menuBtn"
+class="fixed top-5 left-5 z-[99999] w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center text-3xl hover:bg-green-50">
 
-☰
+<i class="fa-solid fa-bars"></i>
 
 </button>
 
@@ -247,31 +248,14 @@ class="text-5xl font-black mt-3 text-orange-500">
 const sidebar = document.querySelector(".sidebar");
 const menuBtn = document.getElementById("menuBtn");
 
-menuBtn.addEventListener("click", () => {
+menuBtn.onclick = () => {
+    sidebar.classList.toggle("active");
+};
 
-    if (sidebar.classList.contains("active")) {
-
-        // Hide Sidebar
-        sidebar.classList.remove("active");
-
-    } else {
-
-        // Show Sidebar
-        sidebar.classList.add("active");
-
-    }
-
-});
-
-// Kisi bhi menu par click hote hi sidebar hide
 document.querySelectorAll(".sidebar a").forEach(link => {
-
-    link.addEventListener("click", () => {
-
+    link.onclick = () => {
         sidebar.classList.remove("active");
-
-    });
-
+    };
 });
 
 </script>
