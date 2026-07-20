@@ -97,15 +97,11 @@ setTimeout(() => {
 }, 3000);
 async function fetchFeaturedApps(){
 
-const {data,error}=await supabase
-
-.from("apps")
-
-.select("*")
-
-
-
-.limit(5);
+const { data, error } = await supabase
+    .from("apps")
+    .select("*")
+    .eq("featured", true)
+    .limit(5);
 
 if(error){
 
@@ -121,8 +117,11 @@ slider.innerHTML="";
 
 data.forEach(app=>{
 
-const image=app.banner_url || (app.screenshots?.[0]) || app.icon_url;
+const screenshots = Array.isArray(app.screenshots)
+    ? app.screenshots
+    : [];
 
+const image = app.banner_url || screenshots[0] || app.icon_url;
 slider.innerHTML+=`
 
 <div class="swiper-slide">
@@ -133,44 +132,52 @@ slider.innerHTML+=`
 
 class="w-full h-full object-cover">
 
-<div class="absolute inset-0 bg-black/50"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
 
-<div class="absolute left-10 bottom-10 text-white max-w-xl">
+<div class="absolute inset-0 z-20 flex items-end">
+    <div class="p-10 max-w-2xl text-white">
 
-<img src="${app.icon_url}"
+        <img src="${app.icon_url}" class="w-24 h-24 rounded-[28px] bg-white p-2 object-contain shadow-2xl mb-5">
 
-class="w-20 h-20 rounded-3xl mb-4">
+        <h2 class="text-5xl font-black">${app.name}</h2>
 
-<h2 class="text-5xl font-black">
+        <p class="mt-3">${app.description}</p>
 
-${app.name}
-
-</h2>
-
-<p class="mt-2">
-
-${app.description}
-
+      <p class="mt-2 text-green-200">
+    Developer: ${app.developer}
 </p>
 
-<div class="flex gap-6 mt-4">
+<p class="mt-2 text-sm text-gray-200">
+    Android ${app.android_version}
+</p>
 
-<span>⭐ ${app.rating}</span>
+        <div class="flex flex-wrap gap-3 mt-5">
 
-<span>⬇ ${app.downloads}</span>
+            <span class="bg-white/20 backdrop-blur px-3 py-2 rounded-full">
+                ⭐ ${app.rating}
+            </span>
 
-<span>📦 ${app.size}</span>
+            <span class="bg-white/20 backdrop-blur px-3 py-2 rounded-full">
+                ⬇ ${app.downloads}
+            </span>
 
-</div>
+            <span class="bg-white/20 backdrop-blur px-3 py-2 rounded-full">
+                📦 ${Math.round(app.size / 1024 / 1024)} MB
+            </span>
 
-<a href="${app.apk_url}"
+            <span class="bg-green-600 px-3 py-2 rounded-full">
+                v${app.version}
+            </span>
 
-class="download-btn inline-block mt-6">
+        </div>
 
-Download Now
+       <a href="${app.apk_url}"
+class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-2xl font-bold mt-6 transition">
+<i class="fa-solid fa-download"></i>
+            Download Now
+        </a>
 
-</a>
-
+    </div>
 </div>
 
 </div>
