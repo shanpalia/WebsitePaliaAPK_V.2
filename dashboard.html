@@ -148,13 +148,7 @@ Logout
 
 <div class="flex items-center gap-4">
 
-<button
-id="menuBtn"
-class="fixed top-5 left-5 z-[99999] w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center text-3xl hover:bg-green-50">
 
-<i class="fa-solid fa-bars"></i>
-
-</button>
 
 <div>
 
@@ -254,30 +248,32 @@ class="text-5xl font-black mt-3 text-orange-500">
 
 </div>
 
-
+    <div id="overlay"
+class="fixed inset-0 bg-black/40 hidden z-[998]"></div>
 <script>
 
 const menuBtn = document.getElementById("menuBtn");
 const sidebar = document.querySelector(".sidebar");
+const overlay = document.getElementById("overlay");
 
-menuBtn.addEventListener("click",()=>{
-
+menuBtn.onclick = () => {
     sidebar.classList.toggle("active");
+    overlay.classList.toggle("hidden");
+};
 
-});
+overlay.onclick = () => {
+    sidebar.classList.remove("active");
+    overlay.classList.add("hidden");
+};
 
-document.querySelectorAll(".sidebar a").forEach(link=>{
-
-    link.addEventListener("click",()=>{
-
+document.querySelectorAll(".sidebar a").forEach(link => {
+    link.onclick = () => {
         sidebar.classList.remove("active");
-
-    });
-
+        overlay.classList.add("hidden");
+    };
 });
 
 </script>
-    <div id="overlay"
-class="fixed inset-0 bg-black/40 hidden z-[998]"></div>
+
 </body>
 </html>
