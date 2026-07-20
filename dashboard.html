@@ -1,81 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaliaAPK Admin | Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-        const supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        // Analytics Load Karein
-        async function loadStats() {
-            const { data, count } = await supabase.from('apps').select('*', { count: 'exact' });
-            document.getElementById('total-apps').innerText = count;
-            
-            // Total Downloads Calculate (Assuming 'downloads' column is int)
-            const totalDownloads = data.reduce((acc, app) => acc + (app.downloads || 0), 0);
-            document.getElementById('total-downloads').innerText = totalDownloads;
-            
-            // List Apps
-            const tbody = document.getElementById('app-list');
-            tbody.innerHTML = data.map(app => `
-                <tr class="border-b">
-                    <td class="p-3">${app.name}</td>
-                    <td class="p-3">${app.downloads || 0}</td>
-                    <td class="p-3">
-                        <button onclick="deleteApp('${app.id}')" class="text-red-500 font-bold">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+<title>PaliaAPK HUB Admin Dashboard</title>
 
-        window.deleteApp = async (id) => {
-            await supabase.from('apps').delete().eq('id', id);
-            location.reload();
-        };
+<script src="https://cdn.tailwindcss.com"></script>
 
-        window.logout = () => {
-            // Firebase Auth Logout (Agar use kar rahe hain)
-            window.location.href = 'index.html';
-        };
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-        loadStats();
-    </script>
+<style>
+
+body{
+background:#f5f7fb;
+font-family:Arial,sans-serif;
+}
+
+.card{
+background:#fff;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+</style>
+
 </head>
-<body class="bg-gray-100 p-6">
 
-    <!-- Header Stats -->
-    <div class="grid grid-cols-2 gap-6 mb-8">
-        <div class="bg-white p-6 rounded-2xl shadow">
-            <h3 class="text-gray-500">Total Apps</h3>
-            <p id="total-apps" class="text-3xl font-black">0</p>
-        </div>
-        <div class="bg-white p-6 rounded-2xl shadow">
-            <h3 class="text-gray-500">Total Downloads</h3>
-            <p id="total-downloads" class="text-3xl font-black">0</p>
-        </div>
-    </div>
+<body>
 
-    <!-- Actions -->
-    <div class="flex justify-between mb-6">
-        <h2 class="text-xl font-bold">Manage Apps</h2>
-        <div class="flex gap-4">
-            <button onclick="window.location.href='index.html'" class="bg-gray-800 text-white px-4 py-2 rounded-xl">Home</button>
-            <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-xl">Logout</button>
-        </div>
-    </div>
+<div class="max-w-7xl mx-auto p-6">
 
-    <!-- Table -->
-    <div class="bg-white rounded-3xl shadow overflow-hidden">
-        <table class="w-full text-left">
-            <thead class="bg-gray-50 border-b">
-                <tr><th class="p-3">App Name</th><th class="p-3">Downloads</th><th class="p-3">Action</th></tr>
-            </thead>
-            <tbody id="app-list"></tbody>
-        </table>
-    </div>
+<!-- HEADER -->
+
+<div class="card p-6 flex items-center justify-between">
+
+<div>
+
+<h1 class="text-4xl font-black text-green-600">
+
+PaliaAPK HUB
+
+</h1>
+
+<p class="text-gray-500">
+
+Admin Dashboard
+
+</p>
+
+</div>
+
+<div class="flex gap-4">
+
+<button
+id="homeBtn"
+class="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold">
+
+<i class="fa-solid fa-house"></i>
+
+Home
+
+</button>
+
+<button
+id="logoutBtn"
+class="bg-red-600 text-white px-6 py-3 rounded-xl font-bold">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+Logout
+
+</button>
+
+</div>
+
+</div>
+
+<!-- DASHBOARD CARDS -->
+
+<div class="grid grid-cols-2 gap-6 mt-8">
+
+<div class="card p-8">
+
+<p class="text-gray-500">
+
+Total Apps
+
+</p>
+
+<h2
+id="totalApps"
+class="text-5xl font-black mt-3">
+
+0
+
+</h2>
+
+</div>
+
+<div class="card p-8">
+
+<p class="text-gray-500">
+
+Total Downloads
+
+</p>
+
+<h2
+id="totalDownloads"
+class="text-5xl font-black mt-3">
+
+0
+
+</h2>
+
+</div>
+
+</div>
+
+<!-- ACTION BUTTONS -->
+
+<div class="flex gap-4 mt-8">
+
+<button
+id="addAppBtn"
+class="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-2xl font-bold">
+
+<i class="fa-solid fa-plus"></i>
+
+Add New App
+
+</button>
+
+</div>
+
+<!-- MANAGE APPS -->
+
+<div class="card mt-8 overflow-hidden">
+
+<div class="p-6 border-b">
+
+<h2 class="text-2xl font-black">
+
+Manage Apps
+
+</h2>
+
+</div>
+
+<table class="w-full">
+
+<thead class="bg-gray-100">
+
+<tr>
+
+<th class="p-4">Icon</th>
+
+<th class="p-4">App Name</th>
+
+<th class="p-4">Version</th>
+
+<th class="p-4">Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="app-list">
+
+<tr>
+
+<td colspan="4" class="text-center p-12 text-gray-400">
+
+No Apps Found
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
 
 </body>
 </html>
