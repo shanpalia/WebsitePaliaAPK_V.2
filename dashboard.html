@@ -13,24 +13,27 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 <style>
 
 body{
-background:#f3f6fb;
-font-family:Arial,sans-serif;
+    margin:0;
+    background:#f3f6fb;
+    font-family:Arial,sans-serif;
+    overflow-x:hidden;
 }
-
 .sidebar{
-    width:280px;
     position:fixed;
     top:0;
     left:-280px;
+    width:280px;
     height:100vh;
     background:#fff;
-    box-shadow:0 0 20px rgba(0,0,0,.15);
-    transition:left .3s ease;
+    box-shadow:0 0 30px rgba(0,0,0,.15);
+    transition:left .35s ease;
     z-index:1000;
+    overflow-y:auto;
 }
 
 .sidebar.active{
     left:0;
+}
 }
 
 .main{
@@ -73,10 +76,22 @@ box-shadow:0 8px 20px rgba(0,0,0,.06);
 </head>
 
 <body>
-<button id="menuBtn"
-class="fixed top-5 left-5 z-[1100] w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center">
+<button
+id="menuBtn"
+style="
+position:fixed;
+top:18px;
+left:18px;
+width:52px;
+height:52px;
+border:none;
+border-radius:14px;
+background:#fff;
+box-shadow:0 8px 20px rgba(0,0,0,.15);
+cursor:pointer;
+z-index:99999;">
 
-<i class="fa-solid fa-bars text-2xl"></i>
+<i class="fa-solid fa-bars" style="font-size:24px;"></i>
 
 </button>
 <!-- Sidebar -->
@@ -248,29 +263,53 @@ class="text-5xl font-black mt-3 text-orange-500">
 
 </div>
 
-    <div id="overlay"
-class="fixed inset-0 bg-black/40 hidden z-[998]"></div>
+<div
+id="overlay"
+style="
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.35);
+z-index:999;">
+</div>
 <script>
 
-const menuBtn = document.getElementById("menuBtn");
-const sidebar = document.querySelector(".sidebar");
-const overlay = document.getElementById("overlay");
+const menuBtn=document.getElementById("menuBtn");
+const sidebar=document.querySelector(".sidebar");
+const overlay=document.getElementById("overlay");
 
-menuBtn.onclick = () => {
-    sidebar.classList.toggle("active");
-    overlay.classList.toggle("hidden");
-};
+menuBtn.addEventListener("click",()=>{
 
-overlay.onclick = () => {
-    sidebar.classList.remove("active");
-    overlay.classList.add("hidden");
-};
+    if(sidebar.classList.contains("active")){
 
-document.querySelectorAll(".sidebar a").forEach(link => {
-    link.onclick = () => {
         sidebar.classList.remove("active");
-        overlay.classList.add("hidden");
-    };
+        overlay.style.display="none";
+
+    }else{
+
+        sidebar.classList.add("active");
+        overlay.style.display="block";
+
+    }
+
+});
+
+overlay.addEventListener("click",()=>{
+
+    sidebar.classList.remove("active");
+    overlay.style.display="none";
+
+});
+
+document.querySelectorAll(".sidebar a").forEach(link=>{
+
+    link.addEventListener("click",()=>{
+
+        sidebar.classList.remove("active");
+        overlay.style.display="none";
+
+    });
+
 });
 
 </script>
