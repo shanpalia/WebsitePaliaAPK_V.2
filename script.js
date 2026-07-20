@@ -1,183 +1,264 @@
-// Supabase ka configuration
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+// ===============================
+// PaliaAPK HUB
+// Production Script v2 - Part 1
+// ===============================
 
-const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co'; // Apne Supabase Dashboard se lein
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+// ===============================
+// Supabase Config
+// ===============================
+
+const SUPABASE_URL = "https://ralinnuegsbuvlhwpzln.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Apps fetch karne ka function
-async function fetchApps() {
+// ===============================
+// Global Elements
+// ===============================
+
+const appGrid = document.getElementById("app-grid");
+const featuredSlider = document.getElementById("featured-slider");
+const adminTrigger = document.getElementById("admin-trigger");
+
+// ===============================
+// Helper Functions
+// ===============================
+
+function formatFileSize(bytes) {
+
+    if (!bytes) return "0 MB";
+
+    return (bytes / 1024 / 1024).toFixed(1) + " MB";
+
+}
+
+function heroImage(app){
+
+    if(app.banner_url) return app.banner_url;
+
+    if(Array.isArray(app.screenshots) && app.screenshots.length){
+
+        return app.screenshots[0];
+
+    }
+
+    return app.icon_url;
+
+}
+
+function escapeHTML(text){
+
+    return String(text || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+
+}
+
+// ===============================
+// Share Website
+// ===============================
+
+window.shareWebsite = async function(){
+
+    const url = window.location.href;
+
+    if(navigator.share){
+
+        try{
+
+            await navigator.share({
+
+                title:"PaliaAPK HUB",
+
+                text:"Premium Android Store",
+
+                url
+
+            });
+
+        }catch(e){}
+
+    }else{
+
+        await navigator.clipboard.writeText(url);
+
+        alert("Website link copied.");
+
+    }
+
+}
+
+// ===============================
+// Admin Hidden Button
+// ===============================
+
+let clickCount = 0;
+
+if(adminTrigger){
+
+adminTrigger.addEventListener("click",()=>{
+
+clickCount++;
+
+if(clickCount>=5){
+
+location.href="admin.html";
+
+clickCount=0;
+
+}
+
+setTimeout(()=>{
+
+clickCount=0;
+
+},3000);
+
+});
+
+}
+// ===============================
+// Featured Hero Slider
+// ===============================
+
+async function fetchFeaturedApps() {
+
+    if (!featuredSlider) return;
+
+    featuredSlider.innerHTML = `
+        <div class="swiper-slide flex items-center justify-center h-full">
+            <div class="text-center text-gray-500">
+                Loading Featured Apps...
+            </div>
+        </div>
+    `;
+
     const { data, error } = await supabase
-        .from('apps') // Supabase mein aapke table ka naam
-        .select('*');
+        .from("apps")
+        .select("*")
+        .eq("featured", true)
+        .order("created_at", { ascending: false })
+        .limit(5);
 
     if (error) {
-        console.error("Error fetching apps:", error);
+        console.error(error);
+        featuredSlider.innerHTML = `
+            <div class="swiper-slide flex items-center justify-center h-full">
+                <h2 class="text-red-500 text-2xl font-bold">
+                    Failed to load featured apps
+                </h2>
+            </div>
+        `;
         return;
     }
 
-    const appGrid = document.getElementById('app-grid');
-    appGrid.innerHTML = ''; // Pehle grid khali karein
+    if (!data || data.length === 0) {
 
-   data.forEach(app => {
-       console.log(app);
-
-let screenshots = [];
-
-try {
-    screenshots = Array.isArray(app.screenshots)
-        ? app.screenshots
-        : JSON.parse(app.screenshots || "[]");
-} catch (e) {
-    screenshots = [];
-}
-
-
-        const card = `
-            <div class="bg-white p-4 rounded-3xl border border-gray-100 hover:shadow-xl transition">
-                <img src="${app.icon_url}" class="w-full h-32 object-cover rounded-2xl mb-4" alt="${app.name}">
-                <h3 class="font-bold">${app.name}</h3>
-                <p class="text-xs text-gray-400 mb-4">v${app.version}</p>
-                <a href="${app.apk_url}" class="block text-center w-full bg-green-50 text-green-700 py-3 rounded-xl font-bold text-sm">Download</a>
+        featuredSlider.innerHTML = `
+            <div class="swiper-slide flex items-center justify-center h-full bg-gray-100">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold">
+                        No Featured Apps
+                    </h2>
+                    <p class="text-gray-500 mt-2">
+                        Mark an app as Featured from Admin Panel.
+                    </p>
+                </div>
             </div>
         `;
-        appGrid.innerHTML += card;
-    });
-}
 
-// Page load hote hi apps load karein
-fetchFeaturedApps();
-fetchApps();
-// Admin Security Page Logic
-let clickCount = 0;
-const adminTrigger = document.getElementById('admin-trigger');
+        return;
 
-adminTrigger.addEventListener('click', () => {
-    clickCount++;
-    
-    if (clickCount === 5) {
-        // 5 clicks hone par admin page par le jayega
-        window.location.href = 'admin.html';
-        clickCount = 0; // reset
     }
-});
-async function shareWebsite(){
 
-const url=window.location.href;
+    featuredSlider.innerHTML = "";
 
-if(navigator.share){
+    data.forEach(app => {
 
-try{
+        const image = heroImage(app);
 
-await navigator.share({
-
-title:"PaliaAPK HUB",
-
-text:"Premium Android Store",
-
-url:url
-
-});
-
-}catch(e){}
-
-}else{
-
-navigator.clipboard.writeText(url);
-
-alert("Website link copied.");
-
-}
-
-}
-// Optional: Agar user 3 second tak click na kare to count reset ho jaye
-setTimeout(() => {
-    clickCount = 0;
-}, 3000);
-async function fetchFeaturedApps(){
-
-const { data, error } = await supabase
-    .from("apps")
-    .select("*")
-    .eq("featured", true)
-    .limit(5);
-
-if(error){
-
-console.error(error);
-
-return;
-
-}
-
-const slider=document.getElementById("featured-slider");
-
-slider.innerHTML="";
-
-data.forEach(app=>{
-
-const screenshots = Array.isArray(app.screenshots)
-    ? app.screenshots
-    : [];
-
-const image = app.banner_url || screenshots[0] || app.icon_url;
-slider.innerHTML+=`
+        featuredSlider.innerHTML += `
 
 <div class="swiper-slide">
 
 <div class="relative h-[430px] rounded-[32px] overflow-hidden">
 
-<img src="${image}"
-
-class="w-full h-full object-cover">
+<img
+src="${image}"
+class="w-full h-full object-cover"
+alt="${escapeHTML(app.name)}">
 
 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
 
-<div class="absolute inset-0 z-20 flex items-end">
-    <div class="p-10 max-w-2xl text-white">
+<div class="absolute inset-0 flex items-end z-20">
 
-        <img src="${app.icon_url}" class="w-24 h-24 rounded-[28px] bg-white p-2 object-contain shadow-2xl mb-5">
+<div class="p-10 max-w-2xl text-white">
 
-        <h2 class="text-5xl font-black">${app.name}</h2>
+<img
+src="${app.icon_url}"
+class="w-24 h-24 rounded-[28px] bg-white p-2 object-contain shadow-2xl mb-5">
 
-        <p class="mt-3">${app.description}</p>
+<h2 class="text-5xl font-black">
 
-      <p class="mt-2 text-green-200">
-    Developer: ${app.developer}
+${escapeHTML(app.name)}
+
+</h2>
+
+<p class="mt-4 text-gray-200 line-clamp-3">
+
+${escapeHTML(app.description)}
+
 </p>
 
-<p class="mt-2 text-sm text-gray-200">
-    Android ${app.android_version}
+<p class="mt-4 text-green-300">
+
+Developer • ${escapeHTML(app.developer)}
+
 </p>
 
-        <div class="flex flex-wrap gap-3 mt-5">
+<div class="flex flex-wrap gap-3 mt-5">
 
-            <span class="bg-white/20 backdrop-blur px-3 py-2 rounded-full">
-                ⭐ ${app.rating}
-            </span>
+<span class="bg-white/20 backdrop-blur px-3 py-2 rounded-full">
 
-            <span class="bg-white/20 backdrop-blur px-3 py-2 rounded-full">
-                ⬇ ${app.downloads}
-            </span>
+⭐ ${app.rating}
 
-            <span class="bg-white/20 backdrop-blur px-3 py-2 rounded-full">
-                📦 ${Math.round(app.size / 1024 / 1024)} MB
-            </span>
+</span>
 
-            <span class="bg-green-600 px-3 py-2 rounded-full">
-                v${app.version}
-            </span>
+<span class="bg-white/20 backdrop-blur px-3 py-2 rounded-full">
 
-        </div>
+⬇ ${app.downloads}
 
-       <a href="${app.apk_url}"
-class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-2xl font-bold mt-6 transition">
+</span>
+
+<span class="bg-white/20 backdrop-blur px-3 py-2 rounded-full">
+
+📦 ${formatFileSize(app.size)}
+
+</span>
+
+<span class="bg-green-600 px-3 py-2 rounded-full">
+
+v${app.version}
+
+</span>
+
+</div>
+
+<a
+href="${app.apk_url}"
+class="download-btn inline-flex items-center gap-2 mt-6">
+
 <i class="fa-solid fa-download"></i>
-            Download Now
-        </a>
 
-    </div>
+Download Now
+
+</a>
+
+</div>
+
 </div>
 
 </div>
@@ -186,16 +267,304 @@ class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white
 
 `;
 
-});
+    });
 
-new Swiper(".mySwiper",{
+    new Swiper(".mySwiper", {
 
-loop:true,
+        loop: data.length > 1,
 
-autoplay:{delay:4000},
+        autoplay: {
 
-pagination:{el:".swiper-pagination"}
+            delay: 4000,
 
-});
+            disableOnInteraction: false
+
+        },
+
+        pagination: {
+
+            el: ".swiper-pagination",
+
+            clickable: true
+
+        }
+
+    });
 
 }
+// ===============================
+// Load Apps Grid
+// ===============================
+
+async function fetchApps() {
+
+    if (!appGrid) return;
+
+    appGrid.innerHTML = `
+        <div class="col-span-full text-center py-12">
+            <p class="text-gray-500">Loading Apps...</p>
+        </div>
+    `;
+
+    const { data, error } = await supabase
+        .from("apps")
+        .select("*")
+        .order("downloads", { ascending: false });
+
+    if (error) {
+
+        console.error(error);
+
+        appGrid.innerHTML = `
+            <div class="col-span-full text-center py-12 text-red-500">
+                Failed to load apps.
+            </div>
+        `;
+
+        return;
+    }
+
+    appGrid.innerHTML = "";
+
+    data.forEach(app => {
+
+        appGrid.innerHTML += `
+
+<div class="app-card">
+
+<img
+src="${app.icon_url}"
+class="w-full h-36 object-cover rounded-2xl"
+alt="${escapeHTML(app.name)}">
+
+<div class="p-4">
+
+<div class="flex items-center justify-between">
+
+<h3 class="font-bold text-lg">
+
+${escapeHTML(app.name)}
+
+</h3>
+
+<span class="badge">
+
+v${app.version}
+
+</span>
+
+</div>
+
+<p class="text-sm text-gray-500 mt-2">
+
+${escapeHTML(app.developer)}
+
+</p>
+
+<div class="flex flex-wrap gap-2 mt-3">
+
+<span class="badge">
+
+⭐ ${app.rating}
+
+</span>
+
+<span class="badge">
+
+⬇ ${app.downloads}
+
+</span>
+
+<span class="badge">
+
+📦 ${formatFileSize(app.size)}
+
+</span>
+
+</div>
+
+<p class="text-sm text-gray-600 mt-4 line-clamp-2">
+
+${escapeHTML(app.description)}
+
+</p>
+
+<div class="flex gap-3 mt-5">
+
+<a
+href="app.html?id=${app.id}"
+class="flex-1 text-center border border-green-600 text-green-600 rounded-xl py-3 font-bold">
+
+Details
+
+</a>
+
+<a
+href="${app.apk_url}"
+class="flex-1 text-center bg-green-600 text-white rounded-xl py-3 font-bold">
+
+Download
+
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+    });
+
+}
+// ===============================
+// Search
+// ===============================
+
+const searchInput = document.querySelector('input[type="text"]');
+
+if (searchInput) {
+
+    searchInput.addEventListener("input", async (e) => {
+
+        const keyword = e.target.value.trim();
+
+        const { data } = await supabase
+            .from("apps")
+            .select("*")
+            .ilike("name", `%${keyword}%`)
+            .order("downloads", { ascending: false });
+
+        if (!data) return;
+
+        appGrid.innerHTML = "";
+
+        data.forEach(app => {
+
+            appGrid.innerHTML += `
+
+<div class="app-card">
+
+<img src="${app.icon_url}"
+class="w-full h-36 object-cover rounded-2xl">
+
+<div class="p-4">
+
+<h3 class="font-bold">${escapeHTML(app.name)}</h3>
+
+<p class="text-sm text-gray-500">
+
+${escapeHTML(app.developer)}
+
+</p>
+
+<div class="flex gap-2 mt-3">
+
+<span class="badge">⭐ ${app.rating}</span>
+
+<span class="badge">${formatFileSize(app.size)}</span>
+
+</div>
+
+<a
+href="${app.apk_url}"
+class="download-btn w-full text-center mt-4 block">
+
+Download
+
+</a>
+
+</div>
+
+</div>
+
+`;
+
+        });
+
+    });
+
+}
+
+// ===============================
+// Categories
+// ===============================
+
+document.querySelectorAll(".category-btn").forEach(btn => {
+
+    btn.addEventListener("click", async () => {
+
+        const category = btn.textContent.trim();
+
+        if (
+            category === "All Apps" ||
+            category === "All"
+        ) {
+
+            fetchApps();
+            return;
+
+        }
+
+        const { data } = await supabase
+            .from("apps")
+            .select("*")
+            .eq("category", category);
+
+        appGrid.innerHTML = "";
+
+        data.forEach(app => {
+
+            appGrid.innerHTML += `
+
+<div class="app-card">
+
+<img src="${app.icon_url}"
+class="w-full h-36 object-cover rounded-2xl">
+
+<div class="p-4">
+
+<h3 class="font-bold">
+
+${escapeHTML(app.name)}
+
+</h3>
+
+<p class="text-sm text-gray-500">
+
+${escapeHTML(app.developer)}
+
+</p>
+
+<a
+href="${app.apk_url}"
+class="download-btn block text-center mt-4">
+
+Download
+
+</a>
+
+</div>
+
+</div>
+
+`;
+
+        });
+
+    });
+
+});
+
+// ===============================
+// Initialize
+// ===============================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    fetchFeaturedApps();
+
+    fetchApps();
+
+});
