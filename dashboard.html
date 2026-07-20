@@ -24,10 +24,8 @@ left:-280px;
 top:0;
 bottom:0;
 background:#fff;
-box-shadow:0 0 30px rgba(0,0,0,.12);
-transition:.35s;
+transition:.3s;
 z-index:9999;
-overflow-y:auto;
 }
 
 .sidebar.active{
@@ -248,30 +246,31 @@ class="text-5xl font-black mt-3 text-orange-500">
 
 const sidebar = document.querySelector(".sidebar");
 const menuBtn = document.getElementById("menuBtn");
-const overlay = document.getElementById("overlay");
 
-menuBtn.onclick = () => {
+menuBtn.addEventListener("click", () => {
 
-    sidebar.classList.add("active");
-    overlay.classList.remove("hidden");
+    if (sidebar.classList.contains("active")) {
 
-}
-
-overlay.onclick = () => {
-
-    sidebar.classList.remove("active");
-    overlay.classList.add("hidden");
-
-}
-
-document.querySelectorAll(".sidebar a").forEach(btn => {
-
-    btn.onclick = () => {
-
+        // Hide Sidebar
         sidebar.classList.remove("active");
-        overlay.classList.add("hidden");
+
+    } else {
+
+        // Show Sidebar
+        sidebar.classList.add("active");
 
     }
+
+});
+
+// Kisi bhi menu par click hote hi sidebar hide
+document.querySelectorAll(".sidebar a").forEach(link => {
+
+    link.addEventListener("click", () => {
+
+        sidebar.classList.remove("active");
+
+    });
 
 });
 
