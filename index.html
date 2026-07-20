@@ -240,13 +240,75 @@ box-shadow:0 10px 30px rgba(0,0,0,.06);
     <main class="container mx-auto p-4 md:p-8">
         
         <!-- Large Featured App Slider Section -->
-        <div class="swiper mySwiper w-full h-[400px] rounded-3xl overflow-hidden shadow-2xl mb-12">
-            <div class="swiper-wrapper" id="featured-slider">
-                <!-- Swiper slides for apps -->
-                <div class="swiper-slide relative bg-gray-300"></div>
+        <!-- ================= Premium Hero ================= -->
+
+<section class="hero-card relative mb-12">
+
+    <div class="swiper mySwiper w-full h-[430px] rounded-[32px] overflow-hidden">
+
+        <div class="swiper-wrapper" id="featured-slider">
+
+            <!-- Dynamic Slides from script.js -->
+
+            <div class="swiper-slide">
+
+                <div class="relative w-full h-full overflow-hidden">
+
+                    <img
+                        src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1600"
+                        class="w-full h-full object-cover">
+
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+
+                    <div class="absolute left-10 bottom-10 text-white max-w-xl">
+
+                        <span class="badge">
+
+                            ⭐ Editor's Choice
+
+                        </span>
+
+                        <h2 class="text-5xl font-black mt-4">
+
+                            Discover Premium Android Apps
+
+                        </h2>
+
+                        <p class="mt-4 text-lg text-gray-200">
+
+                            Fast Downloads • Verified APKs • Daily Updates • Safe Installation
+
+                        </p>
+
+                        <div class="flex gap-4 mt-8">
+
+                            <button class="download-btn">
+
+                                Explore Apps
+
+                            </button>
+
+                            <button class="bg-white/20 backdrop-blur px-6 py-3 rounded-xl font-semibold">
+
+                                Top Charts
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
-            <div class="swiper-pagination"></div>
+
         </div>
+
+        <div class="swiper-pagination"></div>
+
+    </div>
+
+</section>
 
         <!-- Categories Section -->
         <div class="mb-12">
