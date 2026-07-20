@@ -21,6 +21,11 @@ async function fetchApps() {
     appGrid.innerHTML = ''; // Pehle grid khali karein
 
     data.forEach(app => {
+        data.forEach(app => {
+
+    console.log(app);
+
+    let screenshots = [];
         const card = `
             <div class="bg-white p-4 rounded-3xl border border-gray-100 hover:shadow-xl transition">
                 <img src="${app.icon_url}" class="w-full h-32 object-cover rounded-2xl mb-4" alt="${app.name}">
