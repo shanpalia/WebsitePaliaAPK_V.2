@@ -139,26 +139,101 @@ box-shadow:0 10px 30px rgba(0,0,0,.06);
 </head>
 <body class="bg-gray-50 text-slate-800">
 
-   <!-- Header Section -->
-<nav class="glass sticky top-0 z-50 border-b border-gray-100 p-4">
-    <div class="container mx-auto flex justify-between items-center">
-        <!-- Logo with 5-click Event -->
-        <div id="admin-trigger" class="flex items-center gap-2 cursor-pointer">
-            <div class="gradient-bg text-white w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-lg shadow-lg">P</div>
-            <h1 class="text-xl font-black tracking-tighter">PaliaAPK<span class="text-green-600">HUB</span></h1>
-        </div>
-        
-        <!-- Search bar -->
-        <div class="hidden md:flex bg-gray-100 rounded-full px-6 py-2 w-96 items-center">
-            <i class="fa fa-search text-gray-400"></i>
-            <input type="text" placeholder="Search apps..." class="bg-transparent ml-3 outline-none w-full text-sm">
+<!-- ===== Premium Header ===== -->
+<nav class="glass sticky top-0 z-50 border-b border-gray-200 py-3">
+
+<div class="container mx-auto px-4 flex items-center justify-between gap-4">
+
+    <!-- Logo -->
+    <div id="admin-trigger"
+         class="flex items-center gap-3 cursor-pointer">
+
+        <div class="gradient-bg w-12 h-12 rounded-2xl
+                    flex items-center justify-center
+                    shadow-lg">
+
+            <span class="text-white font-black text-xl">P</span>
+
         </div>
 
-        <!-- User Avatar -->
-        <button class="bg-gray-200 w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:ring-2 ring-green-500 transition">
-            <i class="fa fa-user text-gray-600"></i>
-        </button>
+        <div>
+
+            <h1 class="text-xl font-black tracking-tight">
+
+                PaliaAPK
+                <span class="text-green-600">HUB</span>
+
+            </h1>
+
+            <p class="text-xs text-gray-500">
+
+                Premium Android Store
+
+            </p>
+
+        </div>
+
     </div>
+
+    <!-- Search -->
+
+    <div class="hidden md:flex flex-1 max-w-xl">
+
+        <div class="bg-gray-100 rounded-full
+                    w-full px-5 py-3
+                    flex items-center">
+
+            <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+
+            <input
+                type="text"
+                placeholder="Search Apps, Games, AI..."
+                class="bg-transparent outline-none w-full ml-3 text-sm">
+
+        </div>
+
+    </div>
+
+    <!-- Right Icons -->
+
+    <div class="flex items-center gap-2">
+
+        <!-- Share -->
+
+        <button
+            onclick="shareWebsite()"
+            class="w-10 h-10 rounded-full
+                   bg-green-600 text-white
+                   hover:scale-105 transition">
+
+            <i class="fa-solid fa-share-nodes"></i>
+
+        </button>
+
+        <!-- Notification -->
+
+        <button
+            class="w-10 h-10 rounded-full
+                   bg-gray-100 hover:bg-green-50">
+
+            <i class="fa-regular fa-bell"></i>
+
+        </button>
+
+        <!-- User -->
+
+        <button
+            class="w-10 h-10 rounded-full
+                   bg-gray-100 hover:bg-green-50">
+
+            <i class="fa-regular fa-user"></i>
+
+        </button>
+
+    </div>
+
+</div>
+
 </nav>
 
     <!-- Main Content Area -->
