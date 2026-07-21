@@ -64,22 +64,6 @@ transform:translateY(-8px);
 box-shadow:0 20px 40px rgba(0,0,0,.12);
 }
 
-.category-btn{
-background:#fff;
-border:1px solid #e5e7eb;
-padding:12px 22px;
-border-radius:999px;
-font-weight:700;
-transition:.3s;
-white-space:nowrap;
-}
-
-.category-btn:hover{
-background:#16a34a;
-color:#fff;
-border-color:#16a34a;
-}
-
 .stat-card{
 background:#fff;
 border-radius:24px;
@@ -228,7 +212,7 @@ box-shadow:0 10px 30px rgba(0,0,0,.06);
         <section class="hero-card relative mb-12">
             <div class="swiper mySwiper w-full h-[450px] md:h-[400px]">
                 <div class="swiper-wrapper" id="featured-slider">
-                    <!-- Dynamic Slides from script.js will be injected here with clean white background layout -->
+                    <!-- Dynamic Slides from script.js will be injected here -->
                 </div>
                 <div class="swiper-pagination"></div>
             </div>
@@ -260,36 +244,27 @@ box-shadow:0 10px 30px rgba(0,0,0,.06);
             </div>
         </section>
 
-        <!-- Categories Section -->
+        <!-- Categories Section (Compact & Clickable) -->
         <div class="mb-12">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-2xl font-bold">Browse Categories</h3>
             </div>
-            <div class="flex space-x-4 overflow-x-auto no-scrollbar pb-4">
-                <button class="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold whitespace-nowrap">All Apps</button>
-                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Games</button>
-                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Social</button>
-                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Tools</button>
-                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Photography</button>
-                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Music</button>
-                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Video</button>
-                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Finance</button>
-                <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Education</button>
-                <button class="category-btn">AI</button>
-                <button class="category-btn">VPN</button>
-                <button class="category-btn">Browser</button>
-                <button class="category-btn">Productivity</button>
-                <button class="category-btn">Security</button>
-                <button class="category-btn">Shopping</button>
-                <button class="category-btn">Travel</button>
-                <button class="category-btn">Lifestyle</button>
-                <button class="category-btn">Health</button>
-                <button class="category-btn">Medical</button>
-                <button class="category-btn">Entertainment</button>
-                <button class="category-btn">Developer</button>
-                <button class="category-btn">Weather</button>
-                <button class="category-btn">Communication</button>
-                <button class="category-btn">File Manager</button>
+            <div class="flex space-x-3 overflow-x-auto no-scrollbar pb-4">
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-green-600 text-white shadow-md shadow-green-600/20">All Apps</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Games</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Social</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">AI</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Utilities</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Tools</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Photography</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Music</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Video</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Finance</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Education</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">VPN</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Browser</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Productivity</button>
+                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Security</button>
             </div>
         </div>
 
@@ -302,7 +277,7 @@ box-shadow:0 10px 30px rgba(0,0,0,.06);
         <div id="app-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             <!-- App Card Component -->
             <div class="app-card bg-white p-4 rounded-3xl border border-gray-100">
-                <div class="w-full h-32 bg-gray-200 rounded-2xl mb-4"></div>
+                <div class="w-full h-36 bg-gray-200 rounded-2xl mb-4"></div>
                 <h3 class="font-bold text-sm">App Name</h3>
                 <p class="text-xs text-gray-500">⭐⭐⭐⭐⭐ 4.9</p>
                 <p class="text-xs text-gray-400">50M+ Downloads</p>
