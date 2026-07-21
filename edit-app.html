@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit App - PaliaAPK HUB</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 font-sans antialiased">
+
+    <!-- Top Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="manage.html" class="text-slate-500 hover:text-slate-700 transition">
+                    <i class="fa-solid fa-arrow-left text-xl"></i>
+                </a>
+                <h1 class="text-xl font-bold text-slate-800">Edit Application</h1>
+            </div>
+            <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1 rounded-full">Admin Mode</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+            
+            <!-- Loading Indicator -->
+            <div id="loading-state" class="text-center py-12">
+                <i class="fa-solid fa-spinner fa-spin text-3xl text-emerald-600 mb-3"></i>
+                <p class="text-slate-600">Loading app details...</p>
+            </div>
+
+            <!-- Edit Form (Hidden by default until data loads) -->
+            <form id="edit-form" class="space-y-6 hidden" onsubmit="updateApp(event)">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <!-- App Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">App Name</label>
+                        <input type="text" id="app-name" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+                    </div>
+
+                    <!-- Developer Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Developer Name</label>
+                        <input type="text" id="app-developer" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <!-- Version -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Version</label>
+                        <input type="text" id="app-version" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+                    </div>
+
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                        <select id="app-category" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+                            <option value="Social">Social</option>
+                            <option value="Tools">Tools</option>
+                            <option value="Games">Games</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Productivity">Productivity</option>
+                        </select>
+                    </div>
+
+                    <!-- Android Version -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Android Requirement</label>
+                        <input type="text" id="app-android" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition">
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                    <textarea id="app-description" rows="4" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition"></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center justify-end space-x-4 pt-4 border-t border-slate-100">
+                    <a href="manage.html" class="px-6 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition">Cancel</a>
+                    <button type="submit" id="save-btn" class="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-medium hover:bg-emerald-700 shadow-sm transition">
+                        Update Application
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </main>
+
+    <!-- Script to Handle Data Fetching and Updating -->
+    <script>
+        // Supabase Configuration (Apna URL aur Anon Key yahan dalein)
+        const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // URL se App ID nikalna (e.g., edit-app.html?id=1)
+        const urlParams = new URLSearchParams(window.location.search);
+        const appId = urlParams.get('id');
+
+        async function fetchAppData() {
+            if (!appId) {
+                alert('No App ID specified!');
+                window.location.href = 'manage.html';
+                return;
+            }
+
+            const { data, error } = await _supabase
+                .from('apps') // Apne table ka naam yahan check kar lein
+                .select('*')
+                .eq('id', appId)
+                .single();
+
+            if (error) {
+                console.error('Error fetching app:', error);
+                alert('Could not load app details.');
+                return;
+            }
+
+            // Form fields mein data bharna
+            document.getElementById('app-name').value = data.name || '';
+            document.getElementById('app-developer').value = data.developer || '';
+            document.getElementById('app-version').value = data.version || '';
+            document.getElementById('app-category').value = data.category || 'Social';
+            document.getElementById('app-android').value = data.android_version || '';
+            document.getElementById('app-description').value = data.description || '';
+
+            // Loading hata kar form dikhana
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('edit-form').classList.remove('hidden');
+        }
+
+        async function updateApp(event) {
+            event.preventDefault();
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.textContent = 'Updating...';
+            saveBtn.disabled = true;
+
+            const updatedData = {
+                name: document.getElementById('app-name').value,
+                developer: document.getElementById('app-developer').value,
+                version: document.getElementById('app-version').value,
+                category: document.getElementById('app-category').value,
+                android_version: document.getElementById('app-android').value,
+                description: document.getElementById('app-description').value
+            };
+
+            const { error } = await _supabase
+                .from('apps')
+                .update(updatedData)
+                .eq('id', appId);
+
+            if (error) {
+                console.error('Error updating app:', error);
+                alert('Failed to update app.');
+                saveBtn.textContent = 'Update Application';
+                saveBtn.disabled = false;
+            } else {
+                alert('App updated successfully!');
+                window.location.href = 'manage.html';
+            }
+        }
+
+        // Page load hote hi data fetch karna
+        fetchAppData();
+    </script>
+</body>
+</html>
