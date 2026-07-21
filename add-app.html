@@ -415,13 +415,6 @@ img{ max-width: 100%; display: block; }
 .field.has-error textarea{ border-color: var(--danger); background: var(--danger-bg); }
 .field.has-error .field-error{ display: flex; }
 
-.input-suffix{ position: relative; }
-.input-suffix .field-input{ padding-right: 46px; }
-.input-suffix span{
-  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  font-size: 12px; color: var(--ink-300); font-weight: 600; pointer-events: none;
-}
-
 /* Tags */
 .tag-input-wrap{
   display: flex; flex-wrap: wrap; gap: 6px;
@@ -989,15 +982,9 @@ img{ max-width: 100%; display: block; }
                   </select>
                 </div>
 
-                <div class="field">
-                  <label for="fSize">APK Size</label>
-                  <div class="input-suffix">
-                    <input class="field-input" type="text" id="fSize" name="apkSize" placeholder="e.g. 148" autocomplete="off" inputmode="decimal">
-                    <span>MB</span>
-                  </div>
-                </div>
+                <!-- APK Size field yahan se hata diya gaya hai -->
 
-                <div class="field">
+                <div class="field field--full">
                   <label for="fTagInput">Tags <span class="opt">optional</span></label>
                   <div class="tag-input-wrap" id="tagWrap">
                     <input type="text" id="fTagInput" placeholder="Type a tag and press Enter">
@@ -1468,14 +1455,20 @@ img{ max-width: 100%; display: block; }
     var version = currentFieldValue('fVersion');
     var developer = currentFieldValue('fDeveloper');
     var category = currentFieldValue('fCategory');
-    var size = currentFieldValue('fSize');
     var description = fDescription.value.trim();
 
     pv.name.textContent = name || 'New App Name';
     pv.developer.textContent = developer || 'Developer name';
     pv.version.textContent = version ? 'v' + version : 'v—';
     pv.category.textContent = category || 'Category';
-    pv.size.textContent = size ? size + ' MB' : 'Size —';
+
+    // Live APK size calculation from uploaded file
+    if(uploads.apk && uploads.apk.file){
+      var sizeInMb = (uploads.apk.file.size / (1024 * 1024)).toFixed(1) + ' MB';
+      pv.size.textContent = sizeInMb;
+    } else {
+      pv.size.textContent = 'Size —';
+    }
 
     if(description){
       pv.description.textContent = description;
@@ -1590,7 +1583,7 @@ img{ max-width: 100%; display: block; }
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
- var BUCKETS = { icon: 'app-icons', apk: 'app-apks', banner: 'app-banners', screenshot: 'app-screenshots' };
+  var BUCKETS = { icon: 'app-icons', apk: 'app-apks', banner: 'app-banners', screenshot: 'app-screenshots' };
   var toastStack = document.getElementById('toastStack');
   var TOAST_SUCCESS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>';
   var TOAST_ERROR_ICON   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
@@ -1666,6 +1659,9 @@ img{ max-width: 100%; display: block; }
   }
 
   function collectPayload(status, urls, slug){
+    // Automatically calculate size from uploaded APK file for database submission
+    var calculatedSize = (uploads.apk && uploads.apk.file) ? (uploads.apk.file.size / (1024 * 1024)).toFixed(1) + ' MB' : null;
+
     return {
       name: currentFieldValue('fName'),
       slug: slug,
@@ -1674,7 +1670,7 @@ img{ max-width: 100%; display: block; }
       package_name: currentFieldValue('fPackage') || null,
       category: currentFieldValue('fCategory') || null,
       android_version: currentFieldValue('fAndroid') || null,
-      apk_size: currentFieldValue('fSize') || null,
+      apk_size: calculatedSize,
       tags: tags,
       description: fDescription.value.trim(),
       icon_url: urls.icon || null,
