@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaliaAPK HUB Admin Dashboard</title>
+    <title>Manage Apps - PaliaAPK HUB Admin Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
@@ -131,38 +131,12 @@
         .main {
             padding: 30px;
         }
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(4,1fr);
-            gap: 20px;
-        }
-        .card {
-            background: #fff;
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 8px 20px rgba(0,0,0,.06);
-        }
-        .card p {
-            color: #777;
-            font-weight: 600;
-        }
-        .card h2 {
-            font-size: 42px;
-            font-weight: 900;
-            margin-top: 10px;
-        }
         #overlay {
             position: fixed;
             inset: 0;
             background: rgba(0,0,0,.35);
             display: none;
             z-index: 999;
-        }
-        @media(max-width:1100px) {
-            .cards { grid-template-columns: repeat(2,1fr); }
-        }
-        @media(max-width:700px) {
-            .cards { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -180,7 +154,7 @@
             <p>Admin Dashboard</p>
         </div>
         <div class="menu">
-            <a href="dashboard.html" style="background:#ecfdf5;color:#16a34a;">
+            <a href="dashboard.html">
                 <i class="fa-solid fa-chart-line"></i>
                 <span>Dashboard</span>
             </a>
@@ -188,7 +162,7 @@
                 <i class="fa-solid fa-plus"></i>
                 <span>Add New App</span>
             </a>
-            <a href="manage-apps.html">
+            <a href="manage-apps.html" style="background:#ecfdf5;color:#16a34a;">
                 <i class="fa-solid fa-mobile-screen-button"></i>
                 <span>Manage Apps</span>
             </a>
@@ -210,38 +184,18 @@
                 <i class="fa-solid fa-bars"></i>
             </button>
             <div class="title">
-                <h2>Dashboard</h2>
-                <p>Welcome to PaliaAPK HUB Admin Panel</p>
+                <h2>Manage Apps</h2>
+                <p>View, Edit or Delete your uploaded applications</p>
             </div>
         </div>
         <div class="profile">SP</div>
     </header>
 
-    <!-- MAIN -->
+    <!-- MAIN CONTAINER -->
     <main class="main">
-        <div class="cards">
-            <div class="card">
-                <p>Total Apps</p>
-                <h2 id="totalApps">0</h2>
-            </div>
-            <div class="card">
-                <p>Total Downloads</p>
-                <h2 id="totalDownloads">0</h2>
-            </div>
-            <div class="card">
-                <p>Total Users</p>
-                <h2 id="totalUsers">0</h2>
-            </div>
-            <div class="card">
-                <p>Total Site Visits</p>
-                <h2 id="totalVisits">0</h2>
-            </div>
-        </div>
-
-        <!-- ALL APPS -->
-        <div class="table-box" style="margin-top:30px;background:#fff;border-radius:20px;padding:25px;box-shadow:0 8px 20px rgba(0,0,0,.06);">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                <h2 style="font-size:28px;font-weight:900;">All Apps</h2>
+        <div class="table-box" style="background:#fff;border-radius:20px;padding:25px;box-shadow:0 8px 20px rgba(0,0,0,.06);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:15px;">
+                <h2 style="font-size:28px;font-weight:900;">All Applications</h2>
                 <input id="searchApp" type="text" placeholder="Search App..." style="width:320px;padding:12px 18px;border:1px solid #ddd;border-radius:12px;outline:none;font-size:15px;">
             </div>
 
@@ -250,7 +204,7 @@
                     <thead>
                         <tr style="background:#f5f7fb;">
                             <th style="padding:16px;">Icon</th>
-                            <th style="padding:16px;">App</th>
+                            <th style="padding:16px;">App Name</th>
                             <th style="padding:16px;">Developer</th>
                             <th style="padding:16px;">Version</th>
                             <th style="padding:16px;">Category</th>
@@ -262,7 +216,7 @@
                     </thead>
                     <tbody id="appsTable">
                         <tr>
-                            <td colspan="9" style="padding:60px;text-align:center;color:#999;">Loading Live Apps...</td>
+                            <td colspan="9" style="padding:60px;text-align:center;color:#999;">Loading Apps...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -270,7 +224,7 @@
         </div>
     </main>
 
-    <!-- JAVASCRIPT LOGIC WITH REALTIME & EDIT/DELETE -->
+    <!-- JAVASCRIPT LOGIC -->
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
@@ -279,7 +233,7 @@
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE"
         );
 
-        // Sidebar Elements
+        // Sidebar Elements Toggle
         const sidebar = document.getElementById("sidebar");
         const menuBtn = document.getElementById("menuBtn");
         const closeBtn = document.getElementById("closeSidebar");
@@ -309,28 +263,17 @@
             }
         });
 
-        // Load & Render Dashboard Data
-        async function loadDashboard() {
+        // Fetch & Load Apps Data
+        async function fetchApps() {
             const { data, error } = await supabase
                 .from("apps")
                 .select("*")
                 .order("created_at", { ascending: false });
 
             if (error) {
-                console.error("Error fetching data:", error);
+                console.error("Error fetching apps:", error);
                 return;
             }
-
-            document.getElementById("totalApps").textContent = data.length;
-
-            let downloads = 0;
-            data.forEach(app => {
-                downloads += Number(app.downloads || 0);
-            });
-
-            document.getElementById("totalDownloads").textContent = downloads;
-            document.getElementById("totalUsers").textContent = "0";
-            document.getElementById("totalVisits").textContent = "0";
 
             renderTable(data);
         }
@@ -368,21 +311,18 @@
             });
         }
 
-        // Initial Data Load
-        loadDashboard();
+        // Initial fetch call
+        fetchApps();
 
-        // =========================
-        // REALTIME SUBSCRIPTION (Live Sync)
-        // =========================
+        // Realtime sync
         supabase
             .channel('public:apps')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'apps' }, payload => {
-                console.log('Realtime change detected:', payload);
-                loadDashboard(); // Database mein kuch bhi insert, update ya delete hoga toh table khud refresh ho jayegi
+                fetchApps();
             })
             .subscribe();
 
-        // Search Functionality
+        // Search Filter
         document.getElementById("searchApp").addEventListener("input", async (e) => {
             const keyword = e.target.value.trim();
 
@@ -400,9 +340,9 @@
             renderTable(data);
         });
 
-        // Global Edit Function (Redirects to add-app.html with ID for updating)
+        // Global Edit Function (Ab yeh manage-apps.html par hi redirect karega)
         window.editApp = function(id) {
-            window.location.href = "add-app.html?id=" + id;
+            window.location.href = "manage-apps.html?id=" + id;
         };
 
         // Global Delete Function
@@ -419,7 +359,7 @@
                 return;
             }
 
-            loadDashboard();
+            fetchApps();
         };
     </script>
 </body>
