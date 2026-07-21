@@ -154,7 +154,7 @@ async function fetchFeaturedApps() {
                         <div class="flex flex-wrap gap-2 mb-6">
                             <span class="badge">⭐ ${app.rating || '4.9'}</span>
                             <span class="badge">⬇ ${app.downloads || '1M+'}</span>
-                            <span class="badge">📦 ${formatFileSize(app.size)}</span>
+                           <span class="badge">📦 ${formatFileSize(app.size)}</span>
                             <span class="badge bg-green-600 text-white">v${app.version || '1.0'}</span>
                         </div>
 
