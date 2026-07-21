@@ -78,7 +78,7 @@ if(adminTrigger){
 }
 
 // ===============================
-// Featured Hero Slider (Updated for White Background & Fixed Icons)
+// Featured Hero Slider
 // ===============================
 
 async function fetchFeaturedApps() {
@@ -129,7 +129,6 @@ async function fetchFeaturedApps() {
     featuredSlider.innerHTML = "";
 
     data.forEach(app => {
-        // Screenshots HTML map safely
         const screenshotsHTML = Array.isArray(app.screenshots) && app.screenshots.length > 0
             ? app.screenshots.map(img => `<img src="${img}" class="hero-screenshot-img flex-shrink-0" alt="Screenshot">`).join('')
             : '<p class="text-xs text-gray-400 self-center">No screenshots</p>';
@@ -285,23 +284,47 @@ if (searchInput) {
 }
 
 // ===============================
-// Categories
+// Categories Click & Filter Logic
 // ===============================
 
 document.querySelectorAll(".category-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
+        document.querySelectorAll(".category-btn").forEach(b => {
+            b.classList.remove("bg-green-600", "text-white", "shadow-md", "shadow-green-600/20");
+            b.classList.add("bg-white", "text-slate-700", "border", "border-gray-200");
+        });
+        
+        btn.classList.remove("bg-white", "text-slate-700", "border", "border-gray-200");
+        btn.classList.add("bg-green-600", "text-white", "shadow-md", "shadow-green-600/20");
+
         const category = btn.textContent.trim();
+
         if (category === "All Apps" || category === "All") {
             fetchApps();
             return;
         }
 
-        const { data } = await supabase
+        appGrid.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <p class="text-gray-500">Loading ${category} apps...</p>
+            </div>
+        `;
+
+        const { data, error } = await supabase
             .from("apps")
             .select("*")
             .eq("category", category);
 
-        if (!data) return;
+        if (error) {
+            console.error(error);
+            appGrid.innerHTML = `<div class="col-span-full text-center py-12 text-red-500">Error loading apps.</div>`;
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            appGrid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500">No apps found in ${category}.</div>`;
+            return;
+        }
 
         appGrid.innerHTML = "";
         data.forEach(app => {
@@ -309,9 +332,21 @@ document.querySelectorAll(".category-btn").forEach(btn => {
                 <div class="app-card">
                     <img src="${app.icon_url}" class="w-full h-36 object-contain bg-white p-3 rounded-2xl" alt="${escapeHTML(app.name)}">
                     <div class="p-4">
-                        <h3 class="font-bold">${escapeHTML(app.name)}</h3>
-                        <p class="text-sm text-gray-500">${escapeHTML(app.developer)}</p>
-                        <a href="${app.apk_url}" class="download-btn block text-center mt-4">Download</a>
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-lg">${escapeHTML(app.name)}</h3>
+                            <span class="badge">v${app.version || '1.0'}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">${escapeHTML(app.developer || 'ShanPalia')}</p>
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            <span class="badge">⭐ ${app.rating || '4.9'}</span>
+                            <span class="badge">⬇ ${app.downloads || '0'}</span>
+                            <span class="badge">📦 ${formatFileSize(app.size)}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-4 line-clamp-2">${escapeHTML(app.description)}</p>
+                        <div class="flex gap-3 mt-5">
+                            <a href="app.html?id=${app.id}" class="flex-1 text-center border border-green-600 text-green-600 rounded-xl py-3 font-bold text-sm">Details</a>
+                            <a href="${app.apk_url}" class="flex-1 text-center bg-green-600 text-white rounded-xl py-3 font-bold text-sm">Download</a>
+                        </div>
                     </div>
                 </div>
             `;
