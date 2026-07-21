@@ -279,28 +279,45 @@
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE"
         );
 
-        // Sidebar Toggle
+        // =========================
+        // Sidebar Toggle Buttons Logic
+        // =========================
         const sidebar = document.getElementById("sidebar");
         const menuBtn = document.getElementById("menuBtn");
         const closeBtn = document.getElementById("closeSidebar");
         const overlay = document.getElementById("overlay");
 
-        menuBtn.onclick = () => {
+        menuBtn.addEventListener("click", () => {
             sidebar.classList.add("active");
             overlay.style.display = "block";
-        }
+        });
 
-        closeBtn.onclick = () => {
+        closeBtn.addEventListener("click", () => {
             sidebar.classList.remove("active");
             overlay.style.display = "none";
-        }
+        });
 
-        overlay.onclick = () => {
+        overlay.addEventListener("click", () => {
             sidebar.classList.remove("active");
             overlay.style.display = "none";
-        }
+        });
 
+        // =========================
+        // Logout Button Logic
+        // =========================
+        const logoutBtn = document.getElementById("logoutBtn");
+        logoutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (confirm("Are you sure you want to logout?")) {
+                // Agar Firebase auth session clear karna ho toh yahan likh sakte hain
+                localStorage.removeItem("adminLoggedIn");
+                window.location.href = "index.html";
+            }
+        });
+
+        // =========================
         // Load Dashboard Data
+        // =========================
         async function loadDashboard() {
             const { data, error } = await supabase
                 .from("apps")
@@ -331,7 +348,7 @@
             const tbody = document.getElementById("appsTable");
             tbody.innerHTML = "";
 
-            if(data.length === 0) {
+            if (!data || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="9" style="padding:40px;text-align:center;color:#999;">No apps found</td></tr>`;
                 return;
             }
@@ -362,7 +379,9 @@
 
         loadDashboard();
 
+        // =========================
         // Search Functionality
+        // =========================
         document.getElementById("searchApp").addEventListener("input", async (e) => {
             const keyword = e.target.value.trim();
 
@@ -380,14 +399,15 @@
             renderTable(data);
         });
 
-        // Edit Global Function
+        // =========================
+        // Edit & Delete Global Functions
+        // =========================
         window.editApp = function(id) {
-            location.href = "add-app.html?id=" + id;
+            window.location.href = "add-app.html?id=" + id;
         };
 
-        // Delete Global Function
         window.deleteApp = async function(id) {
-            if (!confirm("Delete this app?")) return;
+            if (!confirm("Are you sure you want to delete this app?")) return;
 
             const { error } = await supabase
                 .from("apps")
