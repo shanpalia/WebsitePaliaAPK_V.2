@@ -1590,8 +1590,7 @@ img{ max-width: 100%; display: block; }
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-  var BUCKETS = { icon: 'app-icons', apk: 'apks', banner: 'banners', screenshot: 'screenshots' };
-
+ var BUCKETS = { icon: 'app-icons', apk: 'app-apks', banner: 'app-banners', screenshot: 'app-screenshots' };
   var toastStack = document.getElementById('toastStack');
   var TOAST_SUCCESS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>';
   var TOAST_ERROR_ICON   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
