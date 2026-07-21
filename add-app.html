@@ -207,7 +207,7 @@ img{ max-width: 100%; display: block; }
 }
 
 /* ==========================================================================
-   3. FORM PANEL (skeleton — fields populated in Part 2)
+   3. FORM PANEL
    ========================================================================== */
 .form-panel{ min-width: 0; display: flex; flex-direction: column; gap: 18px; }
 
@@ -248,7 +248,7 @@ img{ max-width: 100%; display: block; }
 .panel-card__body{ padding: 22px; }
 
 /* ==========================================================================
-   4. PREVIEW PANEL / PHONE (skeleton — wired live in Part 2)
+   4. PREVIEW PANEL / PHONE
    ========================================================================== */
 .preview-panel{
   position: sticky;
@@ -339,14 +339,6 @@ img{ max-width: 100%; display: block; }
   scrollbar-width: none;
 }
 .phone-content::-webkit-scrollbar{ display: none; }
-
-.phone-scaffold-note{
-  padding: 40px 24px;
-  text-align: center;
-  color: var(--ink-300);
-  font-size: 12.5px;
-  line-height: 1.6;
-}
 
 /* ==========================================================================
    5. FORM FIELDS
@@ -784,15 +776,7 @@ img{ max-width: 100%; display: block; }
 .pv-shot svg{ width: 18px; height: 18px; }
 
 /* ==========================================================================
-   9. RESPONSIVE (part 2 additions)
-   ========================================================================== */
-@media (max-width: 760px){
-  .field-grid, .field-grid--3{ grid-template-columns: 1fr; }
-  .uploader-grid{ grid-template-columns: 1fr 1fr; }
-}
-
-/* ==========================================================================
-   11. SUBMISSION STATE, TOASTS & ALERTS (Part 3)
+   11. SUBMISSION STATE, TOASTS & ALERTS
    ========================================================================== */
 .form-panel.is-submitting{ position: relative; }
 .form-panel.is-submitting::after{
@@ -872,9 +856,6 @@ img{ max-width: 100%; display: block; }
 }
 .toast__close svg{ width: 12px; height: 12px; }
 
-/* ==========================================================================
-   12. RESPONSIVE (base)
-   ========================================================================== */
 @media (max-width: 1180px){
   .page-grid{ grid-template-columns: 1fr; }
   .preview-panel{ position: static; }
@@ -1130,7 +1111,7 @@ img{ max-width: 100%; display: block; }
         </form>
       </section>
 
-      <!-- PREVIEW PANEL: wired live in Part 2 -->
+      <!-- PREVIEW PANEL -->
       <aside class="preview-panel">
         <div class="preview-heading">
           <h3>Live Preview</h3>
@@ -1201,9 +1182,6 @@ img{ max-width: 100%; display: block; }
 <script>
 (function(){
   "use strict";
-  /* ============================================================
-     PART 2 — FORM, UPLOADERS, TAGS, DESCRIPTION MODE, LIVE PREVIEW
-     ============================================================ */
 
   var appForm      = document.getElementById('appForm');
   var statusPill    = document.getElementById('statusPill');
@@ -1224,13 +1202,11 @@ img{ max-width: 100%; display: block; }
     statusPillText.textContent = 'No changes yet';
   }
 
-  /* ---------- shared icon markup used by every uploader's empty state ---------- */
   var UPLOAD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15V6a2 2 0 00-2-2H5a2 2 0 00-2 2v9m18 0l-2.5-3.5-4 5-3-3.5L4 15m18 0v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2"/></svg>';
   var FILE_ICON   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>';
   var REPLACE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a9 9 0 11-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>';
   var REMOVE_ICON  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 
-  /* ---------- uploader registry (id -> { file, dataUrl }) ---------- */
   var uploads = {};
 
   var UPLOADER_CONFIGS = [
@@ -1364,7 +1340,6 @@ img{ max-width: 100%; display: block; }
 
   UPLOADER_CONFIGS.forEach(initUploader);
 
-  /* ---------- tags ---------- */
   var tagWrap    = document.getElementById('tagWrap');
   var tagInput   = document.getElementById('fTagInput');
   var tags       = [];
@@ -1410,7 +1385,6 @@ img{ max-width: 100%; display: block; }
   });
   tagWrap.addEventListener('click', function(){ tagInput.focus(); });
 
-  /* ---------- description mode toggle ---------- */
   var btnDescManual = document.getElementById('btnDescManual');
   var btnDescAI     = document.getElementById('btnDescAI');
   var descAIPanel   = document.getElementById('descAIPanel');
@@ -1473,7 +1447,6 @@ img{ max-width: 100%; display: block; }
     }, 900);
   });
 
-  /* ---------- live phone preview ---------- */
   var pv = {
     banner: document.getElementById('pvBanner'),
     bannerEmpty: document.getElementById('pvBannerEmpty'),
@@ -1515,7 +1488,6 @@ img{ max-width: 100%; display: block; }
     descCharCount.textContent = description.length + ' characters';
     descCharCount.classList.toggle('is-over', description.length > 4000);
 
-    /* tags */
     pv.tags.innerHTML = '';
     tags.forEach(function(tag){
       var el = document.createElement('span');
@@ -1524,21 +1496,18 @@ img{ max-width: 100%; display: block; }
       pv.tags.appendChild(el);
     });
 
-    /* icon */
     if(uploads.icon && uploads.icon.dataUrl){
       pv.icon.innerHTML = '<img src="' + uploads.icon.dataUrl + '" alt="App icon">';
     } else {
       pv.icon.innerHTML = pvIconDefaultSVG;
     }
 
-    /* banner */
     if(uploads.banner && uploads.banner.dataUrl){
       pv.banner.innerHTML = '<img src="' + uploads.banner.dataUrl + '" alt="App banner">';
     } else {
       pv.banner.innerHTML = '<div class="pv-banner__empty">Banner preview</div>';
     }
 
-    /* screenshots */
     var shotIds = ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'];
     var activeShots = shotIds.filter(function(id){ return uploads[id] && uploads[id].dataUrl; });
 
@@ -1575,7 +1544,6 @@ img{ max-width: 100%; display: block; }
     }
   });
 
-  /* ---------- basic client-side validation ---------- */
   function setFieldError(id, hasError){
     var el = document.getElementById(id);
     if(!el) return;
@@ -1615,15 +1583,6 @@ img{ max-width: 100%; display: block; }
     return valid;
   }
 
-  /* ============================================================
-     PART 3 — SUPABASE STORAGE UPLOAD + APPS TABLE INSERT
-     ============================================================ */
-
-  /* ---------- single Supabase client ----------
-     Replace these two constants with your own project's values
-     (Project Settings → API in your Supabase dashboard). The anon
-     key is safe to expose client-side as long as Row Level Security
-     policies are configured on the `apps` table and storage buckets. */
   var SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
 
@@ -1633,7 +1592,6 @@ img{ max-width: 100%; display: block; }
 
   var BUCKETS = { icon: 'app-icons', apk: 'apks', banner: 'banners', screenshot: 'screenshots' };
 
-  /* ---------- toasts ---------- */
   var toastStack = document.getElementById('toastStack');
   var TOAST_SUCCESS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>';
   var TOAST_ERROR_ICON   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
@@ -1664,7 +1622,6 @@ img{ max-width: 100%; display: block; }
   }
   function hideSubmitAlert(){ submitAlert.classList.remove('is-visible'); }
 
-  /* ---------- slug ---------- */
   function slugify(text){
     return text
       .toString()
@@ -1676,7 +1633,6 @@ img{ max-width: 100%; display: block; }
   }
   function randomSuffix(){ return Math.random().toString(36).slice(2, 7); }
 
-  /* ---------- storage upload ---------- */
   function fileExtension(name){
     var parts = name.split('.');
     return parts.length > 1 ? parts.pop().toLowerCase() : 'bin';
@@ -1692,7 +1648,6 @@ img{ max-width: 100%; display: block; }
       });
   }
 
-  /* ---------- submit orchestration ---------- */
   var submitBtnLabels = {
     btnSaveDraft: 'Save Draft',
     btnPublish: 'Publish App'
@@ -1821,7 +1776,6 @@ img{ max-width: 100%; display: block; }
       });
   }
 
-  /* ---------- form actions ---------- */
   document.getElementById('btnReset').addEventListener('click', function(){
     if(!window.confirm('Reset the form? All fields and uploaded files will be cleared.')) return;
 
@@ -1850,13 +1804,10 @@ img{ max-width: 100%; display: block; }
     submitApp('published', 'btnPublish', 'Publishing…');
   });
 
-  /* initial paint */
   renderTags();
   renderPreview();
 
-  /* Part 3 script will be appended below this line. */
 })();
 </script>
 </body>
 </html>
-
