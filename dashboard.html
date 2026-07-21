@@ -1,181 +1,535 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PaliaAPK HUB - Admin Dashboard</title>
+
+<title>PaliaAPK HUB Admin Dashboard</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Arial,sans-serif;background:#f4f7fb}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f3f6fb;
+overflow-x:hidden;
+}
+
+/* Sidebar */
+
 .sidebar{
- position:fixed;top:0;left:-280px;width:280px;height:100vh;
- background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.15);
- transition:left .3s;z-index:1000
+
+position:fixed;
+
+top:0;
+
+left:-290px;
+
+width:290px;
+
+height:100vh;
+
+background:#fff;
+
+box-shadow:0 10px 30px rgba(0,0,0,.12);
+
+transition:.35s;
+
+z-index:1000;
+
+overflow-y:auto;
+
 }
-.sidebar.active{left:0}
+
+.sidebar.active{
+
+left:0;
+
+}
+
 .logo{
- position:relative;
- padding:24px;
- border-bottom:1px solid #eee;
+
+padding:25px;
+
+border-bottom:1px solid #eee;
+
+position:relative;
+
 }
-.logo h1{font-size:30px;color:#16a34a;font-weight:800}
-.logo p{color:#777;margin-top:5px}
-.close-btn{
- position:absolute;
- top:18px;
- right:18px;
- width:42px;
- height:42px;
- border:none;
- border-radius:12px;
- background:#16a34a;
- color:#fff;
- font-size:20px;
- cursor:pointer;
- display:none;
+
+.logo h1{
+
+font-size:30px;
+
+font-weight:900;
+
+color:#16a34a;
+
 }
-.sidebar.active .close-btn{display:block}
+
+.logo p{
+
+margin-top:6px;
+
+color:#666;
+
+}
+
+#closeSidebar{
+
+position:absolute;
+
+top:18px;
+
+right:18px;
+
+width:42px;
+
+height:42px;
+
+border:none;
+
+background:#16a34a;
+
+color:#fff;
+
+border-radius:12px;
+
+cursor:pointer;
+
+display:none;
+
+}
+
+.sidebar.active #closeSidebar{
+
+display:block;
+
+}
+
+.menu{
+
+padding:15px;
+
+}
+
 .menu a{
- display:flex;
- align-items:center;
- gap:12px;
- padding:16px 22px;
- text-decoration:none;
- color:#444;
- font-weight:700;
+
+display:flex;
+
+align-items:center;
+
+gap:14px;
+
+padding:16px 18px;
+
+margin-bottom:8px;
+
+border-radius:14px;
+
+text-decoration:none;
+
+font-weight:700;
+
+color:#555;
+
+transition:.25s;
+
 }
-.menu a:hover{background:#ecfdf5;color:#16a34a}
+
+.menu a:hover{
+
+background:#ecfdf5;
+
+color:#16a34a;
+
+}
+
+/* Header */
+
 .header{
- height:80px;
- background:#fff;
- display:flex;
- justify-content:space-between;
- align-items:center;
- padding:0 24px;
- box-shadow:0 2px 10px rgba(0,0,0,.05)
+
+height:80px;
+
+background:#fff;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:0 28px;
+
+box-shadow:0 2px 12px rgba(0,0,0,.05);
+
 }
-.left{display:flex;align-items:center;gap:16px}
+
+.left{
+
+display:flex;
+
+align-items:center;
+
+gap:18px;
+
+}
+
 #menuBtn{
- width:48px;height:48px;
- border:none;
- border-radius:12px;
- background:#16a34a;
- color:#fff;
- cursor:pointer;
- font-size:22px;
+
+width:48px;
+
+height:48px;
+
+border:none;
+
+background:#16a34a;
+
+color:#fff;
+
+border-radius:14px;
+
+font-size:22px;
+
+cursor:pointer;
+
 }
+
+.title h2{
+
+font-size:30px;
+
+font-weight:900;
+
+}
+
+.title p{
+
+color:#666;
+
+margin-top:4px;
+
+}
+
 .profile{
- width:44px;height:44px;border-radius:50%;
- background:#16a34a;color:#fff;
- display:flex;align-items:center;justify-content:center;
- font-weight:bold;
+
+width:46px;
+
+height:46px;
+
+background:#16a34a;
+
+border-radius:50%;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+color:#fff;
+
+font-weight:bold;
+
 }
-.main{padding:30px}
+
+.main{
+
+padding:30px;
+
+}
+
 .cards{
- display:grid;
- grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
- gap:20px;
+
+display:grid;
+
+grid-template-columns:repeat(4,1fr);
+
+gap:20px;
+
 }
+
 .card{
- background:#fff;
- border-radius:18px;
- padding:22px;
- box-shadow:0 8px 20px rgba(0,0,0,.08)
+
+background:#fff;
+
+border-radius:20px;
+
+padding:24px;
+
+box-shadow:0 8px 20px rgba(0,0,0,.06);
+
 }
-.card h3{color:#777}
-.card h2{font-size:40px;margin-top:10px}
+
+.card p{
+
+color:#777;
+
+font-weight:600;
+
+}
+
+.card h2{
+
+font-size:42px;
+
+font-weight:900;
+
+margin-top:10px;
+
+}
+
 #overlay{
- position:fixed;
- inset:0;
- background:rgba(0,0,0,.35);
- display:none;
- z-index:999;
+
+position:fixed;
+
+inset:0;
+
+background:rgba(0,0,0,.35);
+
+display:none;
+
+z-index:999;
+
 }
+
+@media(max-width:1100px){
+
+.cards{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+}
+
+@media(max-width:700px){
+
+.cards{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
 </style>
+
 </head>
+
 <body>
 
 <div id="overlay"></div>
+<!-- =========================
+SIDEBAR
+========================= -->
 
-<div class="sidebar" id="sidebar">
+<div id="sidebar" class="sidebar">
 
 <div class="logo">
-<button id="closeSidebar" class="close-btn">
+
+<button id="closeSidebar">
+
 <i class="fa-solid fa-xmark"></i>
+
 </button>
+
 <h1>PaliaAPK HUB</h1>
+
 <p>Admin Dashboard</p>
+
 </div>
 
 <div class="menu">
-<a href="dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-<a href="add-app.html"><i class="fa-solid fa-plus"></i> Add New App</a>
-<a href="manage-apps.html"><i class="fa-solid fa-mobile-screen-button"></i> Manage Apps</a>
-<a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
-<a href="#"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+
+<a href="dashboard.html">
+
+<i class="fa-solid fa-chart-line"></i>
+
+<span>Dashboard</span>
+
+</a>
+
+<a href="add-app.html">
+
+<i class="fa-solid fa-plus"></i>
+
+<span>Add New App</span>
+
+</a>
+
+<a href="manage-apps.html">
+
+<i class="fa-solid fa-mobile-screen-button"></i>
+
+<span>Manage Apps</span>
+
+</a>
+
+<a href="index.html">
+
+<i class="fa-solid fa-house"></i>
+
+<span>Home</span>
+
+</a>
+
+<a href="#" id="logoutBtn">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+<span>Logout</span>
+
+</a>
+
 </div>
 
 </div>
+
+<!-- =========================
+HEADER
+========================= -->
 
 <header class="header">
+
 <div class="left">
-<button id="menuBtn"><i class="fa-solid fa-bars"></i></button>
-<div>
-<h2 style="font-size:28px;font-weight:800">Dashboard</h2>
-<p style="color:#777">Welcome to PaliaAPK HUB Admin</p>
+
+<button id="menuBtn">
+
+<i class="fa-solid fa-bars"></i>
+
+</button>
+
+<div class="title">
+
+<h2>Dashboard</h2>
+
+<p>Welcome to PaliaAPK HUB Admin Panel</p>
+
 </div>
+
 </div>
-<div class="profile">SP</div>
+
+<div class="profile">
+
+SP
+
+</div>
+
 </header>
 
+<!-- =========================
+MAIN
+========================= -->
+
 <main class="main">
+
 <div class="cards">
-<div class="card"><h3>Total Apps</h3><h2>0</h2></div>
-<div class="card"><h3>Total Downloads</h3><h2>0</h2></div>
-<div class="card"><h3>Total Users</h3><h2>0</h2></div>
-<div class="card"><h3>Total Site Visits</h3><h2>0</h2></div>
+
+<div class="card">
+
+<p>Total Apps</p>
+
+<h2 id="totalApps">0</h2>
+
 </div>
-<!-- All Apps -->
 
-<div class="mt-10 bg-white rounded-2xl shadow-lg p-6">
+<div class="card">
 
-<div class="flex justify-between items-center mb-6">
+<p>Total Downloads</p>
 
-<h2 class="text-2xl font-bold">
+<h2 id="totalDownloads">0</h2>
+
+</div>
+
+<div class="card">
+
+<p>Total Users</p>
+
+<h2 id="totalUsers">0</h2>
+
+</div>
+
+<div class="card">
+
+<p>Total Site Visits</p>
+
+<h2 id="totalVisits">0</h2>
+
+</div>
+
+</div>
+<!-- =========================
+ALL APPS
+========================= -->
+
+<div class="table-box" style="margin-top:30px;background:#fff;border-radius:20px;padding:25px;box-shadow:0 8px 20px rgba(0,0,0,.06);">
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+
+<h2 style="font-size:28px;font-weight:900;">
+
 All Apps
+
 </h2>
 
 <input
-type="text"
 id="searchApp"
+type="text"
 placeholder="Search App..."
-class="border rounded-xl px-4 py-2 w-72">
+style="
+width:320px;
+padding:12px 18px;
+border:1px solid #ddd;
+border-radius:12px;
+outline:none;
+font-size:15px;
+">
 
 </div>
 
-<div class="overflow-x-auto">
+<div style="overflow-x:auto;">
 
-<table class="w-full">
+<table
+style="
+width:100%;
+border-collapse:collapse;
+">
 
-<thead class="bg-gray-100">
+<thead>
 
-<tr>
+<tr style="background:#f5f7fb;">
 
-<th class="p-4">Icon</th>
+<th style="padding:16px;">Icon</th>
 
-<th class="p-4">App Name</th>
+<th style="padding:16px;">App</th>
 
-<th class="p-4">Version</th>
+<th style="padding:16px;">Developer</th>
 
-<th class="p-4">Category</th>
+<th style="padding:16px;">Version</th>
 
-<th class="p-4">Date</th>
+<th style="padding:16px;">Category</th>
 
-<th class="p-4">Downloads</th>
+<th style="padding:16px;">Android</th>
 
-<th class="p-4">Actions</th>
+<th style="padding:16px;">Downloads</th>
+
+<th style="padding:16px;">Status</th>
+
+<th style="padding:16px;">Action</th>
 
 </tr>
 
@@ -185,7 +539,12 @@ class="border rounded-xl px-4 py-2 w-72">
 
 <tr>
 
-<td colspan="7" class="text-center p-8 text-gray-500">
+<td colspan="9"
+style="
+padding:60px;
+text-align:center;
+color:#999;
+">
 
 Loading Apps...
 
@@ -200,33 +559,333 @@ Loading Apps...
 </div>
 
 </div>
-</main>
+<script type="module">
 
-<script>
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabase = createClient(
+"https://ralinnuegsbuvlhwpzln.supabase.co",
+"YOUR_SUPABASE_ANON_KEY"
+);
+
+// =========================
+// Sidebar
+// =========================
+
 const sidebar=document.getElementById("sidebar");
 const menuBtn=document.getElementById("menuBtn");
 const closeBtn=document.getElementById("closeSidebar");
 const overlay=document.getElementById("overlay");
 
-function openSidebar(){
- sidebar.classList.add("active");
- overlay.style.display="block";
+menuBtn.onclick=()=>{
+
+sidebar.classList.add("active");
+overlay.style.display="block";
+
 }
 
-function closeSidebar(){
- sidebar.classList.remove("active");
- overlay.style.display="none";
+closeBtn.onclick=()=>{
+
+sidebar.classList.remove("active");
+overlay.style.display="none";
+
 }
 
-menuBtn.addEventListener("click",openSidebar);
-closeBtn.addEventListener("click",closeSidebar);
-overlay.addEventListener("click",closeSidebar);
+overlay.onclick=()=>{
 
-document.querySelectorAll(".menu a").forEach(a=>{
- a.addEventListener("click",closeSidebar);
+sidebar.classList.remove("active");
+overlay.style.display="none";
+
+}
+
+// =========================
+// Dashboard
+// =========================
+
+async function loadDashboard(){
+
+const {data,error}=await supabase
+
+.from("apps")
+
+.select("*")
+
+.order("created_at",{ascending:false});
+
+if(error){
+
+console.error(error);
+
+return;
+
+}
+
+document.getElementById("totalApps").textContent=data.length;
+
+let downloads=0;
+
+data.forEach(app=>{
+
+downloads+=Number(app.downloads||0);
+
 });
+
+document.getElementById("totalDownloads").textContent=downloads;
+
+document.getElementById("totalUsers").textContent="0";
+
+document.getElementById("totalVisits").textContent="0";
+ // =========================
+// All Apps Table
+// =========================
+
+const tbody = document.getElementById("appsTable");
+
+tbody.innerHTML = "";
+
+data.forEach(app => {
+
+tbody.innerHTML += `
+
+<tr style="border-bottom:1px solid #ececec;">
+
+<td style="padding:12px;text-align:center;">
+
+<img
+src="${app.icon_url || 'https://placehold.co/60'}"
+style="
+width:60px;
+height:60px;
+border-radius:15px;
+object-fit:cover;
+">
+
+</td>
+
+<td style="padding:12px;font-weight:700;">
+
+${app.name || "-"}
+
+</td>
+
+<td style="padding:12px;">
+
+${app.developer || "-"}
+
+</td>
+
+<td style="padding:12px;">
+
+${app.version || "-"}
+
+</td>
+
+<td style="padding:12px;">
+
+${app.category || "-"}
+
+</td>
+
+<td style="padding:12px;">
+
+${app.android_version || "-"}
+
+</td>
+
+<td style="padding:12px;">
+
+${app.downloads || 0}
+
+</td>
+
+<td style="padding:12px;">
+
+<span style="
+background:#dcfce7;
+color:#15803d;
+padding:6px 12px;
+border-radius:20px;
+font-size:13px;
+font-weight:bold;
+">
+
+Published
+
+</span>
+
+</td>
+
+<td style="padding:12px;white-space:nowrap;">
+
+<button
+onclick="editApp('${app.id}')"
+style="
+background:#2563eb;
+color:#fff;
+border:none;
+padding:8px 14px;
+border-radius:10px;
+cursor:pointer;
+margin-right:8px;
+">
+
+Edit
+
+</button>
+
+<button
+onclick="deleteApp('${app.id}')"
+style="
+background:#dc2626;
+color:#fff;
+border:none;
+padding:8px 14px;
+border-radius:10px;
+cursor:pointer;
+">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+} // loadDashboard() ends here
+
+loadDashboard();
+ // =========================
+// Search
+// =========================
+
+document.getElementById("searchApp").addEventListener("input", async (e)=>{
+
+const keyword=e.target.value.trim();
+
+const {data,error}=await supabase
+.from("apps")
+.select("*")
+.ilike("name",`%${keyword}%`)
+.order("created_at",{ascending:false});
+
+if(error){
+console.error(error);
+return;
+}
+
+const tbody=document.getElementById("appsTable");
+tbody.innerHTML="";
+
+data.forEach(app=>{
+
+tbody.innerHTML+=`
+
+<tr style="border-bottom:1px solid #ececec;">
+
+<td style="padding:12px;text-align:center;">
+<img src="${app.icon_url || 'https://placehold.co/60'}"
+style="width:60px;height:60px;border-radius:15px;object-fit:cover;">
+</td>
+
+<td style="padding:12px;font-weight:700;">
+${app.name || "-"}
+</td>
+
+<td style="padding:12px;">
+${app.developer || "-"}
+</td>
+
+<td style="padding:12px;">
+${app.version || "-"}
+</td>
+
+<td style="padding:12px;">
+${app.category || "-"}
+</td>
+
+<td style="padding:12px;">
+${app.android_version || "-"}
+</td>
+
+<td style="padding:12px;">
+${app.downloads || 0}
+</td>
+
+<td style="padding:12px;">
+<span style="background:#dcfce7;color:#15803d;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:bold;">
+Published
+</span>
+</td>
+
+<td style="padding:12px;white-space:nowrap;">
+
+<button onclick="editApp('${app.id}')"
+style="background:#2563eb;color:#fff;border:none;padding:8px 14px;border-radius:10px;cursor:pointer;margin-right:8px;">
+
+Edit
+
+</button>
+
+<button onclick="deleteApp('${app.id}')"
+style="background:#dc2626;color:#fff;border:none;padding:8px 14px;border-radius:10px;cursor:pointer;">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+});
+
+// =========================
+// Edit
+// =========================
+
+window.editApp=function(id){
+
+location.href="add-app.html?id="+id;
+
+};
+
+// =========================
+// Delete
+// =========================
+
+window.deleteApp=async function(id){
+
+if(!confirm("Delete this app?")) return;
+
+const {error}=await supabase
+.from("apps")
+.delete()
+.eq("id",id);
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+loadDashboard();
+
+};
+
 </script>
 
-</body>
-</html>
+</main>
 
+</body>
+
+</html>
