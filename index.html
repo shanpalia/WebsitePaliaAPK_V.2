@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
-   <style>
+    <style>
 :root{
 --primary:#16a34a;
 --primary-light:#22c55e;
@@ -135,211 +135,207 @@ transition:.3s;
 nav:hover{
 box-shadow:0 10px 30px rgba(0,0,0,.06);
 }
+
+/* Modern App Hero UI & Sliding Screenshots Styling */
+.app-hero-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    border-radius: 32px;
+    padding: 30px;
+    color: #ffffff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    gap: 30px;
+}
+
+.app-hero-content {
+    flex: 1;
+    min-width: 300px;
+}
+
+.app-main-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.app-icon-large {
+    width: 90px;
+    height: 90px;
+    border-radius: 20px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.app-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+}
+
+.app-developer {
+    font-size: 14px;
+    color: #9ca3af;
+    margin: 0 0 10px 0;
+}
+.app-developer span {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.app-meta-badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.app-description {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #d1d5db;
+    margin-bottom: 25px;
+}
+
+.action-buttons-group {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-download-primary {
+    background-color: #10b981;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.3s;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+.btn-download-primary:hover {
+    background-color: #059669;
+}
+
+/* Sliding Screenshots Styles */
+.app-screenshots-slider {
+    width: 350px;
+    overflow-x: auto;
+    display: flex;
+    padding-bottom: 10px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: #10b981 transparent;
+}
+
+.slider-track {
+    display: flex;
+    gap: 15px;
+}
+
+.slide-img {
+    width: 160px;
+    height: 320px;
+    object-fit: cover;
+    border-radius: 16px;
+    scroll-snap-align: start;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    border: 2px solid rgba(255,255,255,0.1);
+    transition: transform 0.3s;
+}
+
+.slide-img:hover {
+    transform: scale(1.02);
+}
 </style>
 </head>
 <body class="bg-gray-50 text-slate-800">
 
 <!-- ===== Premium Header ===== -->
 <nav class="glass sticky top-0 z-50 border-b border-gray-200 py-3">
-
 <div class="container mx-auto px-4 flex items-center justify-between gap-4">
-
     <!-- Logo -->
-    <div id="admin-trigger"
-         class="flex items-center gap-3 cursor-pointer">
-
-        <div class="gradient-bg w-12 h-12 rounded-2xl
-                    flex items-center justify-center
-                    shadow-lg">
-
+    <div id="admin-trigger" class="flex items-center gap-3 cursor-pointer">
+        <div class="gradient-bg w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg">
             <span class="text-white font-black text-xl">P</span>
-
         </div>
-
         <div>
-
             <h1 class="text-xl font-black tracking-tight">
-
-                PaliaAPK
-                <span class="text-green-600">HUB</span>
-
+                PaliaAPK <span class="text-green-600">HUB</span>
             </h1>
-
-            <p class="text-xs text-gray-500">
-
-                Premium Android Store
-
-            </p>
-
+            <p class="text-xs text-gray-500">Premium Android Store</p>
         </div>
-
     </div>
 
     <!-- Search -->
-
     <div class="hidden md:flex flex-1 max-w-xl">
-
-        <div class="bg-gray-100 rounded-full
-                    w-full px-5 py-3
-                    flex items-center">
-
+        <div class="bg-gray-100 rounded-full w-full px-5 py-3 flex items-center">
             <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
-
-            <input
-                type="text"
-                placeholder="Search Apps, Games, AI..."
-                class="bg-transparent outline-none w-full ml-3 text-sm">
-
+            <input type="text" placeholder="Search Apps, Games, AI..." class="bg-transparent outline-none w-full ml-3 text-sm">
         </div>
-
     </div>
 
     <!-- Right Icons -->
-
     <div class="flex items-center gap-2">
-
         <!-- Share -->
-
-        <button
-            onclick="shareWebsite()"
-            class="w-10 h-10 rounded-full
-                   bg-green-600 text-white
-                   hover:scale-105 transition">
-
+        <button onclick="shareWebsite()" class="w-10 h-10 rounded-full bg-green-600 text-white hover:scale-105 transition flex items-center justify-center">
             <i class="fa-solid fa-share-nodes"></i>
-
         </button>
 
         <!-- Notification -->
-
-        <button
-            class="w-10 h-10 rounded-full
-                   bg-gray-100 hover:bg-green-50">
-
+        <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-green-50 flex items-center justify-center">
             <i class="fa-regular fa-bell"></i>
-
         </button>
 
         <!-- User -->
-
-        <button
-            class="w-10 h-10 rounded-full
-                   bg-gray-100 hover:bg-green-50">
-
+        <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-green-50 flex items-center justify-center">
             <i class="fa-regular fa-user"></i>
-
         </button>
-
     </div>
-
 </div>
-
 </nav>
 
     <!-- Main Content Area -->
     <main class="container mx-auto p-4 md:p-8">
         
-        <!-- Large Featured App Slider Section -->
-        <!-- ================= Premium Hero ================= -->
+        <!-- Large Featured App Slider Section / Modern Hero UI -->
+        <section class="hero-card relative mb-12">
+            <div class="swiper mySwiper w-full h-[450px] rounded-[32px] overflow-hidden">
+                <div class="swiper-wrapper" id="featured-slider">
+                    <!-- Dynamic Slides from script.js -->
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </section>
 
-<section class="hero-card relative mb-12">
+        <!-- ================= QUICK STATS ================= -->
+        <section class="mb-12">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+                <div class="stat-card">
+                    <div class="text-4xl">📱</div>
+                    <h2 class="text-3xl font-black text-green-600 mt-3">500+</h2>
+                    <p class="text-gray-500 mt-1">Apps Available</p>
+                </div>
+                <div class="stat-card">
+                    <div class="text-4xl">⬇️</div>
+                    <h2 class="text-3xl font-black text-blue-600 mt-3">2M+</h2>
+                    <p class="text-gray-500 mt-1">Downloads</p>
+                </div>
+                <div class="stat-card">
+                    <div class="text-4xl">⭐</div>
+                    <h2 class="text-3xl font-black text-yellow-500 mt-3">100%</h2>
+                    <p class="text-gray-500 mt-1">Verified APK</p>
+                </div>
+                <div class="stat-card">
+                    <div class="text-4xl">🔄</div>
+                    <h2 class="text-3xl font-black text-red-500 mt-3">Daily</h2>
+                    <p class="text-gray-500 mt-1">Fresh Updates</p>
+                </div>
+            </div>
+        </section>
 
-    <div class="swiper mySwiper w-full h-[430px] rounded-[32px] overflow-hidden">
-
-        <div class="swiper-wrapper" id="featured-slider">
-
-            <!-- Dynamic Slides from script.js -->
-
-           </div>
-
-<div class="swiper-pagination"></div>
-
-</div>
-
-</section>
-
-
-<!-- ================= QUICK STATS ================= -->
-
-<section class="mb-12">
-
-<div class="grid grid-cols-2 md:grid-cols-4 gap-5">
-
-<div class="stat-card">
-
-<div class="text-4xl">📱</div>
-
-<h2 class="text-3xl font-black text-green-600 mt-3">
-
-500+
-
-</h2>
-
-<p class="text-gray-500 mt-1">
-
-Apps Available
-
-</p>
-
-</div>
-
-<div class="stat-card">
-
-<div class="text-4xl">⬇️</div>
-
-<h2 class="text-3xl font-black text-blue-600 mt-3">
-
-2M+
-
-</h2>
-
-<p class="text-gray-500 mt-1">
-
-Downloads
-
-</p>
-
-</div>
-
-<div class="stat-card">
-
-<div class="text-4xl">⭐</div>
-
-<h2 class="text-3xl font-black text-yellow-500 mt-3">
-
-100%
-
-</h2>
-
-<p class="text-gray-500 mt-1">
-
-Verified APK
-
-</p>
-
-</div>
-
-<div class="stat-card">
-
-<div class="text-4xl">🔄</div>
-
-<h2 class="text-3xl font-black text-red-500 mt-3">
-
-Daily
-
-</h2>
-
-<p class="text-gray-500 mt-1">
-
-Fresh Updates
-
-</p>
-
-</div>
-
-</div>
-
-</section>
         <!-- Categories Section -->
         <div class="mb-12">
             <div class="flex items-center justify-between mb-6">
@@ -356,63 +352,37 @@ Fresh Updates
                 <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Finance</button>
                 <button class="bg-white border px-8 py-3 rounded-2xl font-bold hover:border-green-500 whitespace-nowrap">Education</button>
                 <button class="category-btn">AI</button>
-<button class="category-btn">VPN</button>
-<button class="category-btn">Browser</button>
-<button class="category-btn">Productivity</button>
-<button class="category-btn">Security</button>
-<button class="category-btn">Shopping</button>
-<button class="category-btn">Travel</button>
-<button class="category-btn">Lifestyle</button>
-<button class="category-btn">Health</button>
-<button class="category-btn">Medical</button>
-<button class="category-btn">Entertainment</button>
-<button class="category-btn">Developer</button>
-<button class="category-btn">Weather</button>
-<button class="category-btn">Communication</button>
-<button class="category-btn">File Manager</button>
+                <button class="category-btn">VPN</button>
+                <button class="category-btn">Browser</button>
+                <button class="category-btn">Productivity</button>
+                <button class="category-btn">Security</button>
+                <button class="category-btn">Shopping</button>
+                <button class="category-btn">Travel</button>
+                <button class="category-btn">Lifestyle</button>
+                <button class="category-btn">Health</button>
+                <button class="category-btn">Medical</button>
+                <button class="category-btn">Entertainment</button>
+                <button class="category-btn">Developer</button>
+                <button class="category-btn">Weather</button>
+                <button class="category-btn">Communication</button>
+                <button class="category-btn">File Manager</button>
             </div>
         </div>
 
         <!-- App Grid Section -->
         <div class="flex justify-between items-center mb-6">
-
-<h2 class="section-title">
-
-🔥 Trending Apps
-
-</h2>
-
-<a href="search.html"
-
-class="text-green-600 font-bold">
-
-View All →
-
-</a>
-
-</div>
+            <h2 class="section-title">🔥 Trending Apps</h2>
+            <a href="search.html" class="text-green-600 font-bold">View All →</a>
+        </div>
+        
         <div id="app-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             <!-- App Card Component -->
             <div class="app-card bg-white p-4 rounded-3xl border border-gray-100">
                 <div class="w-full h-32 bg-gray-200 rounded-2xl mb-4"></div>
                 <h3 class="font-bold text-sm">App Name</h3>
-                <p class="text-xs text-gray-500">
-
-⭐⭐⭐⭐⭐ 4.9
-
-</p>
-
-<p class="text-xs text-gray-400">
-
-50M+ Downloads
-
-</p>
-
-<p class="text-xs text-gray-400">
-
-45 MB
-
-</p>
+                <p class="text-xs text-gray-500">⭐⭐⭐⭐⭐ 4.9</p>
+                <p class="text-xs text-gray-400">50M+ Downloads</p>
+                <p class="text-xs text-gray-400">45 MB</p>
                 <p class="text-xs text-gray-400 mb-4">Version 2.0</p>
                 <button class="w-full bg-green-50 text-green-700 py-3 rounded-xl font-bold text-sm">Download</button>
             </div>
@@ -434,13 +404,10 @@ View All →
                 <a href="#" class="hover:text-green-500">Feedback System</a>
                 <a href="#" class="hover:text-green-500">Privacy & Policies</a>
                 <a href="#" class="hover:text-green-500">Terms of Service</a>
-                <a href="#">Telegram</a>
-
-<a href="#">GitHub</a>
-
-<a href="#">DMCA</a>
-
-<a href="#">About</a>
+                <a href="#" class="hover:text-green-500">Telegram</a>
+                <a href="#" class="hover:text-green-500">GitHub</a>
+                <a href="#" class="hover:text-green-500">DMCA</a>
+                <a href="#" class="hover:text-green-500">About</a>
             </div>
 
             <div class="md:text-right">
