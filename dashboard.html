@@ -1,859 +1,406 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>PaliaAPK HUB Admin Dashboard</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-
-<style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
-
-body{
-background:#f3f6fb;
-overflow-x:hidden;
-}
-
-/* Sidebar */
-
-.sidebar{
-
-position:fixed;
-
-top:0;
-
-left:-290px;
-
-width:290px;
-
-height:100vh;
-
-background:#fff;
-
-box-shadow:0 10px 30px rgba(0,0,0,.12);
-
-transition:.35s;
-
-z-index:1000;
-
-overflow-y:auto;
-
-}
-
-.sidebar.active{
-
-left:0;
-
-}
-
-.logo{
-position:relative;
-padding:25px;
-padding-right:80px;
-border-bottom:1px solid #eee;
-}
-
-.logo h1{
-
-font-size:30px;
-
-font-weight:900;
-
-color:#16a34a;
-
-}
-
-.logo p{
-
-margin-top:6px;
-
-color:#666;
-
-}
-
-#closeSidebar{
-position:absolute;
-top:20px;
-right:20px;
-width:40px;
-height:40px;
-border:none;
-border-radius:10px;
-background:#dc2626;
-color:#fff;
-font-size:18px;
-cursor:pointer;
-display:none;
-align-items:center;
-justify-content:center;
-}
-
-.sidebar.active #closeSidebar{
-display:flex;
-}
-.menu{
-
-padding:15px;
-
-}
-
-.menu a{
-
-display:flex;
-
-align-items:center;
-
-gap:14px;
-
-padding:16px 18px;
-
-margin-bottom:8px;
-
-border-radius:14px;
-
-text-decoration:none;
-
-font-weight:700;
-
-color:#555;
-
-transition:.25s;
-
-}
-
-.menu a:hover{
-
-background:#ecfdf5;
-
-color:#16a34a;
-
-}
-
-/* Header */
-
-.header{
-
-height:80px;
-
-background:#fff;
-
-display:flex;
-
-justify-content:space-between;
-
-align-items:center;
-
-padding:0 28px;
-
-box-shadow:0 2px 12px rgba(0,0,0,.05);
-
-}
-
-.left{
-
-display:flex;
-
-align-items:center;
-
-gap:18px;
-
-}
-
-#menuBtn{
-
-width:48px;
-
-height:48px;
-
-border:none;
-
-background:#16a34a;
-
-color:#fff;
-
-border-radius:14px;
-
-font-size:22px;
-
-cursor:pointer;
-
-}
-
-.title h2{
-
-font-size:30px;
-
-font-weight:900;
-
-}
-
-.title p{
-
-color:#666;
-
-margin-top:4px;
-
-}
-
-.profile{
-
-width:46px;
-
-height:46px;
-
-background:#16a34a;
-
-border-radius:50%;
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-color:#fff;
-
-font-weight:bold;
-
-}
-
-.main{
-
-padding:30px;
-
-}
-
-.cards{
-
-display:grid;
-
-grid-template-columns:repeat(4,1fr);
-
-gap:20px;
-
-}
-
-.card{
-
-background:#fff;
-
-border-radius:20px;
-
-padding:24px;
-
-box-shadow:0 8px 20px rgba(0,0,0,.06);
-
-}
-
-.card p{
-
-color:#777;
-
-font-weight:600;
-
-}
-
-.card h2{
-
-font-size:42px;
-
-font-weight:900;
-
-margin-top:10px;
-
-}
-
-#overlay{
-
-position:fixed;
-
-inset:0;
-
-background:rgba(0,0,0,.35);
-
-display:none;
-
-z-index:999;
-
-}
-
-@media(max-width:1100px){
-
-.cards{
-
-grid-template-columns:repeat(2,1fr);
-
-}
-
-}
-
-@media(max-width:700px){
-
-.cards{
-
-grid-template-columns:1fr;
-
-}
-
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaliaAPK HUB Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background: #f3f6fb;
+            overflow-x: hidden;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -290px;
+            width: 290px;
+            height: 100vh;
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,.12);
+            transition: .35s;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .sidebar.active {
+            left: 0;
+        }
+        .logo {
+            position: relative;
+            padding: 25px;
+            padding-right: 80px;
+            border-bottom: 1px solid #eee;
+        }
+        .logo h1 {
+            font-size: 30px;
+            font-weight: 900;
+            color: #16a34a;
+        }
+        .logo p {
+            margin-top: 6px;
+            color: #666;
+        }
+        #closeSidebar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            background: #dc2626;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .sidebar.active #closeSidebar {
+            display: flex;
+        }
+        .menu {
+            padding: 15px;
+        }
+        .menu a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            margin-bottom: 8px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 700;
+            color: #555;
+            transition: .25s;
+        }
+        .menu a:hover {
+            background: #ecfdf5;
+            color: #16a34a;
+        }
+        .header {
+            height: 80px;
+            background: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.05);
+        }
+        .left {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        #menuBtn {
+            width: 48px;
+            height: 48px;
+            border: none;
+            background: #16a34a;
+            color: #fff;
+            border-radius: 14px;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        .title h2 {
+            font-size: 30px;
+            font-weight: 900;
+        }
+        .title p {
+            color: #666;
+            margin-top: 4px;
+        }
+        .profile {
+            width: 46px;
+            height: 46px;
+            background: #16a34a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+        }
+        .main {
+            padding: 30px;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,.06);
+        }
+        .card p {
+            color: #777;
+            font-weight: 600;
+        }
+        .card h2 {
+            font-size: 42px;
+            font-weight: 900;
+            margin-top: 10px;
+        }
+        #overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.35);
+            display: none;
+            z-index: 999;
+        }
+        @media(max-width:1100px) {
+            .cards { grid-template-columns: repeat(2,1fr); }
+        }
+        @media(max-width:700px) {
+            .cards { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
-
 <body>
 
-<div id="overlay"></div>
-<!-- =========================
-SIDEBAR
-========================= -->
-
-<div id="sidebar" class="sidebar">
-
-<div class="logo">
-
-    <button id="closeSidebar" class="close-btn">
-        <i class="fa-solid fa-xmark"></i>
-    </button>
-
-    <h1>PaliaAPK HUB</h1>
-
-    <p>Admin Dashboard</p>
-
-</div>
-
-<div class="menu">
-
-    <a href="dashboard.html">
-        <i class="fa-solid fa-chart-line"></i>
-        <span>Dashboard</span>
-    </a>
-
-    <a href="add-app.html">
-        <i class="fa-solid fa-plus"></i>
-        <span>Add New App</span>
-    </a>
-
-    <a href="manage-apps.html">
-        <i class="fa-solid fa-mobile-screen-button"></i>
-        <span>Manage Apps</span>
-    </a>
-
-    <a href="index.html">
-        <i class="fa-solid fa-house"></i>
-        <span>Home</span>
-    </a>
-
-    <a href="#" id="logoutBtn">
-        <i class="fa-solid fa-right-from-bracket"></i>
-        <span>Logout</span>
-    </a>
-
-</div>
-
-
-
-<!-- =========================
-HEADER
-========================= -->
-
-<header class="header">
-
-<div class="left">
-
-<button id="menuBtn">
-
-<i class="fa-solid fa-bars"></i>
-
-</button>
-
-<div class="title">
-
-<h2>Dashboard</h2>
-
-<p>Welcome to PaliaAPK HUB Admin Panel</p>
-
-</div>
-
-</div>
-
-<div class="profile">
-
-SP
-
-</div>
-
-</header>
-
-<!-- =========================
-MAIN
-========================= -->
-
-<main class="main">
-
-<div class="cards">
-
-<div class="card">
-
-<p>Total Apps</p>
-
-<h2 id="totalApps">0</h2>
-
-</div>
-
-<div class="card">
-
-<p>Total Downloads</p>
-
-<h2 id="totalDownloads">0</h2>
-
-</div>
-
-<div class="card">
-
-<p>Total Users</p>
-
-<h2 id="totalUsers">0</h2>
-
-</div>
-
-<div class="card">
-
-<p>Total Site Visits</p>
-
-<h2 id="totalVisits">0</h2>
-
-</div>
-
-</div>
-<!-- =========================
-ALL APPS
-========================= -->
-
-<div class="table-box" style="margin-top:30px;background:#fff;border-radius:20px;padding:25px;box-shadow:0 8px 20px rgba(0,0,0,.06);">
-
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-
-<h2 style="font-size:28px;font-weight:900;">
-
-All Apps
-
-</h2>
-
-<input
-id="searchApp"
-type="text"
-placeholder="Search App..."
-style="
-width:320px;
-padding:12px 18px;
-border:1px solid #ddd;
-border-radius:12px;
-outline:none;
-font-size:15px;
-">
-
-</div>
-
-<div style="overflow-x:auto;">
-
-<table
-style="
-width:100%;
-border-collapse:collapse;
-">
-
-<thead>
-
-<tr style="background:#f5f7fb;">
-
-<th style="padding:16px;">Icon</th>
-
-<th style="padding:16px;">App</th>
-
-<th style="padding:16px;">Developer</th>
-
-<th style="padding:16px;">Version</th>
-
-<th style="padding:16px;">Category</th>
-
-<th style="padding:16px;">Android</th>
-
-<th style="padding:16px;">Downloads</th>
-
-<th style="padding:16px;">Status</th>
-
-<th style="padding:16px;">Action</th>
-
-</tr>
-
-</thead>
-
-<tbody id="appsTable">
-
-<tr>
-
-<td colspan="9"
-style="
-padding:60px;
-text-align:center;
-color:#999;
-">
-
-Loading Apps...
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-<script type="module">
-
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-const supabase = createClient(
-"https://ralinnuegsbuvlhwpzln.supabase.co",
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE"
-);
-
-// =========================
-// Sidebar
-// =========================
-
-const sidebar=document.getElementById("sidebar");
-const menuBtn=document.getElementById("menuBtn");
-const closeBtn=document.getElementById("closeSidebar");
-const overlay=document.getElementById("overlay");
-
-menuBtn.onclick=()=>{
-
-sidebar.classList.add("active");
-overlay.style.display="block";
-
-}
-
-closeBtn.onclick=()=>{
-
-sidebar.classList.remove("active");
-overlay.style.display="none";
-
-}
-
-overlay.onclick=()=>{
-
-sidebar.classList.remove("active");
-overlay.style.display="none";
-
-}
-
-// =========================
-// Dashboard
-// =========================
-
-async function loadDashboard(){
-
-const {data,error}=await supabase
-
-.from("apps")
-
-.select("*")
-
-.order("created_at",{ascending:false});
-
-if(error){
-
-console.error(error);
-
-return;
-
-}
-
-document.getElementById("totalApps").textContent=data.length;
-
-let downloads=0;
-
-data.forEach(app=>{
-
-downloads+=Number(app.downloads||0);
-
-});
-
-document.getElementById("totalDownloads").textContent=downloads;
-
-document.getElementById("totalUsers").textContent="0";
-
-document.getElementById("totalVisits").textContent="0";
- // =========================
-// All Apps Table
-// =========================
-
-const tbody = document.getElementById("appsTable");
-
-tbody.innerHTML = "";
-
-data.forEach(app => {
-
-tbody.innerHTML += `
-
-<tr style="border-bottom:1px solid #ececec;">
-
-<td style="padding:12px;text-align:center;">
-
-<img
-src="${app.icon_url || 'https://placehold.co/60'}"
-style="
-width:60px;
-height:60px;
-border-radius:15px;
-object-fit:cover;
-">
-
-</td>
-
-<td style="padding:12px;font-weight:700;">
-
-${app.name || "-"}
-
-</td>
-
-<td style="padding:12px;">
-
-${app.developer || "-"}
-
-</td>
-
-<td style="padding:12px;">
-
-${app.version || "-"}
-
-</td>
-
-<td style="padding:12px;">
-
-${app.category || "-"}
-
-</td>
-
-<td style="padding:12px;">
-
-${app.android_version || "-"}
-
-</td>
-
-<td style="padding:12px;">
-
-${app.downloads || 0}
-
-</td>
-
-<td style="padding:12px;">
-
-<span style="
-background:#dcfce7;
-color:#15803d;
-padding:6px 12px;
-border-radius:20px;
-font-size:13px;
-font-weight:bold;
-">
-
-Published
-
-</span>
-
-</td>
-
-<td style="padding:12px;white-space:nowrap;">
-
-<button
-onclick="editApp('${app.id}')"
-style="
-background:#2563eb;
-color:#fff;
-border:none;
-padding:8px 14px;
-border-radius:10px;
-cursor:pointer;
-margin-right:8px;
-">
-
-Edit
-
-</button>
-
-<button
-onclick="deleteApp('${app.id}')"
-style="
-background:#dc2626;
-color:#fff;
-border:none;
-padding:8px 14px;
-border-radius:10px;
-cursor:pointer;
-">
-
-Delete
-
-</button>
-
-</td>
-
-</tr>
-
-`;
-
-});
-
-} // loadDashboard() ends here
-
-loadDashboard();
- // =========================
-// Search
-// =========================
-
-document.getElementById("searchApp").addEventListener("input", async (e)=>{
-
-const keyword=e.target.value.trim();
-
-const {data,error}=await supabase
-.from("apps")
-.select("*")
-.ilike("name",`%${keyword}%`)
-.order("created_at",{ascending:false});
-
-if(error){
-console.error(error);
-return;
-}
-
-const tbody=document.getElementById("appsTable");
-tbody.innerHTML="";
-
-data.forEach(app=>{
-
-tbody.innerHTML+=`
-
-<tr style="border-bottom:1px solid #ececec;">
-
-<td style="padding:12px;text-align:center;">
-<img src="${app.icon_url || 'https://placehold.co/60'}"
-style="width:60px;height:60px;border-radius:15px;object-fit:cover;">
-</td>
-
-<td style="padding:12px;font-weight:700;">
-${app.name || "-"}
-</td>
-
-<td style="padding:12px;">
-${app.developer || "-"}
-</td>
-
-<td style="padding:12px;">
-${app.version || "-"}
-</td>
-
-<td style="padding:12px;">
-${app.category || "-"}
-</td>
-
-<td style="padding:12px;">
-${app.android_version || "-"}
-</td>
-
-<td style="padding:12px;">
-${app.downloads || 0}
-</td>
-
-<td style="padding:12px;">
-<span style="background:#dcfce7;color:#15803d;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:bold;">
-Published
-</span>
-</td>
-
-<td style="padding:12px;white-space:nowrap;">
-
-<button onclick="editApp('${app.id}')"
-style="background:#2563eb;color:#fff;border:none;padding:8px 14px;border-radius:10px;cursor:pointer;margin-right:8px;">
-
-Edit
-
-</button>
-
-<button onclick="deleteApp('${app.id}')"
-style="background:#dc2626;color:#fff;border:none;padding:8px 14px;border-radius:10px;cursor:pointer;">
-
-Delete
-
-</button>
-
-</td>
-
-</tr>
-
-`;
-
-});
-
-});
-
-// =========================
-// Edit
-// =========================
-
-window.editApp=function(id){
-
-location.href="add-app.html?id="+id;
-
-};
-
-// =========================
-// Delete
-// =========================
-
-window.deleteApp=async function(id){
-
-if(!confirm("Delete this app?")) return;
-
-const {error}=await supabase
-.from("apps")
-.delete()
-.eq("id",id);
-
-if(error){
-
-alert(error.message);
-return;
-
-}
-
-loadDashboard();
-
-};
-
-</script>
-
-</main>
-
+    <div id="overlay"></div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar" class="sidebar">
+        <div class="logo">
+            <button id="closeSidebar" class="close-btn">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h1>PaliaAPK HUB</h1>
+            <p>Admin Dashboard</p>
+        </div>
+        <div class="menu">
+            <a href="dashboard.html">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="add-app.html">
+                <i class="fa-solid fa-plus"></i>
+                <span>Add New App</span>
+            </a>
+            <a href="manage-apps.html">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+                <span>Manage Apps</span>
+            </a>
+            <a href="index.html">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" id="logoutBtn">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="left">
+            <button id="menuBtn">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="title">
+                <h2>Dashboard</h2>
+                <p>Welcome to PaliaAPK HUB Admin Panel</p>
+            </div>
+        </div>
+        <div class="profile">SP</div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="main">
+        <div class="cards">
+            <div class="card">
+                <p>Total Apps</p>
+                <h2 id="totalApps">0</h2>
+            </div>
+            <div class="card">
+                <p>Total Downloads</p>
+                <h2 id="totalDownloads">0</h2>
+            </div>
+            <div class="card">
+                <p>Total Users</p>
+                <h2 id="totalUsers">0</h2>
+            </div>
+            <div class="card">
+                <p>Total Site Visits</p>
+                <h2 id="totalVisits">0</h2>
+            </div>
+        </div>
+
+        <!-- ALL APPS -->
+        <div class="table-box" style="margin-top:30px;background:#fff;border-radius:20px;padding:25px;box-shadow:0 8px 20px rgba(0,0,0,.06);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h2 style="font-size:28px;font-weight:900;">All Apps</h2>
+                <input id="searchApp" type="text" placeholder="Search App..." style="width:320px;padding:12px 18px;border:1px solid #ddd;border-radius:12px;outline:none;font-size:15px;">
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr style="background:#f5f7fb;">
+                            <th style="padding:16px;">Icon</th>
+                            <th style="padding:16px;">App</th>
+                            <th style="padding:16px;">Developer</th>
+                            <th style="padding:16px;">Version</th>
+                            <th style="padding:16px;">Category</th>
+                            <th style="padding:16px;">Android</th>
+                            <th style="padding:16px;">Downloads</th>
+                            <th style="padding:16px;">Status</th>
+                            <th style="padding:16px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appsTable">
+                        <tr>
+                            <td colspan="9" style="padding:60px;text-align:center;color:#999;">Loading Apps...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script type="module">
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+        const supabase = createClient(
+            "https://ralinnuegsbuvlhwpzln.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE"
+        );
+
+        // Sidebar Toggle
+        const sidebar = document.getElementById("sidebar");
+        const menuBtn = document.getElementById("menuBtn");
+        const closeBtn = document.getElementById("closeSidebar");
+        const overlay = document.getElementById("overlay");
+
+        menuBtn.onclick = () => {
+            sidebar.classList.add("active");
+            overlay.style.display = "block";
+        }
+
+        closeBtn.onclick = () => {
+            sidebar.classList.remove("active");
+            overlay.style.display = "none";
+        }
+
+        overlay.onclick = () => {
+            sidebar.classList.remove("active");
+            overlay.style.display = "none";
+        }
+
+        // Load Dashboard Data
+        async function loadDashboard() {
+            const { data, error } = await supabase
+                .from("apps")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            document.getElementById("totalApps").textContent = data.length;
+
+            let downloads = 0;
+            data.forEach(app => {
+                downloads += Number(app.downloads || 0);
+            });
+
+            document.getElementById("totalDownloads").textContent = downloads;
+            document.getElementById("totalUsers").textContent = "0";
+            document.getElementById("totalVisits").textContent = "0";
+
+            renderTable(data);
+        }
+
+        // Render Table Function
+        function renderTable(data) {
+            const tbody = document.getElementById("appsTable");
+            tbody.innerHTML = "";
+
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="padding:40px;text-align:center;color:#999;">No apps found</td></tr>`;
+                return;
+            }
+
+            data.forEach(app => {
+                tbody.innerHTML += `
+                    <tr style="border-bottom:1px solid #ececec;">
+                        <td style="padding:12px;text-align:center;">
+                            <img src="${app.icon_url || 'https://placehold.co/60'}" style="width:60px;height:60px;border-radius:15px;object-fit:cover;">
+                        </td>
+                        <td style="padding:12px;font-weight:700;">${app.name || "-"}</td>
+                        <td style="padding:12px;">${app.developer || "-"}</td>
+                        <td style="padding:12px;">${app.version || "-"}</td>
+                        <td style="padding:12px;">${app.category || "-"}</td>
+                        <td style="padding:12px;">${app.android_version || "-"}</td>
+                        <td style="padding:12px;">${app.downloads || 0}</td>
+                        <td style="padding:12px;">
+                            <span style="background:#dcfce7;color:#15803d;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:bold;">Published</span>
+                        </td>
+                        <td style="padding:12px;white-space:nowrap;">
+                            <button onclick="editApp('${app.id}')" style="background:#2563eb;color:#fff;border:none;padding:8px 14px;border-radius:10px;cursor:pointer;margin-right:8px;">Edit</button>
+                            <button onclick="deleteApp('${app.id}')" style="background:#dc2626;color:#fff;border:none;padding:8px 14px;border-radius:10px;cursor:pointer;">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        loadDashboard();
+
+        // Search Functionality
+        document.getElementById("searchApp").addEventListener("input", async (e) => {
+            const keyword = e.target.value.trim();
+
+            const { data, error } = await supabase
+                .from("apps")
+                .select("*")
+                .ilike("name", `%${keyword}%`)
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            renderTable(data);
+        });
+
+        // Edit Global Function
+        window.editApp = function(id) {
+            location.href = "add-app.html?id=" + id;
+        };
+
+        // Delete Global Function
+        window.deleteApp = async function(id) {
+            if (!confirm("Delete this app?")) return;
+
+            const { error } = await supabase
+                .from("apps")
+                .delete()
+                .eq("id", id);
+
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            loadDashboard();
+        };
+    </script>
 </body>
-
 </html>
