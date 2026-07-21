@@ -180,7 +180,7 @@
             <p>Admin Dashboard</p>
         </div>
         <div class="menu">
-            <a href="dashboard.html">
+            <a href="dashboard.html" style="background:#ecfdf5;color:#16a34a;">
                 <i class="fa-solid fa-chart-line"></i>
                 <span>Dashboard</span>
             </a>
@@ -262,7 +262,7 @@
                     </thead>
                     <tbody id="appsTable">
                         <tr>
-                            <td colspan="9" style="padding:60px;text-align:center;color:#999;">Loading Apps...</td>
+                            <td colspan="9" style="padding:60px;text-align:center;color:#999;">Loading Live Apps...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -270,7 +270,7 @@
         </div>
     </main>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC WITH REALTIME & EDIT/DELETE -->
     <script type="module">
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
@@ -279,9 +279,7 @@
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE"
         );
 
-        // =========================
-        // Sidebar Toggle Buttons Logic
-        // =========================
+        // Sidebar Elements
         const sidebar = document.getElementById("sidebar");
         const menuBtn = document.getElementById("menuBtn");
         const closeBtn = document.getElementById("closeSidebar");
@@ -302,22 +300,16 @@
             overlay.style.display = "none";
         });
 
-        // =========================
-        // Logout Button Logic
-        // =========================
-        const logoutBtn = document.getElementById("logoutBtn");
-        logoutBtn.addEventListener("click", (e) => {
+        // Logout
+        document.getElementById("logoutBtn").addEventListener("click", (e) => {
             e.preventDefault();
             if (confirm("Are you sure you want to logout?")) {
-                // Agar Firebase auth session clear karna ho toh yahan likh sakte hain
                 localStorage.removeItem("adminLoggedIn");
                 window.location.href = "index.html";
             }
         });
 
-        // =========================
-        // Load Dashboard Data
-        // =========================
+        // Load & Render Dashboard Data
         async function loadDashboard() {
             const { data, error } = await supabase
                 .from("apps")
@@ -325,7 +317,7 @@
                 .order("created_at", { ascending: false });
 
             if (error) {
-                console.error(error);
+                console.error("Error fetching data:", error);
                 return;
             }
 
@@ -343,7 +335,6 @@
             renderTable(data);
         }
 
-        // Render Table Function
         function renderTable(data) {
             const tbody = document.getElementById("appsTable");
             tbody.innerHTML = "";
@@ -355,7 +346,7 @@
 
             data.forEach(app => {
                 tbody.innerHTML += `
-                    <tr style="border-bottom:1px solid #ececec;">
+                    <tr style="border-bottom:1px solid #ececec;" id="row-${app.id}">
                         <td style="padding:12px;text-align:center;">
                             <img src="${app.icon_url || 'https://placehold.co/60'}" style="width:60px;height:60px;border-radius:15px;object-fit:cover;">
                         </td>
@@ -377,11 +368,21 @@
             });
         }
 
+        // Initial Data Load
         loadDashboard();
 
         // =========================
-        // Search Functionality
+        // REALTIME SUBSCRIPTION (Live Sync)
         // =========================
+        supabase
+            .channel('public:apps')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'apps' }, payload => {
+                console.log('Realtime change detected:', payload);
+                loadDashboard(); // Database mein kuch bhi insert, update ya delete hoga toh table khud refresh ho jayegi
+            })
+            .subscribe();
+
+        // Search Functionality
         document.getElementById("searchApp").addEventListener("input", async (e) => {
             const keyword = e.target.value.trim();
 
@@ -399,13 +400,12 @@
             renderTable(data);
         });
 
-        // =========================
-        // Edit & Delete Global Functions
-        // =========================
+        // Global Edit Function (Redirects to add-app.html with ID for updating)
         window.editApp = function(id) {
             window.location.href = "add-app.html?id=" + id;
         };
 
+        // Global Delete Function
         window.deleteApp = async function(id) {
             if (!confirm("Are you sure you want to delete this app?")) return;
 
@@ -415,7 +415,7 @@
                 .eq("id", id);
 
             if (error) {
-                alert(error.message);
+                alert("Error deleting app: " + error.message);
                 return;
             }
 
