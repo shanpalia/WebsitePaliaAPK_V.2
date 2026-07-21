@@ -1956,7 +1956,6 @@ img{ max-width: 100%; display: block; }
 
     var uploadChain = Promise.resolve();
 
-    // Helper to upload if new file is chosen, otherwise retain existing url string
     function ensureUrl(key, bucket, folder){
       if(uploads[key] && uploads[key].file){
         return uploadAsset(bucket, folder, uploads[key].file);
@@ -2012,7 +2011,7 @@ img{ max-width: 100%; display: block; }
         setSubmitting(false, 'Update App');
         markSaved('Updated successfully');
         showToast('success', 'App updated', currentFieldValue('fName') + ' changes were saved successfully.');
-        fetchAppsList(); // refresh table
+        fetchAppsList();
       })
       .catch(function(err){
         setSubmitting(false, 'Update App');
@@ -2044,7 +2043,6 @@ img{ max-width: 100%; display: block; }
     deleteAppRecord(currentSelectedAppId, appName);
   });
 
-  // Initial load
   renderTags();
   renderPreview();
   fetchAppsList();
@@ -2053,4 +2051,3 @@ img{ max-width: 100%; display: block; }
 </script>
 </body>
 </html>
-```[cite: 1]
