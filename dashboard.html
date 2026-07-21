@@ -93,16 +93,18 @@ width:40px;
 height:40px;
 border:none;
 border-radius:10px;
-background:#16a34a;
+background:#dc2626;
 color:#fff;
 font-size:18px;
 cursor:pointer;
 display:none;
-display:flex;
 align-items:center;
 justify-content:center;
 }
 
+.sidebar.active #closeSidebar{
+display:flex;
+}
 .menu{
 
 padding:15px;
@@ -531,7 +533,7 @@ import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
 "https://ralinnuegsbuvlhwpzln.supabase.co",
-"YOUR_SUPABASE_ANON_KEY"
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE"
 );
 
 // =========================
