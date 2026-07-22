@@ -1282,9 +1282,10 @@ img{ max-width: 100%; display: block; }
   }
 
   function formatBytes(bytes){
-    if(bytes < 1024) return bytes + ' B';
-    if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    if(bytes >= 1024 * 1024 * 1024) return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+    if(bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    if(bytes >= 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return bytes + ' B';
   }
 
   function filenameFromUrl(url){
@@ -1585,7 +1586,7 @@ img{ max-width: 100%; display: block; }
     pv.downloads.textContent = (originalDownloads || 0) + ' downloads';
 
     if(uploads.apk && uploads.apk.file){
-      pv.size.textContent = (uploads.apk.file.size / (1024 * 1024)).toFixed(1) + ' MB';
+      pv.size.textContent = formatBytes(uploads.apk.file.size);
     } else if(loadedApkSizeLabel){
       pv.size.textContent = loadedApkSizeLabel;
     } else {
@@ -1953,7 +1954,7 @@ img{ max-width: 100%; display: block; }
     chain
       .then(function(){
         if(uploads.apk.file){
-          finalApkSize = (uploads.apk.file.size / (1024 * 1024)).toFixed(1) + ' MB';
+          finalApkSize = formatBytes(uploads.apk.file.size);
         } else if(!uploads.apk.removed){
           finalApkSize = loadedApkSizeLabel;
         }
