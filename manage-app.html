@@ -1819,10 +1819,10 @@ img{ max-width: 100%; display: block; }
       });
 
       var editBtn = tr.querySelector('[data-action="edit"]');
-      editBtn.addEventListener('click', function(e){
-        e.stopPropagation();
-        selectAppForEditing(app.id);
-      });
+     editBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    window.location.href = "edit-app.html?id=" + app.id;
+});
 
       var delBtn = tr.querySelector('[data-action="delete"]');
       delBtn.addEventListener('click', function(e){
