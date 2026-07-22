@@ -1741,7 +1741,7 @@ img{ max-width: 100%; display: block; }
     }
     if(uploads.apk && uploads.apk.file){
       uploadChain = uploadChain.then(function(){
-        return uploadAsset(BUCKETS.apk, 'apks', uploads.apk.file).then(function(url){ urls.apk = url; });
+        return uploadAsset(BUCKETS.apk, 'apk', uploads.apk.file).then(function(url){ urls.apk = url; });
       });
     }
     ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'].forEach(function(id){
