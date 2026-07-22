@@ -415,36 +415,6 @@ img{ max-width: 100%; display: block; }
 .field.has-error textarea{ border-color: var(--danger); background: var(--danger-bg); }
 .field.has-error .field-error{ display: flex; }
 
-/* Tags */
-.tag-input-wrap{
-  display: flex; flex-wrap: wrap; gap: 6px;
-  border: 1px solid var(--line);
-  background: var(--paper);
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
-  min-height: 44px;
-  align-items: center;
-}
-.tag-input-wrap:focus-within{ border-color: var(--mint-500); background: var(--white); box-shadow: var(--shadow-focus); }
-.tag-chip{
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--mint-100); color: var(--mint-700);
-  font-size: 12px; font-weight: 600;
-  padding: 4px 6px 4px 10px;
-  border-radius: var(--radius-pill);
-}
-.tag-chip button{
-  border: none; background: none; color: var(--mint-700);
-  width: 16px; height: 16px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 13px; line-height: 1;
-}
-.tag-chip button:hover{ background: rgba(16,116,90,0.15); }
-.tag-input-wrap input{
-  border: none; background: none; outline: none;
-  flex: 1; min-width: 90px; font-size: 13px; padding: 4px 2px; color: var(--ink-900);
-}
-
 /* Description mode toggle */
 .desc-toggle{ display: flex; gap: 8px; margin-bottom: 14px; }
 .desc-toggle-btn{
@@ -752,12 +722,6 @@ img{ max-width: 100%; display: block; }
 .pv-desc{ font-size: 12.5px; line-height: 1.6; color: var(--ink-500); white-space: pre-line; }
 .pv-desc.is-empty{ color: var(--ink-300); font-style: italic; }
 
-.pv-tags{ display: flex; flex-wrap: wrap; gap: 6px; }
-.pv-tag{
-  font-size: 10px; font-weight: 600; color: var(--mint-700);
-  background: var(--mint-100); padding: 4px 9px; border-radius: var(--radius-pill);
-}
-
 .pv-shots{
   display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
   scrollbar-width: none;
@@ -992,14 +956,6 @@ img{ max-width: 100%; display: block; }
                     <option>Android 14+</option>
                   </select>
                 </div>
-
-                <div class="field field--full">
-                  <label for="fTagInput">Tags <span class="opt">optional</span></label>
-                  <div class="tag-input-wrap" id="tagWrap">
-                    <input type="text" id="fTagInput" placeholder="Type a tag and press Enter">
-                  </div>
-                  <span class="field-hint">Press Enter or comma to add a tag.</span>
-                </div>
               </div>
             </div>
           </div>
@@ -1028,7 +984,7 @@ img{ max-width: 100%; display: block; }
               </div>
 
               <div class="desc-ai-panel" id="descAIPanel">
-                <p>Generates a description from the App Name, Category, Developer, Version and Tags you've entered above. You can edit the result afterwards.</p>
+                <p>Generates a description from the App Name, Category, Developer and Version you've entered above. You can edit the result afterwards.</p>
                 <button type="button" class="btn-ai-generate" id="btnGenerateNow">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/></svg>
                   <span>Generate Description</span>
@@ -1165,8 +1121,6 @@ img{ max-width: 100%; display: block; }
                   <div class="pv-section-title" style="margin-bottom:8px;">About this app</div>
                   <p class="pv-desc is-empty" id="pvDescription">No description yet — start typing on the left.</p>
                 </div>
-
-                <div class="pv-tags" id="pvTags"></div>
               </div>
             </div>
           </div>
@@ -1433,55 +1387,7 @@ img{ max-width: 100%; display: block; }
   }
 
   /* ==========================================================
-     5. TAGS
-     ========================================================== */
-  var tagWrap  = document.getElementById('tagWrap');
-  var tagInput = document.getElementById('fTagInput');
-  var tags     = [];
-
-  function renderTags(){
-    var chips = tagWrap.querySelectorAll('.tag-chip');
-    chips.forEach(function(chip){ chip.remove(); });
-    tags.forEach(function(tag, idx){
-      var chip = document.createElement('span');
-      chip.className = 'tag-chip';
-      chip.innerHTML = '<span></span><button type="button" aria-label="Remove tag">' + REMOVE_ICON + '</button>';
-      chip.querySelector('span').textContent = tag;
-      chip.querySelector('button').addEventListener('click', function(){
-        tags.splice(idx, 1);
-        renderTags();
-        markDirty();
-        renderPreview();
-      });
-      tagWrap.insertBefore(chip, tagInput);
-    });
-  }
-
-  function addTag(raw){
-    var value = raw.trim().replace(/,$/, '');
-    if(!value) return;
-    if(tags.indexOf(value) === -1) tags.push(value);
-    tagInput.value = '';
-    renderTags();
-    markDirty();
-    renderPreview();
-  }
-
-  tagInput.addEventListener('keydown', function(e){
-    if(e.key === 'Enter' || e.key === ','){
-      e.preventDefault();
-      addTag(tagInput.value);
-    } else if(e.key === 'Backspace' && !tagInput.value && tags.length){
-      tags.pop();
-      renderTags();
-      markDirty();
-      renderPreview();
-    }
-  });
-  tagWrap.addEventListener('click', function(){ tagInput.focus(); });
-
-  /* ==========================================================
-     6. DESCRIPTION AI TOGGLE
+     5. DESCRIPTION AI TOGGLE
      ========================================================== */
   var btnDescManual = document.getElementById('btnDescManual');
   var btnDescAI      = document.getElementById('btnDescAI');
@@ -1511,12 +1417,10 @@ img{ max-width: 100%; display: block; }
     var category = currentFieldValue('fCategory');
     var developer = currentFieldValue('fDeveloper');
     var version = currentFieldValue('fVersion');
-    var tagLine = tags.length ? tags.join(', ') : null;
 
     var lines = [];
     lines.push(name + (category ? ' is a ' + category.toLowerCase() + ' app' : ' is an app') + (developer ? ' built by ' + developer + '.' : '.'));
     lines.push('It is designed to be fast, lightweight, and easy to use on any Android device.');
-    if(tagLine) lines.push('Highlights: ' + tagLine + '.');
     if(version) lines.push('Current version: ' + version + '.');
     lines.push('');
     lines.push('Features:');
@@ -1558,7 +1462,6 @@ img{ max-width: 100%; display: block; }
     size: document.getElementById('pvSize'),
     downloads: document.getElementById('pvDownloads'),
     description: document.getElementById('pvDescription'),
-    tags: document.getElementById('pvTags'),
     shots: document.getElementById('pvShots')
   };
   var pvIconDefaultSVG = pv.icon.innerHTML;
@@ -1603,14 +1506,6 @@ img{ max-width: 100%; display: block; }
 
     descCharCount.textContent = description.length + ' characters';
     descCharCount.classList.toggle('is-over', description.length > 4000);
-
-    pv.tags.innerHTML = '';
-    tags.forEach(function(tag){
-      var el = document.createElement('span');
-      el.className = 'pv-tag';
-      el.textContent = tag;
-      pv.tags.appendChild(el);
-    });
 
     var iconSrc = uploaderImageSrc('icon');
     if(iconSrc){
@@ -1805,15 +1700,6 @@ img{ max-width: 100%; display: block; }
 
     fDescription.value = data.description || '';
 
-    if(Array.isArray(data.tags)){
-      tags = data.tags.slice();
-    } else if(typeof data.tags === 'string' && data.tags.trim()){
-      tags = data.tags.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
-    } else {
-      tags = [];
-    }
-    renderTags();
-
     originalDownloads = Number(data.downloads || 0);
     loadedApkSizeLabel = data.apk_size || null;
 
@@ -1906,7 +1792,6 @@ img{ max-width: 100%; display: block; }
       category: currentFieldValue('fCategory') || null,
       android_version: currentFieldValue('fAndroid') || null,
       apk_size: finalApkSize,
-      tags: tags,
       description: fDescription.value.trim(),
       icon_url: finalUrls.icon,
       banner_url: finalUrls.banner,
@@ -2028,7 +1913,6 @@ img{ max-width: 100%; display: block; }
   /* ==========================================================
      15. INIT
      ========================================================== */
-  renderTags();
   renderPreview();
   loadApp();
 
