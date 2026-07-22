@@ -24,44 +24,41 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Form Section -->
             <div class="lg:col-span-2 bg-gray-800 p-6 rounded-xl border border-gray-700">
-                <h2 class="text-xl font-semibold mb-6 text-white">Update App Details & Files</h2>
+                <h2 class="text-xl font-semibold mb-6 text-white">Edit Application Details</h2>
                 
                 <form id="editAppForm" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-1">App Name</label>
-                            <input type="text" id="appName" name="app_name" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500">
+                            <input type="text" id="appName" name="app_name" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="e.g. My Awesome App">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-1">Version</label>
-                            <input type="text" id="appVersion" name="version" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500">
+                            <input type="text" id="appVersion" name="version" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="e.g. 1.0.0">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-1">Developer</label>
-                            <input type="text" id="appDeveloper" name="developer" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500">
+                            <input type="text" id="appDeveloper" name="developer" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="e.g. Studio Name">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-300 mb-1">Category</label>
-                            <input type="text" id="appCategory" name="category" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500">
+                            <input type="text" id="appCategory" name="category" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="e.g. Tools, Games">
                         </div>
                     </div>
 
-                    <!-- App Icon URL / File Field -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1">App Icon URL</label>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Icon URL</label>
                         <input type="url" id="appIcon" name="icon_url" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="https://example.com/icon.png">
                     </div>
 
-                    <!-- APK File URL Field -->
                     <div>
                         <label class="block text-sm font-medium text-gray-300 mb-1">APK File URL</label>
                         <input type="url" id="appUrl" name="apk_url" required class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="https://example.com/app.apk">
                     </div>
 
-                    <!-- Screenshots URLs Field -->
                     <div>
                         <label class="block text-sm font-medium text-gray-300 mb-1">Screenshots URLs (Comma separated)</label>
                         <textarea id="appScreenshots" name="screenshots" rows="2" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="https://img1.com, https://img2.com"></textarea>
@@ -69,7 +66,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-300 mb-1">Description</label>
-                        <textarea id="appDescription" name="description" rows="4" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500"></textarea>
+                        <textarea id="appDescription" name="description" rows="4" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500" placeholder="Write app features..."></textarea>
                     </div>
 
                     <button type="submit" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white font-semibold py-3 rounded-lg transition">Update Application</button>
@@ -101,15 +98,15 @@
     </div>
 
     <script>
-        // Supabase Initialization (Apni credentials yahan dalein)
-        const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+        // Supabase Initialization
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const urlParams = new URLSearchParams(window.location.search);
         const appId = urlParams.get('id');
 
-        // Form Elements Mapping
+        // Form Elements
         const nameInput = document.getElementById('appName');
         const devInput = document.getElementById('appDeveloper');
         const verInput = document.getElementById('appVersion');
@@ -119,6 +116,7 @@
         const screenshotsInput = document.getElementById('appScreenshots');
         const descInput = document.getElementById('appDescription');
 
+        // Real-time Preview Update
         function updatePreview() {
             document.getElementById('previewName').innerText = nameInput.value || 'App Name';
             document.getElementById('previewDev').innerText = devInput.value || 'Developer';
@@ -141,16 +139,15 @@
             input.addEventListener('input', updatePreview);
         });
 
-        // Fetch Existing App Data for Auto-Population based on URL ?id=...
+        // Auto Fetch Data based on ?id=...
         async function fetchAppData() {
             if (!appId) {
-                alert('No App ID found in URL!');
+                alert('App ID missing in URL!');
                 return;
             }
             const { data, error } = await _supabase.from('apps').select('*').eq('id', appId).single();
             if (error) {
-                console.error('Error fetching app data:', error);
-                alert('Failed to load app data.');
+                console.error('Error fetching data:', error);
                 return;
             }
             if (data) {
@@ -166,7 +163,7 @@
             }
         }
 
-        // Handle Form Submit and Update Database Payload
+        // Update Data on Submit
         document.getElementById('editAppForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const updatedData = {
@@ -182,14 +179,13 @@
 
             const { error } = await _supabase.from('apps').update(updatedData).eq('id', appId);
             if (error) {
-                alert('Error updating app: ' + error.message);
+                alert('Error: ' + error.message);
             } else {
                 alert('App updated successfully!');
                 window.location.href = 'index.html';
             }
         });
 
-        // Initialize Data Fetch on Page Load
         fetchAppData();
     </script>
 </body>
