@@ -1,366 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Apps - PaliaAPK HUB Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        body {
-            background: #f3f6fb;
-            overflow-x: hidden;
-        }
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -290px;
-            width: 290px;
-            height: 100vh;
-            background: #fff;
-            box-shadow: 0 10px 30px rgba(0,0,0,.12);
-            transition: .35s;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-        .sidebar.active {
-            left: 0;
-        }
-        .logo {
-            position: relative;
-            padding: 25px;
-            padding-right: 80px;
-            border-bottom: 1px solid #eee;
-        }
-        .logo h1 {
-            font-size: 30px;
-            font-weight: 900;
-            color: #16a34a;
-        }
-        .logo p {
-            margin-top: 6px;
-            color: #666;
-        }
-        #closeSidebar {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            border: none;
-            border-radius: 10px;
-            background: #dc2626;
-            color: #fff;
-            font-size: 18px;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        .sidebar.active #closeSidebar {
-            display: flex;
-        }
-        .menu {
-            padding: 15px;
-        }
-        .menu a {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 16px 18px;
-            margin-bottom: 8px;
-            border-radius: 14px;
-            text-decoration: none;
-            font-weight: 700;
-            color: #555;
-            transition: .25s;
-        }
-        .menu a:hover {
-            background: #ecfdf5;
-            color: #16a34a;
-        }
-        .header {
-            height: 80px;
-            background: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 28px;
-            box-shadow: 0 2px 12px rgba(0,0,0,.05);
-        }
-        .left {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-        #menuBtn {
-            width: 48px;
-            height: 48px;
-            border: none;
-            background: #16a34a;
-            color: #fff;
-            border-radius: 14px;
-            font-size: 22px;
-            cursor: pointer;
-        }
-        .title h2 {
-            font-size: 30px;
-            font-weight: 900;
-        }
-        .title p {
-            color: #666;
-            margin-top: 4px;
-        }
-        .profile {
-            width: 46px;
-            height: 46px;
-            background: #16a34a;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-weight: bold;
-        }
-        .main {
-            padding: 30px;
-        }
-        #overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.35);
-            display: none;
-            z-index: 999;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PaliaAPK HUB - Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#f4f7fb}
+.sidebar{
+ position:fixed;top:0;left:-280px;width:280px;height:100vh;
+ background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.15);
+ transition:left .3s;z-index:1000
+}
+.sidebar.active{left:0}
+.logo{
+ position:relative;
+ padding:24px;
+ border-bottom:1px solid #eee;
+}
+.logo h1{font-size:30px;color:#16a34a;font-weight:800}
+.logo p{color:#777;margin-top:5px}
+.close-btn{
+ position:absolute;
+ top:18px;
+ right:18px;
+ width:42px;
+ height:42px;
+ border:none;
+ border-radius:12px;
+ background:#16a34a;
+ color:#fff;
+ font-size:20px;
+ cursor:pointer;
+ display:none;
+}
+.sidebar.active .close-btn{display:block}
+.menu a{
+ display:flex;
+ align-items:center;
+ gap:12px;
+ padding:16px 22px;
+ text-decoration:none;
+ color:#444;
+ font-weight:700;
+}
+.menu a:hover{background:#ecfdf5;color:#16a34a}
+.header{
+ height:80px;
+ background:#fff;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:0 24px;
+ box-shadow:0 2px 10px rgba(0,0,0,.05)
+}
+.left{display:flex;align-items:center;gap:16px}
+#menuBtn{
+ width:48px;height:48px;
+ border:none;
+ border-radius:12px;
+ background:#16a34a;
+ color:#fff;
+ cursor:pointer;
+ font-size:22px;
+}
+.profile{
+ width:44px;height:44px;border-radius:50%;
+ background:#16a34a;color:#fff;
+ display:flex;align-items:center;justify-content:center;
+ font-weight:bold;
+}
+.main{padding:30px}
+.cards{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+ gap:20px;
+}
+.card{
+ background:#fff;
+ border-radius:18px;
+ padding:22px;
+ box-shadow:0 8px 20px rgba(0,0,0,.08)
+}
+.card h3{color:#777}
+.card h2{font-size:40px;margin-top:10px}
+#overlay{
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,.35);
+ display:none;
+ z-index:999;
+}
+</style>
 </head>
 <body>
 
-    <div id="overlay"></div>
+<div id="overlay"></div>
 
-    <!-- SIDEBAR -->
-    <div id="sidebar" class="sidebar">
-        <div class="logo">
-            <button id="closeSidebar" class="close-btn">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <h1>PaliaAPK HUB</h1>
-            <p>Admin Dashboard</p>
-        </div>
-        <div class="menu">
-            <a href="dashboard.html">
-                <i class="fa-solid fa-chart-line"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="add-app.html">
-                <i class="fa-solid fa-plus"></i>
-                <span>Add New App</span>
-            </a>
-            <a href="manage-apps.html" style="background:#ecfdf5;color:#16a34a;">
-                <i class="fa-solid fa-mobile-screen-button"></i>
-                <span>Manage Apps</span>
-            </a>
-            <a href="index.html">
-                <i class="fa-solid fa-house"></i>
-                <span>Home</span>
-            </a>
-            <a href="#" id="logoutBtn">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span>Logout</span>
-            </a>
-        </div>
-    </div>
+<div class="sidebar" id="sidebar">
 
-    <!-- HEADER -->
-    <header class="header">
-        <div class="left">
-            <button id="menuBtn">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-            <div class="title">
-                <h2>Manage Apps</h2>
-                <p>View, Edit or Delete your uploaded applications</p>
-            </div>
-        </div>
-        <div class="profile">SP</div>
-    </header>
+<div class="logo">
+<button id="closeSidebar" class="close-btn">
+<i class="fa-solid fa-xmark"></i>
+</button>
+<h1>PaliaAPK HUB</h1>
+<p>Admin Dashboard</p>
+</div>
 
-    <!-- MAIN CONTAINER -->
-    <main class="main">
-        <div class="table-box" style="background:#fff;border-radius:20px;padding:25px;box-shadow:0 8px 20px rgba(0,0,0,.06);">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:15px;">
-                <h2 style="font-size:28px;font-weight:900;">All Applications</h2>
-                <input id="searchApp" type="text" placeholder="Search App..." style="width:320px;padding:12px 18px;border:1px solid #ddd;border-radius:12px;outline:none;font-size:15px;">
-            </div>
+<div class="menu">
+<a href="dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+<a href="add-app.html"><i class="fa-solid fa-plus"></i> Add New App</a>
+<a href="manage-apps.html"><i class="fa-solid fa-mobile-screen-button"></i> Manage Apps</a>
+<a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+<a href="#"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+</div>
 
-            <div style="overflow-x:auto;">
-                <table style="width:100%;border-collapse:collapse;">
-                    <thead>
-                        <tr style="background:#f5f7fb;">
-                            <th style="padding:16px;">Icon</th>
-                            <th style="padding:16px;">App Name</th>
-                            <th style="padding:16px;">Developer</th>
-                            <th style="padding:16px;">Version</th>
-                            <th style="padding:16px;">Category</th>
-                            <th style="padding:16px;">Android</th>
-                            <th style="padding:16px;">Downloads</th>
-                            <th style="padding:16px;">Status</th>
-                            <th style="padding:16px;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="appsTable">
-                        <tr>
-                            <td colspan="9" style="padding:60px;text-align:center;color:#999;">Loading Apps...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
+</div>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script type="module">
-        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+<header class="header">
+<div class="left">
+<button id="menuBtn"><i class="fa-solid fa-bars"></i></button>
+<div>
+<h2 style="font-size:28px;font-weight:800">Dashboard</h2>
+<p style="color:#777">Welcome to PaliaAPK HUB Admin</p>
+</div>
+</div>
+<div class="profile">SP</div>
+</header>
 
-        const supabase = createClient(
-            "https://ralinnuegsbuvlhwpzln.supabase.co",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE"
-        );
+<main class="main">
+<div class="cards">
+<div class="card"><h3>Total Apps</h3><h2>0</h2></div>
+<div class="card"><h3>Total Downloads</h3><h2>0</h2></div>
+<div class="card"><h3>Total Users</h3><h2>0</h2></div>
+<div class="card"><h3>Total Site Visits</h3><h2>0</h2></div>
+</div>
+</main>
 
-        // Sidebar Elements Toggle
-        const sidebar = document.getElementById("sidebar");
-        const menuBtn = document.getElementById("menuBtn");
-        const closeBtn = document.getElementById("closeSidebar");
-        const overlay = document.getElementById("overlay");
+<script>
+const sidebar=document.getElementById("sidebar");
+const menuBtn=document.getElementById("menuBtn");
+const closeBtn=document.getElementById("closeSidebar");
+const overlay=document.getElementById("overlay");
 
-        menuBtn.addEventListener("click", () => {
-            sidebar.classList.add("active");
-            overlay.style.display = "block";
-        });
+function openSidebar(){
+ sidebar.classList.add("active");
+ overlay.style.display="block";
+}
 
-        closeBtn.addEventListener("click", () => {
-            sidebar.classList.remove("active");
-            overlay.style.display = "none";
-        });
+function closeSidebar(){
+ sidebar.classList.remove("active");
+ overlay.style.display="none";
+}
 
-        overlay.addEventListener("click", () => {
-            sidebar.classList.remove("active");
-            overlay.style.display = "none";
-        });
+menuBtn.addEventListener("click",openSidebar);
+closeBtn.addEventListener("click",closeSidebar);
+overlay.addEventListener("click",closeSidebar);
 
-        // Logout
-        document.getElementById("logoutBtn").addEventListener("click", (e) => {
-            e.preventDefault();
-            if (confirm("Are you sure you want to logout?")) {
-                localStorage.removeItem("adminLoggedIn");
-                window.location.href = "index.html";
-            }
-        });
+document.querySelectorAll(".menu a").forEach(a=>{
+ a.addEventListener("click",closeSidebar);
+});
+</script>
 
-        // Fetch & Load Apps Data
-        async function fetchApps() {
-            const { data, error } = await supabase
-                .from("apps")
-                .select("*")
-                .order("created_at", { ascending: false });
-
-            if (error) {
-                console.error("Error fetching apps:", error);
-                return;
-            }
-
-            renderTable(data);
-        }
-
-        function renderTable(data) {
-            const tbody = document.getElementById("appsTable");
-            tbody.innerHTML = "";
-
-            if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="padding:40px;text-align:center;color:#999;">No apps found</td></tr>`;
-                return;
-            }
-
-            data.forEach(app => {
-                tbody.innerHTML += `
-                    <tr style="border-bottom:1px solid #ececec;" id="row-${app.id}">
-                        <td style="padding:12px;text-align:center;">
-                            <img src="${app.icon_url || 'https://placehold.co/60'}" style="width:60px;height:60px;border-radius:15px;object-fit:cover;">
-                        </td>
-                        <td style="padding:12px;font-weight:700;">${app.name || "-"}</td>
-                        <td style="padding:12px;">${app.developer || "-"}</td>
-                        <td style="padding:12px;">${app.version || "-"}</td>
-                        <td style="padding:12px;">${app.category || "-"}</td>
-                        <td style="padding:12px;">${app.android_version || "-"}</td>
-                        <td style="padding:12px;">${app.downloads || 0}</td>
-                        <td style="padding:12px;">
-                            <span style="background:#dcfce7;color:#15803d;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:bold;">Published</span>
-                        </td>
-                        <td style="padding:12px;white-space:nowrap;">
-                            <button onclick="editApp('${app.id}')" style="background:#2563eb;color:#fff;border:none;padding:8px 14px;border-radius:10px;cursor:pointer;margin-right:8px;">Edit</button>
-                            <button onclick="deleteApp('${app.id}')" style="background:#dc2626;color:#fff;border:none;padding:8px 14px;border-radius:10px;cursor:pointer;">Delete</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        // Initial fetch call
-        fetchApps();
-
-        // Realtime sync
-        supabase
-            .channel('public:apps')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'apps' }, payload => {
-                fetchApps();
-            })
-            .subscribe();
-
-        // Search Filter
-        document.getElementById("searchApp").addEventListener("input", async (e) => {
-            const keyword = e.target.value.trim();
-
-            const { data, error } = await supabase
-                .from("apps")
-                .select("*")
-                .ilike("name", `%${keyword}%`)
-                .order("created_at", { ascending: false });
-
-            if (error) {
-                console.error(error);
-                return;
-            }
-
-            renderTable(data);
-        });
-
-        // Global Edit Function (Ab yeh manage-apps.html par hi redirect karega)
-        window.editApp = function(id) {
-            window.location.href = "manage-apps.html?id=" + id;
-        };
-
-        // Global Delete Function
-        window.deleteApp = async function(id) {
-            if (!confirm("Are you sure you want to delete this app?")) return;
-
-            const { error } = await supabase
-                .from("apps")
-                .delete()
-                .eq("id", id);
-
-            if (error) {
-                alert("Error deleting app: " + error.message);
-                return;
-            }
-
-            fetchApps();
-        };
-    </script>
 </body>
 </html>
