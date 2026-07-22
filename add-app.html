@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Add New App — PaliaAPK HUB</title>
-<meta name="description" content="Add a new app to the PaliaAPK HUB catalog.">
+<title>Edit App — PaliaAPK HUB</title>
+<meta name="description" content="Edit an existing app in the PaliaAPK HUB catalog.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -535,6 +535,12 @@ img{ max-width: 100%; display: block; }
   font-size: 12px; font-weight: 700; color: var(--ink-700);
 }
 .uploader__label .req{ color: var(--danger); font-weight: 700; }
+.uploader__label .tagpill{
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: var(--radius-pill);
+  color: var(--mint-700); background: var(--mint-100);
+}
+.uploader__label .tagpill.is-new{ color: var(--mint-800); background: var(--mint-200); }
 
 .uploader__zone{
   display: flex;
@@ -790,6 +796,7 @@ img{ max-width: 100%; display: block; }
   animation: spin 0.7s linear infinite;
 }
 .btn-secondary .btn-spinner{ border-color: rgba(16,116,90,0.25); border-top-color: var(--mint-700); }
+.btn-ghost .btn-spinner{ border-color: rgba(229,72,77,0.25); border-top-color: var(--danger); }
 .btn.is-loading .btn-spinner{ display: inline-block; }
 .btn.is-loading svg{ display: none; }
 .btn:disabled{ opacity: 0.7; cursor: not-allowed; transform: none; }
@@ -887,13 +894,13 @@ img{ max-width: 100%; display: block; }
     </div>
     <div class="topbar-divider"></div>
     <div class="topbar-page">
-      <h1>Add New App</h1>
-      <span>Upload &amp; publish a new catalog entry</span>
+      <h1>Edit App</h1>
+      <span>Update existing application</span>
     </div>
     <div class="topbar-spacer"></div>
     <div class="topbar-status" id="statusPill">
       <span class="dot"></span>
-      <span id="statusPillText">No changes yet</span>
+      <span id="statusPillText">Loading app data…</span>
     </div>
   </header>
 
@@ -903,8 +910,8 @@ img{ max-width: 100%; display: block; }
   <main class="page-body">
 
     <div class="page-heading">
-      <h2>Add New App</h2>
-      <p>Fill in the details, upload the assets, and publish straight to the PaliaAPK HUB catalog.</p>
+      <h2>Edit App</h2>
+      <p>Update existing application.</p>
     </div>
 
     <div class="page-grid">
@@ -951,7 +958,7 @@ img{ max-width: 100%; display: block; }
                 <div class="field">
                   <label for="fCategory">Category <span class="req">*</span></label>
                   <select class="field-input" id="fCategory" name="category">
-                    <option value="" selected disabled>Select category</option>
+                    <option value="" disabled>Select category</option>
                     <option>Games</option>
                     <option>Tools</option>
                     <option>Productivity</option>
@@ -972,7 +979,7 @@ img{ max-width: 100%; display: block; }
                 <div class="field">
                   <label for="fAndroid">Android Version</label>
                   <select class="field-input" id="fAndroid" name="androidVersion">
-                    <option value="" selected disabled>Select minimum version</option>
+                    <option value="" disabled>Select minimum version</option>
                     <option>Android 5.0+</option>
                     <option>Android 6.0+</option>
                     <option>Android 7.0+</option>
@@ -985,8 +992,6 @@ img{ max-width: 100%; display: block; }
                     <option>Android 14+</option>
                   </select>
                 </div>
-
-                <!-- APK Size field yahan se hata diya gaya hai -->
 
                 <div class="field field--full">
                   <label for="fTagInput">Tags <span class="opt">optional</span></label>
@@ -1049,7 +1054,7 @@ img{ max-width: 100%; display: block; }
               </div>
               <div>
                 <h3>Icon, APK &amp; Banner</h3>
-                <p>Drag &amp; drop or click to browse</p>
+                <p>Drag &amp; drop or click to replace</p>
               </div>
             </div>
             <div class="panel-card__body">
@@ -1076,24 +1081,28 @@ img{ max-width: 100%; display: block; }
           <!-- Actions -->
           <div class="panel-card">
             <div class="panel-card__body">
+              <div class="submit-alert submit-alert--info" id="loadAlert">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                <div><strong id="loadAlertTitle">Loading app data…</strong><span id="loadAlertBody">Fetching this app's details from Supabase.</span></div>
+              </div>
               <div class="submit-alert submit-alert--error" id="submitAlert">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 <div><strong id="submitAlertTitle">Something went wrong</strong><span id="submitAlertBody"></span></div>
               </div>
               <div class="form-actions">
-                <button type="button" class="btn btn-ghost" id="btnReset">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
-                  Reset Form
-                </button>
-                <button type="button" class="btn btn-secondary" id="btnSaveDraft">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                <button type="button" class="btn btn-ghost" id="btnDelete" disabled>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m5 0V4a2 2 0 012-2h0a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                   <span class="btn-spinner"></span>
-                  <span class="btn-label">Save Draft</span>
+                  <span class="btn-label">Delete App</span>
                 </button>
-                <button type="button" class="btn btn-primary" id="btnPublish">
+                <button type="button" class="btn btn-secondary" id="btnCancel">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="btnUpdate" disabled>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l6 6L20 6"/></svg>
                   <span class="btn-spinner"></span>
-                  <span class="btn-label">Publish App</span>
+                  <span class="btn-label">Update App</span>
                 </button>
               </div>
             </div>
@@ -1126,7 +1135,7 @@ img{ max-width: 100%; display: block; }
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8 12h8M12 8v8"/></svg>
                 </div>
                 <div class="pv-titleblock">
-                  <h4 id="pvName">New App Name</h4>
+                  <h4 id="pvName">App Name</h4>
                   <p id="pvDeveloper">Developer name</p>
                 </div>
               </div>
@@ -1174,11 +1183,37 @@ img{ max-width: 100%; display: block; }
 (function(){
   "use strict";
 
-  var appForm      = document.getElementById('appForm');
-  var statusPill    = document.getElementById('statusPill');
+  /* ==========================================================
+     0. SUPABASE CLIENT (single instance)
+     ========================================================== */
+  var SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+
+  var sb = (window.supabase && typeof window.supabase.createClient === 'function')
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  var BUCKETS = { icon: 'app-icons', apk: 'app-apks', banner: 'app-banners', screenshot: 'app-screenshots' };
+  var REDIRECT_TARGET = 'manage-app.html';
+
+  /* ==========================================================
+     1. URL PARAM
+     ========================================================== */
+  var urlParams = new URLSearchParams(window.location.search);
+  var appId = urlParams.get('id');
+  var appLoaded = false;
+  var originalDownloads = 0;
+  var loadedApkSizeLabel = null;
+
+  /* ==========================================================
+     2. SHARED DOM REFS / STATUS PILL
+     ========================================================== */
+  var appForm       = document.getElementById('appForm');
+  var statusPill     = document.getElementById('statusPill');
   var statusPillText = document.getElementById('statusPillText');
 
   function markDirty(){
+    if(!appLoaded) return;
     statusPill.classList.remove('is-saved');
     statusPill.classList.add('is-dirty');
     statusPillText.textContent = 'Unsaved changes';
@@ -1193,22 +1228,33 @@ img{ max-width: 100%; display: block; }
     statusPillText.textContent = 'No changes yet';
   }
 
-  var UPLOAD_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15V6a2 2 0 00-2-2H5a2 2 0 00-2 2v9m18 0l-2.5-3.5-4 5-3-3.5L4 15m18 0v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2"/></svg>';
-  var FILE_ICON   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>';
+  /* ==========================================================
+     3. ICONS
+     ========================================================== */
+  var UPLOAD_ICON  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15V6a2 2 0 00-2-2H5a2 2 0 00-2 2v9m18 0l-2.5-3.5-4 5-3-3.5L4 15m18 0v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2"/></svg>';
+  var FILE_ICON    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>';
   var REPLACE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a9 9 0 11-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>';
   var REMOVE_ICON  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 
+  /* ==========================================================
+     4. UPLOADERS
+     uploads[id] = { dbUrl, file, dataUrl, removed }
+     - dbUrl  : original url loaded from Supabase (immutable)
+     - file   : newly staged File replacing the asset (or null)
+     - dataUrl: local preview data-url for staged image files
+     - removed: true when the existing asset was removed w/o replacement
+     ========================================================== */
   var uploads = {};
 
   var UPLOADER_CONFIGS = [
-    { id: 'icon',        type: 'image', label: 'App Icon', required: true,  container: 'uploaderGridTop',     extraClass: 'uploader--icon',        hint: 'PNG/JPG, square' },
-    { id: 'banner',      type: 'image', label: 'Banner',   required: false, container: 'uploaderGridTop',     extraClass: 'uploader--banner',      hint: 'PNG/JPG, 16:9' },
+    { id: 'icon',        type: 'image', label: 'App Icon', required: true,  container: 'uploaderGridTop',     extraClass: 'uploader--icon',        hint: 'PNG/JPG/WEBP, square' },
+    { id: 'banner',      type: 'image', label: 'Banner',   required: false, container: 'uploaderGridTop',     extraClass: 'uploader--banner',      hint: 'PNG/JPG/WEBP, 16:9' },
     { id: 'apk',         type: 'apk',   label: 'APK File',  required: true,  container: 'uploaderApkWrap',     extraClass: 'uploader--apk',         hint: '.apk file' },
-    { id: 'screenshot1', type: 'image', label: 'Screenshot 1', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG' },
-    { id: 'screenshot2', type: 'image', label: 'Screenshot 2', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG' },
-    { id: 'screenshot3', type: 'image', label: 'Screenshot 3', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG' },
-    { id: 'screenshot4', type: 'image', label: 'Screenshot 4', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG' },
-    { id: 'screenshot5', type: 'image', label: 'Screenshot 5', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG' }
+    { id: 'screenshot1', type: 'image', label: 'Screenshot 1', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG/WEBP' },
+    { id: 'screenshot2', type: 'image', label: 'Screenshot 2', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG/WEBP' },
+    { id: 'screenshot3', type: 'image', label: 'Screenshot 3', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG/WEBP' },
+    { id: 'screenshot4', type: 'image', label: 'Screenshot 4', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG/WEBP' },
+    { id: 'screenshot5', type: 'image', label: 'Screenshot 5', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG/WEBP' }
   ];
 
   function buildUploaderMarkup(cfg){
@@ -1218,12 +1264,12 @@ img{ max-width: 100%; display: block; }
 
     return (
       '<div class="uploader ' + cfg.extraClass + '" data-uploader-id="' + cfg.id + '">' +
-        '<div class="uploader__label"><span>' + cfg.label + (cfg.required ? ' <span class="req">*</span>' : '') + '</span></div>' +
+        '<div class="uploader__label"><span>' + cfg.label + (cfg.required ? ' <span class="req">*</span>' : '') + '</span><span class="tagpill" data-role="tagpill" style="display:none;"></span></div>' +
         '<label class="uploader__zone" data-role="dropzone">' +
           UPLOAD_ICON +
           '<strong>Drag &amp; drop or click</strong>' +
           '<span>' + cfg.hint + '</span>' +
-          '<input class="uploader__input" type="file" accept="' + (cfg.type === 'apk' ? '.apk' : 'image/*') + '" data-role="input">' +
+          '<input class="uploader__input" type="file" accept="' + (cfg.type === 'apk' ? '.apk' : 'image/png,image/jpeg,image/webp') + '" data-role="input">' +
         '</label>' +
         previewInner +
         '<div class="uploader__progress"><div class="uploader__progress-bar" data-role="progressbar"></div></div>' +
@@ -1241,10 +1287,57 @@ img{ max-width: 100%; display: block; }
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
+  function filenameFromUrl(url){
+    try{
+      var clean = url.split('?')[0];
+      var parts = clean.split('/');
+      return decodeURIComponent(parts[parts.length - 1]) || 'current-file';
+    }catch(e){ return 'current-file'; }
+  }
+
+  var uploaderRoots = {};
+
+  function refreshUploaderUI(cfg){
+    var root = uploaderRoots[cfg.id];
+    var data = uploads[cfg.id] || {};
+    var tagpill = root.querySelector('[data-role="tagpill"]');
+
+    var showingNewFile = !!data.file;
+    var showingExisting = !data.file && data.dbUrl && !data.removed;
+
+    if(showingNewFile || showingExisting){
+      root.classList.add('has-file');
+
+      if(cfg.type === 'image'){
+        var img = root.querySelector('[data-role="previewimg"]');
+        img.src = showingNewFile ? data.dataUrl : data.dbUrl;
+      } else {
+        var nameEl = root.querySelector('[data-role="filename"]');
+        var sizeEl = root.querySelector('[data-role="filesize"]');
+        if(showingNewFile){
+          nameEl.textContent = data.file.name;
+          sizeEl.textContent = formatBytes(data.file.size);
+        } else {
+          nameEl.textContent = filenameFromUrl(data.dbUrl);
+          sizeEl.textContent = loadedApkSizeLabel || 'Current file on server';
+        }
+      }
+
+      tagpill.style.display = 'inline-block';
+      tagpill.textContent = showingNewFile ? 'New' : 'Current';
+      tagpill.classList.toggle('is-new', showingNewFile);
+    } else {
+      root.classList.remove('has-file');
+      tagpill.style.display = 'none';
+    }
+  }
+
   function initUploader(cfg){
     var container = document.getElementById(cfg.container);
     container.insertAdjacentHTML('beforeend', buildUploaderMarkup(cfg));
     var root = container.querySelector('[data-uploader-id="' + cfg.id + '"]');
+    uploaderRoots[cfg.id] = root;
+    uploads[cfg.id] = { dbUrl: null, file: null, dataUrl: null, removed: false };
 
     var dropzone    = root.querySelector('[data-role="dropzone"]');
     var input       = root.querySelector('[data-role="input"]');
@@ -1254,9 +1347,12 @@ img{ max-width: 100%; display: block; }
 
     function handleFile(file){
       if(!file) return;
-      if(cfg.type === 'image' && file.type.indexOf('image/') !== 0){
-        window.alert('Please choose an image file for ' + cfg.label + '.');
-        return;
+      if(cfg.type === 'image'){
+        var okType = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].indexOf(file.type) !== -1;
+        if(!okType){
+          window.alert('Please choose a PNG, JPG or WEBP image for ' + cfg.label + '.');
+          return;
+        }
       }
       if(cfg.type === 'apk' && !/\.apk$/i.test(file.name)){
         window.alert('Please choose a valid .apk file.');
@@ -1275,19 +1371,13 @@ img{ max-width: 100%; display: block; }
       reader.onload = function(e){
         progressBar.style.width = '100%';
         var dataUrl = e.target.result;
-        uploads[cfg.id] = { file: file, dataUrl: cfg.type === 'image' ? dataUrl : null };
+        uploads[cfg.id].file = file;
+        uploads[cfg.id].dataUrl = cfg.type === 'image' ? dataUrl : null;
+        uploads[cfg.id].removed = false;
 
         window.setTimeout(function(){
           root.classList.remove('is-loading');
-          root.classList.add('has-file');
-
-          if(cfg.type === 'image'){
-            root.querySelector('[data-role="previewimg"]').src = dataUrl;
-          } else {
-            root.querySelector('[data-role="filename"]').textContent = file.name;
-            root.querySelector('[data-role="filesize"]').textContent = formatBytes(file.size);
-          }
-
+          refreshUploaderUI(cfg);
           markDirty();
           renderPreview();
         }, 220);
@@ -1321,9 +1411,11 @@ img{ max-width: 100%; display: block; }
     replaceBtn.addEventListener('click', function(){ input.click(); });
 
     removeBtn.addEventListener('click', function(){
-      uploads[cfg.id] = null;
+      uploads[cfg.id].file = null;
+      uploads[cfg.id].dataUrl = null;
+      if(uploads[cfg.id].dbUrl){ uploads[cfg.id].removed = true; }
       input.value = '';
-      root.classList.remove('has-file');
+      refreshUploaderUI(cfg);
       markDirty();
       renderPreview();
     });
@@ -1331,9 +1423,20 @@ img{ max-width: 100%; display: block; }
 
   UPLOADER_CONFIGS.forEach(initUploader);
 
-  var tagWrap    = document.getElementById('tagWrap');
-  var tagInput   = document.getElementById('fTagInput');
-  var tags       = [];
+  function setUploaderExisting(id, url){
+    if(!uploads[id]) return;
+    uploads[id].dbUrl = url || null;
+    uploads[id].removed = false;
+    var cfg = UPLOADER_CONFIGS.filter(function(c){ return c.id === id; })[0];
+    if(cfg) refreshUploaderUI(cfg);
+  }
+
+  /* ==========================================================
+     5. TAGS
+     ========================================================== */
+  var tagWrap  = document.getElementById('tagWrap');
+  var tagInput = document.getElementById('fTagInput');
+  var tags     = [];
 
   function renderTags(){
     var chips = tagWrap.querySelectorAll('.tag-chip');
@@ -1376,12 +1479,15 @@ img{ max-width: 100%; display: block; }
   });
   tagWrap.addEventListener('click', function(){ tagInput.focus(); });
 
+  /* ==========================================================
+     6. DESCRIPTION AI TOGGLE
+     ========================================================== */
   var btnDescManual = document.getElementById('btnDescManual');
-  var btnDescAI     = document.getElementById('btnDescAI');
-  var descAIPanel   = document.getElementById('descAIPanel');
+  var btnDescAI      = document.getElementById('btnDescAI');
+  var descAIPanel    = document.getElementById('descAIPanel');
   var btnGenerateNow = document.getElementById('btnGenerateNow');
-  var fDescription  = document.getElementById('fDescription');
-  var descCharCount = document.getElementById('descCharCount');
+  var fDescription   = document.getElementById('fDescription');
+  var descCharCount  = document.getElementById('descCharCount');
 
   function setDescMode(mode){
     var isAI = mode === 'ai';
@@ -1438,21 +1544,32 @@ img{ max-width: 100%; display: block; }
     }, 900);
   });
 
+  /* ==========================================================
+     7. LIVE PHONE PREVIEW
+     ========================================================== */
   var pv = {
     banner: document.getElementById('pvBanner'),
-    bannerEmpty: document.getElementById('pvBannerEmpty'),
     icon: document.getElementById('pvIcon'),
     name: document.getElementById('pvName'),
     developer: document.getElementById('pvDeveloper'),
     version: document.getElementById('pvVersion'),
     category: document.getElementById('pvCategory'),
     size: document.getElementById('pvSize'),
+    downloads: document.getElementById('pvDownloads'),
     description: document.getElementById('pvDescription'),
     tags: document.getElementById('pvTags'),
     shots: document.getElementById('pvShots')
   };
   var pvIconDefaultSVG = pv.icon.innerHTML;
   var SHOT_PLACEHOLDER_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 16l-5-5-5 5-3-3-5 5"/></svg>';
+
+  function uploaderImageSrc(id){
+    var d = uploads[id];
+    if(!d) return null;
+    if(d.file) return d.dataUrl;
+    if(d.dbUrl && !d.removed) return d.dbUrl;
+    return null;
+  }
 
   function renderPreview(){
     var name = currentFieldValue('fName');
@@ -1461,15 +1578,16 @@ img{ max-width: 100%; display: block; }
     var category = currentFieldValue('fCategory');
     var description = fDescription.value.trim();
 
-    pv.name.textContent = name || 'New App Name';
+    pv.name.textContent = name || 'App Name';
     pv.developer.textContent = developer || 'Developer name';
     pv.version.textContent = version ? 'v' + version : 'v—';
     pv.category.textContent = category || 'Category';
+    pv.downloads.textContent = (originalDownloads || 0) + ' downloads';
 
-    // Live APK size calculation from uploaded file
     if(uploads.apk && uploads.apk.file){
-      var sizeInMb = (uploads.apk.file.size / (1024 * 1024)).toFixed(1) + ' MB';
-      pv.size.textContent = sizeInMb;
+      pv.size.textContent = (uploads.apk.file.size / (1024 * 1024)).toFixed(1) + ' MB';
+    } else if(loadedApkSizeLabel){
+      pv.size.textContent = loadedApkSizeLabel;
     } else {
       pv.size.textContent = 'Size —';
     }
@@ -1493,27 +1611,29 @@ img{ max-width: 100%; display: block; }
       pv.tags.appendChild(el);
     });
 
-    if(uploads.icon && uploads.icon.dataUrl){
-      pv.icon.innerHTML = '<img src="' + uploads.icon.dataUrl + '" alt="App icon">';
+    var iconSrc = uploaderImageSrc('icon');
+    if(iconSrc){
+      pv.icon.innerHTML = '<img src="' + iconSrc + '" alt="App icon">';
     } else {
       pv.icon.innerHTML = pvIconDefaultSVG;
     }
 
-    if(uploads.banner && uploads.banner.dataUrl){
-      pv.banner.innerHTML = '<img src="' + uploads.banner.dataUrl + '" alt="App banner">';
+    var bannerSrc = uploaderImageSrc('banner');
+    if(bannerSrc){
+      pv.banner.innerHTML = '<img src="' + bannerSrc + '" alt="App banner">';
     } else {
       pv.banner.innerHTML = '<div class="pv-banner__empty">Banner preview</div>';
     }
 
     var shotIds = ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'];
-    var activeShots = shotIds.filter(function(id){ return uploads[id] && uploads[id].dataUrl; });
+    var activeShots = shotIds.map(uploaderImageSrc).filter(Boolean);
 
     pv.shots.innerHTML = '';
     if(activeShots.length){
-      activeShots.forEach(function(id){
+      activeShots.forEach(function(src){
         var el = document.createElement('div');
         el.className = 'pv-shot';
-        el.innerHTML = '<img src="' + uploads[id].dataUrl + '" alt="Screenshot">';
+        el.innerHTML = '<img src="' + src + '" alt="Screenshot">';
         pv.shots.appendChild(el);
       });
     } else {
@@ -1541,6 +1661,9 @@ img{ max-width: 100%; display: block; }
     }
   });
 
+  /* ==========================================================
+     8. VALIDATION
+     ========================================================== */
   function setFieldError(id, hasError){
     var el = document.getElementById(id);
     if(!el) return;
@@ -1548,7 +1671,14 @@ img{ max-width: 100%; display: block; }
     if(field) field.classList.toggle('has-error', hasError);
   }
 
-  function validateForm(strict){
+  function uploaderIsFilled(id){
+    var d = uploads[id];
+    if(!d) return false;
+    if(d.file) return true;
+    return !!(d.dbUrl && !d.removed);
+  }
+
+  function validateForm(){
     var valid = true;
 
     var nameOk = currentFieldValue('fName').length > 0;
@@ -1559,18 +1689,16 @@ img{ max-width: 100%; display: block; }
     setFieldError('fVersion', !versionOk);
     if(!versionOk) valid = false;
 
-    if(strict){
-      var categoryOk = currentFieldValue('fCategory').length > 0;
-      setFieldError('fCategory', !categoryOk);
-      if(!categoryOk) valid = false;
+    var categoryOk = currentFieldValue('fCategory').length > 0;
+    setFieldError('fCategory', !categoryOk);
+    if(!categoryOk) valid = false;
 
-      var descOk = fDescription.value.trim().length > 0;
-      setFieldError('fDescription', !descOk);
-      if(!descOk) valid = false;
+    var descOk = fDescription.value.trim().length > 0;
+    setFieldError('fDescription', !descOk);
+    if(!descOk) valid = false;
 
-      if(!(uploads.icon && uploads.icon.dataUrl)) valid = false;
-      if(!(uploads.apk && uploads.apk.file)) valid = false;
-    }
+    if(!uploaderIsFilled('icon')) valid = false;
+    if(!uploaderIsFilled('apk')) valid = false;
 
     if(!valid){
       var firstError = appForm.querySelector('.has-error, .uploader:not(.has-file)');
@@ -1580,14 +1708,9 @@ img{ max-width: 100%; display: block; }
     return valid;
   }
 
-  var SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
-  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
-
-  var sb = (window.supabase && typeof window.supabase.createClient === 'function')
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    : null;
-
-  var BUCKETS = { icon: 'app-icons', apk: 'app-apks', banner: 'app-banners', screenshot: 'app-screenshots' };
+  /* ==========================================================
+     9. TOASTS & ALERTS
+     ========================================================== */
   var toastStack = document.getElementById('toastStack');
   var TOAST_SUCCESS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>';
   var TOAST_ERROR_ICON   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
@@ -1606,9 +1729,21 @@ img{ max-width: 100%; display: block; }
     window.setTimeout(function(){ if(el.parentNode) el.remove(); }, 6000);
   }
 
-  var submitAlert = document.getElementById('submitAlert');
+  var loadAlert      = document.getElementById('loadAlert');
+  var loadAlertTitle = document.getElementById('loadAlertTitle');
+  var loadAlertBody  = document.getElementById('loadAlertBody');
+  var submitAlert      = document.getElementById('submitAlert');
   var submitAlertTitle = document.getElementById('submitAlertTitle');
-  var submitAlertBody = document.getElementById('submitAlertBody');
+  var submitAlertBody  = document.getElementById('submitAlertBody');
+
+  loadAlert.classList.add('is-visible');
+
+  function showLoadAlert(title, body){
+    loadAlertTitle.textContent = title;
+    loadAlertBody.textContent = body;
+    loadAlert.classList.add('is-visible');
+  }
+  function hideLoadAlert(){ loadAlert.classList.remove('is-visible'); }
 
   function showSubmitAlert(title, message){
     submitAlertTitle.textContent = title;
@@ -1618,21 +1753,14 @@ img{ max-width: 100%; display: block; }
   }
   function hideSubmitAlert(){ submitAlert.classList.remove('is-visible'); }
 
-  function slugify(text){
-    return text
-      .toString()
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 80) || 'app';
-  }
-  function randomSuffix(){ return Math.random().toString(36).slice(2, 7); }
-
+  /* ==========================================================
+     10. STORAGE HELPERS
+     ========================================================== */
   function fileExtension(name){
     var parts = name.split('.');
     return parts.length > 1 ? parts.pop().toLowerCase() : 'bin';
   }
+  function randomSuffix(){ return Math.random().toString(36).slice(2, 7); }
 
   function uploadAsset(bucket, folder, file){
     var path = folder + '/' + Date.now() + '-' + randomSuffix() + '.' + fileExtension(file.name);
@@ -1644,167 +1772,264 @@ img{ max-width: 100%; display: block; }
       });
   }
 
+  function storagePathFromUrl(bucket, url){
+    if(!url) return null;
+    var marker = '/object/public/' + bucket + '/';
+    var idx = url.indexOf(marker);
+    if(idx === -1) return null;
+    return url.substring(idx + marker.length);
+  }
+
+  function deleteAssetByUrl(bucket, url){
+    var path = storagePathFromUrl(bucket, url);
+    if(!path) return Promise.resolve();
+    return sb.storage.from(bucket).remove([path]).catch(function(){ /* best-effort */ });
+  }
+
+  /* ==========================================================
+     11. LOAD APP DATA
+     ========================================================== */
+  var btnUpdate = document.getElementById('btnUpdate');
+  var btnDelete = document.getElementById('btnDelete');
+  var btnCancel = document.getElementById('btnCancel');
+
+  function populateForm(data){
+    document.getElementById('fName').value = data.name || '';
+    document.getElementById('fVersion').value = data.version || '';
+    document.getElementById('fDeveloper').value = data.developer || '';
+    document.getElementById('fPackage').value = data.package_name || '';
+
+    if(data.category){ document.getElementById('fCategory').value = data.category; }
+    if(data.android_version){ document.getElementById('fAndroid').value = data.android_version; }
+
+    fDescription.value = data.description || '';
+
+    if(Array.isArray(data.tags)){
+      tags = data.tags.slice();
+    } else if(typeof data.tags === 'string' && data.tags.trim()){
+      tags = data.tags.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+    } else {
+      tags = [];
+    }
+    renderTags();
+
+    originalDownloads = Number(data.downloads || 0);
+    loadedApkSizeLabel = data.apk_size || null;
+
+    setUploaderExisting('icon', data.icon_url);
+    setUploaderExisting('banner', data.banner_url);
+    setUploaderExisting('apk', data.apk_url);
+
+    var shots = Array.isArray(data.screenshots) ? data.screenshots : [];
+    ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'].forEach(function(id, i){
+      setUploaderExisting(id, shots[i] || null);
+    });
+
+    renderPreview();
+  }
+
+  function loadApp(){
+    if(!sb){
+      showLoadAlert('Supabase is not configured', 'Add your project URL and anon key at the top of the script.');
+      return;
+    }
+    if(!appId){
+      showLoadAlert('No app selected', 'This page needs an "id" query parameter, e.g. edit-app.html?id=xxxxxxxx');
+      statusPillText.textContent = 'No app selected';
+      return;
+    }
+
+    sb.from('apps').select('*').eq('id', appId).single()
+      .then(function(res){
+        if(res.error || !res.data){
+          throw (res.error || new Error('App not found.'));
+        }
+        populateForm(res.data);
+        appLoaded = true;
+        btnUpdate.disabled = false;
+        btnDelete.disabled = false;
+        hideLoadAlert();
+        markClean();
+      })
+      .catch(function(err){
+        var message = (err && err.message) ? err.message : 'Could not load this app. It may have been deleted.';
+        showLoadAlert('Could not load app', message);
+        statusPillText.textContent = 'Load failed';
+        showToast('error', 'Load failed', message);
+      });
+  }
+
+  /* ==========================================================
+     12. UPDATE APP
+     ========================================================== */
   var submitBtnLabels = {
-    btnSaveDraft: 'Save Draft',
-    btnPublish: 'Publish App'
+    btnUpdate: 'Update App',
+    btnDelete: 'Delete App'
   };
 
-  function setSubmitting(isSubmitting, activeBtnId, loadingLabel){
-    ['btnSaveDraft', 'btnPublish', 'btnReset'].forEach(function(id){
-      var btn = document.getElementById(id);
-      btn.disabled = isSubmitting;
-    });
+  function setSubmitting(isSubmitting, activeBtnId){
+    [btnUpdate, btnDelete, btnCancel].forEach(function(btn){ btn.disabled = isSubmitting; });
     var activeBtn = document.getElementById(activeBtnId);
-    if(!activeBtn) return;
-    activeBtn.classList.toggle('is-loading', isSubmitting);
-    var labelEl = activeBtn.querySelector('.btn-label');
-    if(labelEl) labelEl.textContent = isSubmitting ? loadingLabel : submitBtnLabels[activeBtnId];
+    if(activeBtn){
+      activeBtn.classList.toggle('is-loading', isSubmitting);
+      var labelEl = activeBtn.querySelector('.btn-label');
+      if(labelEl) labelEl.textContent = isSubmitting
+        ? (activeBtnId === 'btnDelete' ? 'Deleting…' : 'Updating…')
+        : submitBtnLabels[activeBtnId];
+    }
     document.getElementById('formPanel').classList.toggle('is-submitting', isSubmitting);
   }
 
-  function collectPayload(status, urls, slug){
-    // Automatically calculate size from uploaded APK file for database submission
-    var calculatedSize = (uploads.apk && uploads.apk.file) ? (uploads.apk.file.size / (1024 * 1024)).toFixed(1) + ' MB' : null;
+  function resolveUploaderForSave(id, bucket){
+    var d = uploads[id];
+    if(d.file){
+      var oldUrl = d.dbUrl;
+      return uploadAsset(bucket, id.replace(/[0-9]+$/, ''), d.file).then(function(newUrl){
+        if(oldUrl){ deleteAssetByUrl(bucket, oldUrl); }
+        return newUrl;
+      });
+    }
+    if(d.removed){
+      if(d.dbUrl){ deleteAssetByUrl(bucket, d.dbUrl); }
+      return Promise.resolve(null);
+    }
+    return Promise.resolve(d.dbUrl || null);
+  }
 
+  function collectPayload(finalUrls, finalApkSize){
     return {
       name: currentFieldValue('fName'),
-      
       version: currentFieldValue('fVersion'),
       developer: currentFieldValue('fDeveloper') || null,
       package_name: currentFieldValue('fPackage') || null,
       category: currentFieldValue('fCategory') || null,
       android_version: currentFieldValue('fAndroid') || null,
-      apk_size: calculatedSize,
-     
+      apk_size: finalApkSize,
+      tags: tags,
       description: fDescription.value.trim(),
-      icon_url: urls.icon || null,
-      banner_url: urls.banner || null,
-      apk_url: urls.apk || null,
-      screenshots: urls.screenshots,
-      downloads: 0,
-      
-      created_at: new Date().toISOString(),
+      icon_url: finalUrls.icon,
+      banner_url: finalUrls.banner,
+      apk_url: finalUrls.apk,
+      screenshots: finalUrls.screenshots,
+      downloads: originalDownloads,
       updated_at: new Date().toISOString()
     };
   }
 
-  function insertWithUniqueSlug(payload, attemptsLeft){
-    return sb.from('apps').insert([payload]).select().then(function(res){
-      if(res.error){
-        var isDupSlug = res.error.code === '23505' && attemptsLeft > 0;
-        if(isDupSlug){
-          payload.slug = payload.slug + '-' + randomSuffix();
-          return insertWithUniqueSlug(payload, attemptsLeft - 1);
-        }
-        throw res.error;
-      }
-      return res.data;
-    });
-  }
-
-  function submitApp(status, btnId, loadingLabel){
+  function updateApp(){
     if(!sb){
-      showSubmitAlert('Supabase is not configured', 'Add your project URL and anon key at the top of the script before saving or publishing.');
-      showToast('error', 'Supabase not configured', 'Set SUPABASE_URL and SUPABASE_ANON_KEY first.');
+      showSubmitAlert('Supabase is not configured', 'Add your project URL and anon key at the top of the script.');
       return;
     }
-
-    var strict = status === 'published';
-    if(!validateForm(strict)){
+    if(!appLoaded || !appId){
+      showSubmitAlert('App not loaded', 'Wait for the app data to finish loading before saving.');
+      return;
+    }
+    if(!validateForm()){
       markDirty();
-      showSubmitAlert(
-        strict ? 'Missing required fields' : 'App Name and Version are required',
-        strict
-          ? 'App Name, Version, Category, Description, App Icon and the APK file are all required to publish.'
-          : 'Fill in at least the App Name and Version to save a draft.'
-      );
+      showSubmitAlert('Missing required fields', 'App Name, Version, Category, Description, App Icon and the APK file are all required.');
       return;
     }
 
     hideSubmitAlert();
-    setSubmitting(true, btnId, loadingLabel);
+    setSubmitting(true, 'btnUpdate');
 
-    var slug = slugify(currentFieldValue('fName')) + '-' + randomSuffix();
-    var urls = { icon: null, banner: null, apk: null, screenshots: [] };
+    var finalUrls = { icon: null, banner: null, apk: null, screenshots: [] };
+    var finalApkSize = null;
 
-    var uploadChain = Promise.resolve();
+    var chain = Promise.resolve()
+      .then(function(){ return resolveUploaderForSave('icon', BUCKETS.icon).then(function(u){ finalUrls.icon = u; }); })
+      .then(function(){ return resolveUploaderForSave('banner', BUCKETS.banner).then(function(u){ finalUrls.banner = u; }); })
+      .then(function(){ return resolveUploaderForSave('apk', BUCKETS.apk).then(function(u){ finalUrls.apk = u; }); });
 
-    if(uploads.icon && uploads.icon.file){
-      uploadChain = uploadChain.then(function(){
-        return uploadAsset(BUCKETS.icon, 'icons', uploads.icon.file).then(function(url){ urls.icon = url; });
-      });
-    }
-    if(uploads.banner && uploads.banner.file){
-      uploadChain = uploadChain.then(function(){
-        return uploadAsset(BUCKETS.banner, 'banners', uploads.banner.file).then(function(url){ urls.banner = url; });
-      });
-    }
-    if(uploads.apk && uploads.apk.file){
-      uploadChain = uploadChain.then(function(){
-        return uploadAsset(BUCKETS.apk, 'apks', uploads.apk.file).then(function(url){ urls.apk = url; });
-      });
-    }
     ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'].forEach(function(id){
-      if(uploads[id] && uploads[id].file){
-        uploadChain = uploadChain.then(function(){
-          return uploadAsset(BUCKETS.screenshot, 'screenshots', uploads[id].file).then(function(url){ urls.screenshots.push(url); });
+      chain = chain.then(function(){
+        return resolveUploaderForSave(id, BUCKETS.screenshot).then(function(u){
+          if(u) finalUrls.screenshots.push(u);
         });
-      }
+      });
     });
 
-    uploadChain
+    chain
       .then(function(){
-        var payload = collectPayload(status, urls, slug);
-        return insertWithUniqueSlug(payload, 3);
+        if(uploads.apk.file){
+          finalApkSize = (uploads.apk.file.size / (1024 * 1024)).toFixed(1) + ' MB';
+        } else if(!uploads.apk.removed){
+          finalApkSize = loadedApkSizeLabel;
+        }
+        var payload = collectPayload(finalUrls, finalApkSize);
+        return sb.from('apps').update(payload).eq('id', appId).select();
       })
-      .then(function(){
-        setSubmitting(false, btnId, loadingLabel);
-        markSaved(status === 'published' ? 'Published' : 'Draft saved');
-        showToast(
-          'success',
-          status === 'published' ? 'App published' : 'Draft saved',
-          currentFieldValue('fName') + ' was ' + (status === 'published' ? 'published to the catalog.' : 'saved as a draft.')
-        );
+      .then(function(res){
+        if(res.error) throw res.error;
+        setSubmitting(false, 'btnUpdate');
+        markSaved('Updated');
+        showToast('success', 'App Updated Successfully', currentFieldValue('fName') + ' has been updated.');
+        window.setTimeout(function(){ window.location.href = REDIRECT_TARGET; }, 1100);
       })
       .catch(function(err){
-        setSubmitting(false, btnId, loadingLabel);
+        setSubmitting(false, 'btnUpdate');
         markDirty();
         var message = (err && err.message) ? err.message : 'Please check your connection and try again.';
-        showSubmitAlert('Could not save this app', message);
-        showToast('error', 'Save failed', message);
+        showSubmitAlert('Could not update this app', message);
+        showToast('error', 'Update failed', message);
       });
   }
 
-  document.getElementById('btnReset').addEventListener('click', function(){
-    if(!window.confirm('Reset the form? All fields and uploaded files will be cleared.')) return;
+  /* ==========================================================
+     13. DELETE APP
+     ========================================================== */
+  function deleteApp(){
+    if(!sb || !appLoaded || !appId) return;
+    if(!window.confirm('Delete this app permanently? This will remove the database record, icon, banner, screenshots and APK file. This action cannot be undone.')) return;
 
-    appForm.reset();
-    tags = [];
-    renderTags();
+    hideSubmitAlert();
+    setSubmitting(true, 'btnDelete');
 
-    UPLOADER_CONFIGS.forEach(function(cfg){
-      uploads[cfg.id] = null;
-      var root = appForm.querySelector('[data-uploader-id="' + cfg.id + '"]');
-      if(root) root.classList.remove('has-file', 'is-loading', 'is-dragover');
+    var deletions = [
+      deleteAssetByUrl(BUCKETS.icon, uploads.icon.dbUrl),
+      deleteAssetByUrl(BUCKETS.banner, uploads.banner.dbUrl),
+      deleteAssetByUrl(BUCKETS.apk, uploads.apk.dbUrl)
+    ];
+    ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'].forEach(function(id){
+      deletions.push(deleteAssetByUrl(BUCKETS.screenshot, uploads[id].dbUrl));
     });
 
-    document.querySelectorAll('.field.has-error').forEach(function(f){ f.classList.remove('has-error'); });
-    setDescMode('manual');
-    hideSubmitAlert();
-    markClean();
-    renderPreview();
+    Promise.all(deletions)
+      .then(function(){
+        return sb.from('apps').delete().eq('id', appId);
+      })
+      .then(function(res){
+        if(res.error) throw res.error;
+        setSubmitting(false, 'btnDelete');
+        showToast('success', 'App Deleted Successfully', currentFieldValue('fName') + ' has been removed from the catalog.');
+        window.setTimeout(function(){ window.location.href = REDIRECT_TARGET; }, 1100);
+      })
+      .catch(function(err){
+        setSubmitting(false, 'btnDelete');
+        var message = (err && err.message) ? err.message : 'Please check your connection and try again.';
+        showSubmitAlert('Could not delete this app', message);
+        showToast('error', 'Delete failed', message);
+      });
+  }
+
+  /* ==========================================================
+     14. BUTTON WIRING
+     ========================================================== */
+  btnUpdate.addEventListener('click', updateApp);
+  btnDelete.addEventListener('click', deleteApp);
+  btnCancel.addEventListener('click', function(){
+    var isDirty = statusPill.classList.contains('is-dirty');
+    if(isDirty && !window.confirm('Discard unsaved changes and go back?')) return;
+    window.location.href = REDIRECT_TARGET;
   });
 
-  document.getElementById('btnSaveDraft').addEventListener('click', function(){
-    submitApp('draft', 'btnSaveDraft', 'Saving…');
-  });
-
-  document.getElementById('btnPublish').addEventListener('click', function(){
-    submitApp('published', 'btnPublish', 'Publishing…');
-  });
-
+  /* ==========================================================
+     15. INIT
+     ========================================================== */
   renderTags();
   renderPreview();
+  loadApp();
 
 })();
 </script>
