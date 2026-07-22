@@ -26,10 +26,7 @@ const adminTrigger = document.getElementById("admin-trigger");
 // Helper Functions
 // ===============================
 
-function formatFileSize(bytes) {
-    if (!bytes) return "0 MB";
-    return (bytes / 1024 / 1024).toFixed(1) + " MB";
-}
+
 
 function escapeHTML(text){
     return String(text || "")
@@ -154,7 +151,7 @@ async function fetchFeaturedApps() {
                         <div class="flex flex-wrap gap-2 mb-6">
                             <span class="badge">⭐ ${app.rating || '4.9'}</span>
                             <span class="badge">⬇ ${app.downloads || '1M+'}</span>
-                          <span class="badge">📦 ${formatFileSize(app.size)}</span>
+                         <span class="badge">📦 ${app.apk_size || "Unknown Size"}</span>
                             <span class="badge bg-green-600 text-white">v${app.version || '1.0'}</span>
                         </div>
 
@@ -233,7 +230,7 @@ async function fetchApps() {
                     <div class="flex flex-wrap gap-2 mt-3">
                         <span class="badge">⭐ ${app.rating}</span>
                         <span class="badge">⬇ ${app.downloads}</span>
-                        <span class="badge">📦 ${formatFileSize(app.size)}</span>
+                       <span class="badge">📦 ${app.apk_size || "Unknown Size"}</span>
                     </div>
                     <p class="text-sm text-gray-600 mt-4 line-clamp-2">${escapeHTML(app.description)}</p>
                     <div class="flex gap-3 mt-5">
@@ -273,7 +270,7 @@ if (searchInput) {
                         <p class="text-sm text-gray-500">${escapeHTML(app.developer)}</p>
                         <div class="flex gap-2 mt-3">
                             <span class="badge">⭐ ${app.rating}</span>
-                            <span class="badge">${formatFileSize(app.size)}</span>
+                            <span class="badge">${app.apk_size || "Unknown Size"}</span>
                         </div>
                         <a href="${app.apk_url}" class="download-btn w-full text-center mt-4 block">Download</a>
                     </div>
@@ -340,7 +337,7 @@ document.querySelectorAll(".category-btn").forEach(btn => {
                         <div class="flex flex-wrap gap-2 mt-3">
                             <span class="badge">⭐ ${app.rating || '4.9'}</span>
                             <span class="badge">⬇ ${app.downloads || '0'}</span>
-                            <span class="badge">📦 ${formatFileSize(app.size)}</span>
+                           <span class="badge">📦 ${app.apk_size || "Unknown Size"}</span>
                         </div>
                         <p class="text-sm text-gray-600 mt-4 line-clamp-2">${escapeHTML(app.description)}</p>
                         <div class="flex gap-3 mt-5">
