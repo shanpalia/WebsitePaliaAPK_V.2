@@ -179,40 +179,98 @@
     <nav class="glass sticky top-0 z-50 border-b border-gray-200/80 py-3 transition-all duration-300">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
             
-            <!-- Logo Brand -->
-            <a href="index.html" class="flex items-center gap-3 group focus:outline-none" aria-label="PaliaAPK HUB Home">
+            <!-- Logo Brand with Hidden Admin Trigger (5 clicks in 2 seconds) -->
+            <div id="adminTriggerLogo" class="flex items-center gap-3 group focus:outline-none cursor-pointer" role="button" aria-label="PaliaAPK HUB Home">
                 <div class="gradient-bg w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg shadow-mint-600/20 group-hover:scale-105 transition-transform">
                     <span class="text-white font-black text-xl">P</span>
                 </div>
                 <div>
-                   <h1 id="adminTrigger" class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
+                    <h1 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
                         PaliaAPK <span class="text-mint-600">HUB</span>
                     </h1>
                     <p class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Android Store</p>
                 </div>
-            </a>
+            </div>
 
-            <!-- Search Bar -->
+            <!-- Search Bar with Autocomplete Dropdown -->
             <div class="hidden md:flex flex-1 max-w-lg mx-4 relative">
-                <div class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full w-full px-4 py-2.5 flex items-center">
+                <div class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full w-full px-4 py-2.5 flex items-center relative">
                     <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
                     <input type="text" id="searchInput" placeholder="Search apps, games, tools..." class="bg-transparent outline-none w-full ml-3 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400">
+                    <div id="searchAutocomplete" class="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700"></div>
                 </div>
             </div>
 
-            <!-- Right Actions & Controls -->
+            <!-- Right Actions & Controls: Notifications, Dark Mode, Profile/Login -->
             <div class="flex items-center gap-3">
+                
+                <!-- Notification Dropdown -->
+                <div class="relative">
+                    <button id="notificationToggleBtn" class="relative w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                        <i class="fa-solid fa-bell text-sm"></i>
+                        <span id="notificationBadge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow">2</span>
+                    </button>
+                    <div id="notificationDropdown" class="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-3">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 dark:border-gray-700">
+                            <h4 class="font-bold text-xs text-gray-900 dark:text-white uppercase tracking-wider">Notifications</h4>
+                            <span class="text-[10px] text-mint-600 dark:text-mint-400 font-bold cursor-pointer hover:underline" onclick="markNotificationsRead()">Mark read</span>
+                        </div>
+                        <div class="space-y-2 text-xs" id="notificationList">
+                            <div class="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 flex items-start gap-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-shield-check text-xs"></i></div>
+                                <div>
+                                    <p class="font-bold text-gray-800 dark:text-gray-200">Security Update</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">All APK files scanned with zero malware guarantee.</p>
+                                </div>
+                            </div>
+                            <div class="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 flex items-start gap-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-rocket text-xs"></i></div>
+                                <div>
+                                    <p class="font-bold text-gray-800 dark:text-gray-200">New Apps Added</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Nova AI and PaliaCraft Launcher updated.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dark Mode Toggle -->
                 <button id="darkModeToggle" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
                     <i class="fa-solid fa-moon dark:hidden"></i>
                     <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
                 </button>
                 
-                <div id="userArea">
+                <!-- Authentication & Profile Avatar Dropdown -->
+                <div class="relative" id="userArea">
                     <button id="loginBtn" class="px-4 h-10 rounded-xl bg-mint-600 hover:bg-mint-700 text-white font-bold text-xs transition shadow-md shadow-mint-600/20 flex items-center gap-2">
                         <i class="fa-solid fa-user"></i> Login
                     </button>
-                    <div id="profileBox" class="hidden flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
-                        <div id="profileAvatar" class="w-9 h-9 rounded-lg gradient-bg text-white flex items-center justify-center font-bold text-xs">SP</div>
+                    
+                    <div id="profileBox" class="hidden relative">
+                        <div id="profileAvatarBtn" class="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
+                            <div id="profileAvatar" class="w-9 h-9 rounded-lg gradient-bg text-white flex items-center justify-center font-bold text-xs shadow">SP</div>
+                        </div>
+                        
+                        <!-- Profile Dropdown Menu -->
+                        <div id="profileDropdown" class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-2 space-y-1">
+                            <a href="dashboard.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-user text-mint-600"></i> My Profile
+                            </a>
+                            <a href="downloads.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-download text-mint-600"></i> Downloads
+                            </a>
+                            <a href="favorites.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-heart text-mint-600"></i> Favorites
+                            </a>
+                            <a href="settings.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-gear text-mint-600"></i> Settings
+                            </a>
+                            <div class="border-t border-gray-100 dark:border-gray-700 pt-1 mt-1">
+                                <button id="logoutBtn" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition text-left">
+                                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -264,10 +322,45 @@
             </div>
         </section>
 
-        <!-- Apps Listing Section -->
+        <!-- Featured Collections Section -->
         <section class="mb-12">
             <div class="flex items-center justify-between mb-6">
-                <h3 id="sectionHeading" class="text-xl font-black tracking-tight text-gray-900 dark:text-white">All</h3>
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Featured Collections</h3>
+            </div>
+            <div id="featuredCollectionsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Injected via Supabase data -->
+            </div>
+        </section>
+
+        <!-- Top Charts Section -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Top Charts</h3>
+            </div>
+            <div id="topChartsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Injected via Supabase data -->
+            </div>
+        </section>
+
+        <!-- Recently Updated Section -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Recently Updated</h3>
+            </div>
+            <div id="recentlyUpdatedGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Injected via Supabase data -->
+            </div>
+        </section>
+
+        <!-- Apps Listing Section (Filtered by Category / Search) -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="sectionHeading" class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">All Apps</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="triggerShareWebsite()" class="px-3.5 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 dark:hover:bg-mint-900/30 text-gray-700 dark:text-gray-300 hover:text-mint-600 font-bold text-xs transition flex items-center gap-2 border border-gray-200 dark:border-gray-700">
+                        <i class="fa-solid fa-share-nodes"></i> Share Store
+                    </button>
+                </div>
             </div>
             <div id="appsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 <!-- Dynamic App Cards -->
@@ -279,7 +372,7 @@
     <!-- Footer -->
     <footer class="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 py-12 mt-12">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
                 <div>
                     <div class="flex items-center gap-3 mb-4">
                         <div class="gradient-bg w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm">P</div>
@@ -287,9 +380,12 @@
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Your ultimate destination for verified, secure, and fast Android app downloads.</p>
                     <div class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
-                        <a href="#" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition"><i class="fa-brands fa-telegram text-xs"></i></a>
-                        <a href="#" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition"><i class="fa-brands fa-discord text-xs"></i></a>
-                        <a href="#" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition"><i class="fa-brands fa-twitter text-xs"></i></a>
+                        <a href="https://t.me/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="Telegram"><i class="fa-brands fa-telegram text-xs"></i></a>
+                        <a href="https://github.com/ShanPalia" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="GitHub"><i class="fa-brands fa-github text-xs"></i></a>
+                        <a href="https://facebook.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="Facebook"><i class="fa-brands fa-facebook text-xs"></i></a>
+                        <a href="https://instagram.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="Instagram"><i class="fa-brands fa-instagram text-xs"></i></a>
+                        <a href="https://youtube.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="YouTube"><i class="fa-brands fa-youtube text-xs"></i></a>
+                        <a href="https://x.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="X"><i class="fa-brands fa-x-twitter text-xs"></i></a>
                     </div>
                 </div>
                 <div>
@@ -310,6 +406,13 @@
                     </ul>
                 </div>
                 <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">📤 Share Website</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Share PaliaAPK HUB with your friends and help them discover safe and verified Android APKs.</p>
+                    <button onclick="triggerShareWebsite()" class="w-full bg-mint-600 hover:bg-mint-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-md shadow-mint-600/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-share-nodes"></i> Share Website
+                    </button>
+                </div>
+                <div>
                     <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">Newsletter</h4>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Subscribe for latest verified updates & app releases.</p>
                     <form onsubmit="event.preventDefault(); alert('Subscribed successfully!');" class="flex gap-2">
@@ -318,8 +421,13 @@
                     </form>
                 </div>
             </div>
-            <div class="border-t border-gray-100 dark:border-gray-800 pt-6 text-center text-xs text-gray-400">
-                <p>&copy; 2026 PaliaAPK HUB. All rights reserved. • Built with White & Mint Green Theme</p>
+            
+            <div class="border-t border-gray-100 dark:border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+                <p>&copy; 2026 PaliaAPK HUB. All rights reserved. • Developed with ❤️ by <a href="https://github.com/ShanPalia" target="_blank" class="text-mint-600 dark:text-mint-400 font-bold hover:underline">ShanPalia</a></p>
+                <p class="flex items-center gap-1.5 font-medium">
+                    <span>👨‍💻 Developed by</span>
+                    <a href="https://github.com/ShanPalia" target="_blank" class="text-mint-600 dark:text-mint-400 font-bold hover:underline">ShanPalia</a>
+                </p>
             </div>
         </div>
     </footer>
@@ -348,8 +456,9 @@
 
         window.allAppsCache = [];
         window.currentCategory = 'All';
+        window.currentSearchQuery = '';
 
-        // Exact 10 requested categories with All included first
+        // Exact 10 requested categories + All
         const defaultCategoriesConfig = [
             { name: 'All', icon: 'fa-fire' },
             { name: 'AI', icon: 'fa-robot' },
@@ -379,6 +488,55 @@
             }
         });
 
+        // Hidden Admin Trigger Logic: 5 clicks on logo within 2 seconds
+        let logoClickCount = 0;
+        let logoClickTimer = null;
+        const adminTriggerLogo = document.getElementById('adminTriggerLogo');
+        adminTriggerLogo?.addEventListener('click', () => {
+            logoClickCount++;
+            if (logoClickCount === 1) {
+                logoClickTimer = setTimeout(() => {
+                    logoClickCount = 0;
+                }, 2000);
+            }
+            if (logoClickCount >= 5) {
+                clearTimeout(logoClickTimer);
+                logoClickCount = 0;
+                window.location.href = 'admin.html';
+            }
+        });
+
+        // Notifications Dropdown Toggle & Marking Read
+        const notificationToggleBtn = document.getElementById('notificationToggleBtn');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationBadge = document.getElementById('notificationBadge');
+
+        notificationToggleBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notificationDropdown?.classList.toggle('hidden');
+        });
+
+        window.markNotificationsRead = function() {
+            if (notificationBadge) notificationBadge.style.display = 'none';
+        };
+
+        // Profile Avatar Dropdown Toggle
+        const profileAvatarBtn = document.getElementById('profileAvatarBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        profileAvatarBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown?.classList.toggle('hidden');
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            notificationDropdown?.classList.add('hidden');
+            profileDropdown?.classList.add('hidden');
+            const autocomplete = document.getElementById('searchAutocomplete');
+            if (autocomplete) autocomplete.classList.add('hidden');
+        });
+
         // Initialize Data from Supabase
         async function initData() {
             if (!supabaseClient) {
@@ -398,26 +556,34 @@
 
         function loadFallbacks() {
             window.allAppsCache = [
-                { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300'], featured: true },
-                { id: 2, name: 'CyberShield Browser', category: 'Tools', downloads: '850K', rating: 4.8, size: '32 MB', version: 'v1.5', icon_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150', banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800', screenshots: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300'], featured: true },
-                { id: 3, name: 'Nova AI Assistant', category: 'AI', downloads: '2.5M', rating: 4.9, size: '64 MB', version: 'v3.0', icon_url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=150', banner_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', screenshots: ['https://images.unsplash.com/photo-1677442136019-21780efad99a?w=300'], featured: false }
+                { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300'], featured: true, top_chart: true, recently_updated: true },
+                { id: 2, name: 'CyberShield Browser', category: 'Tools', downloads: '850K', rating: 4.8, size: '32 MB', version: 'v1.5', icon_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150', banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800', screenshots: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300'], featured: true, top_chart: true, recently_updated: false },
+                { id: 3, name: 'Nova AI Assistant', category: 'AI', downloads: '2.5M', rating: 4.9, size: '64 MB', version: 'v3.0', icon_url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=150', banner_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', screenshots: ['https://images.unsplash.com/photo-1677442136019-21780efad99a?w=300'], featured: false, top_chart: true, recently_updated: true }
             ];
             renderPageData(window.allAppsCache);
         }
 
         function renderPageData(apps) {
-            renderHeroSlider(apps.filter(a => a.featured || a.is_featured).length > 0 ? apps.filter(a => a.featured || a.is_featured) : apps);
+            const featuredApps = apps.filter(a => a.featured || a.is_featured);
+            renderHeroSlider(featuredApps.length > 0 ? featuredApps : apps);
             renderCategoriesSection(apps);
-            filterAppsByCategory(window.currentCategory, false);
+            renderFeaturedCollections(apps);
+            renderTopCharts(apps);
+            renderRecentlyUpdated(apps);
+            filterAndRenderApps();
             setupCategoryScrollListeners();
+            setupLiveSearch();
         }
 
+        // Hero Slider with dynamic loop check (< 3 items disables loop)
         function renderHeroSlider(apps) {
             const wrapper = document.getElementById('featured-slider');
             if (!wrapper) return;
 
+            const shouldLoop = apps.length >= 3;
+
             wrapper.innerHTML = apps.map(app => {
-                const screenshots = app.screenshots || [app.banner_url || app.icon_url, app.icon_url, app.icon_url];
+                const screenshots = app.screenshots && app.screenshots.length > 0 ? app.screenshots : [app.banner_url || app.icon_url, app.icon_url, app.icon_url];
                 const screenshotsHtml = screenshots.slice(0, 3).map(img => `
                     <div class="w-24 h-44 sm:w-28 sm:h-52 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center p-1">
                         <img src="${img}" alt="Screenshot" class="w-full h-full hero-img-contain rounded-lg">
@@ -444,7 +610,7 @@
                                         <span>${app.downloads || '1M+ downloads'}</span>
                                     </p>
                                     <div class="pt-1">
-                                        <button onclick="window.location.href='app.html?id=${app.id}'" class="download-btn text-xs flex items-center gap-2">
+                                        <button onclick="handleDownloadClick(${app.id})" class="download-btn text-xs flex items-center gap-2">
                                             <i class="fa-solid fa-download"></i> Download (${app.size || '35 MB'})
                                         </button>
                                     </div>
@@ -460,7 +626,7 @@
 
             if (typeof Swiper !== 'undefined') {
                 new Swiper('.heroSwiper', {
-                    loop: true,
+                    loop: shouldLoop,
                     autoplay: { delay: 5000, disableOnInteraction: false },
                     pagination: { el: '.swiper-pagination', clickable: true },
                     navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
@@ -468,7 +634,7 @@
             }
         }
 
-        // Render Categories Section with Supabase app counts and 0 fallback states
+        // Render Categories Section
         window.renderCategoriesSection = function(appsArray) {
             const container = document.getElementById('categoriesContainer');
             if (!container) return;
@@ -522,58 +688,15 @@
             if (existingRipple) existingRipple.remove();
             card.appendChild(circle);
 
-            filterAppsByCategory(categoryName, true);
-        };
-
-        window.filterAppsByCategory = function(categoryName, updateUI = true) {
             window.currentCategory = categoryName;
-
-            if (updateUI && typeof window.allAppsCache !== 'undefined') {
-                window.renderCategoriesSection(window.allAppsCache);
-            }
-
-            if (typeof window.allAppsCache !== 'undefined') {
-                const filteredApps = categoryName === 'All' 
-                    ? window.allAppsCache 
-                    : window.allAppsCache.filter(app => app.category && app.category.toLowerCase() === categoryName.toLowerCase());
-                
-                const sectionHeading = document.getElementById('sectionHeading');
-                if (sectionHeading) sectionHeading.textContent = categoryName === 'All' ? 'All Apps' : categoryName;
-
-                const appsGrid = document.getElementById('appsGrid');
-                if (appsGrid) {
-                    if (filteredApps.length === 0) {
-                        appsGrid.innerHTML = `
-                            <div class="col-span-full py-16 text-center">
-                                <div class="w-16 h-16 bg-mint-50 dark:bg-mint-900/20 text-mint-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
-                                    <i class="fa-solid fa-box-open"></i>
-                                </div>
-                                <p class="text-sm font-bold text-gray-700 dark:text-gray-300">No apps available in this category.</p>
-                            </div>`;
-                    } else {
-                        appsGrid.innerHTML = filteredApps.map(app => `
-                            <div class="app-card p-3.5 flex flex-col justify-between">
-                                <div>
-                                    <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
-                                        <img src="${app.icon_url || ''}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
-                                    </div>
-                                    <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">${app.name}</h5>
-                                    <p class="text-[10px] text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
-                                </div>
-                                <button onclick="window.location.href='app.html?id=${app.id}'" class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">Install</button>
-                            </div>
-                        `).join('');
-                    }
-                }
-            }
+            renderCategoriesSection(window.allAppsCache);
+            filterAndRenderApps();
         };
 
-        // Smooth Category Scrolling with Arrows and Wheel
         window.scrollCategories = function(direction) {
             const container = document.getElementById('categoriesContainer');
             if (!container) return;
-            const scrollAmount = 300;
-            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+            container.scrollBy({ left: direction * 300, behavior: 'smooth' });
             setTimeout(updateCategoryArrowVisibility, 300);
         };
 
@@ -602,72 +725,236 @@
         function setupCategoryScrollListeners() {
             const container = document.getElementById('categoriesContainer');
             if (!container) return;
-
             container.addEventListener('scroll', updateCategoryArrowVisibility);
-            
-            // Mouse wheel horizontal scrolling for desktop
             container.addEventListener('wheel', (evt) => {
                 if (evt.deltaY !== 0) {
                     evt.preventDefault();
                     container.scrollLeft += evt.deltaY;
                 }
             }, { passive: false });
-
             window.addEventListener('resize', updateCategoryArrowVisibility);
         }
 
-        // Firebase Auth State UI
+        // Render Featured Collections
+        function renderFeaturedCollections(apps) {
+            const grid = document.getElementById('featuredCollectionsGrid');
+            if (!grid) return;
+            const items = apps.slice(0, 3);
+            grid.innerHTML = items.map(app => `
+                <div class="app-card p-4 flex items-center gap-4 cursor-pointer" onclick="window.location.href='app.html?id=${app.id}'">
+                    <div class="w-16 h-16 rounded-xl bg-gray-50 dark:bg-gray-800 p-2 flex items-center justify-center shrink-0">
+                        <img src="${app.icon_url}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-mint-600 dark:text-mint-400 bg-mint-50 dark:bg-mint-900/30 px-2 py-0.5 rounded-full">Collection</span>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white mt-1 truncate">${app.name}</h4>
+                        <p class="text-xs text-gray-400 mt-0.5">⭐ ${app.rating || '4.9'} • ${app.downloads || '1M+ downloads'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Top Charts
+        function renderTopCharts(apps) {
+            const grid = document.getElementById('topChartsGrid');
+            if (!grid) return;
+            const items = apps.slice(0, 3);
+            grid.innerHTML = items.map((app, index) => `
+                <div class="app-card p-4 flex items-center gap-4 cursor-pointer" onclick="window.location.href='app.html?id=${app.id}'">
+                    <span class="text-xl font-black text-mint-600 w-6 text-center">#${index + 1}</span>
+                    <div class="w-16 h-16 rounded-xl bg-gray-50 dark:bg-gray-800 p-2 flex items-center justify-center shrink-0">
+                        <img src="${app.icon_url}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white truncate">${app.name}</h4>
+                        <p class="text-xs text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Recently Updated
+        function renderRecentlyUpdated(apps) {
+            const grid = document.getElementById('recentlyUpdatedGrid');
+            if (!grid) return;
+            const items = apps.slice(0, 6);
+            grid.innerHTML = items.map(app => `
+                <div class="app-card p-3.5 flex flex-col justify-between">
+                    <div>
+                        <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                            <img src="${app.icon_url || ''}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                        </div>
+                        <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">${app.name}</h5>
+                        <p class="text-[10px] text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
+                    </div>
+                    <button onclick="handleDownloadClick(${app.id})" class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">Install</button>
+                </div>
+            `).join('');
+        }
+
+        // Filter and Render Apps with live search highlight
+        window.filterAndRenderApps = function() {
+            const category = window.currentCategory || 'All';
+            const query = (window.currentSearchQuery || '').toLowerCase().trim();
+
+            let filtered = window.allAppsCache || [];
+
+            if (category !== 'All') {
+                filtered = filtered.filter(app => app.category && app.category.toLowerCase() === category.toLowerCase());
+            }
+
+            if (query) {
+                filtered = filtered.filter(app => (app.name && app.name.toLowerCase().includes(query)) || (app.category && app.category.toLowerCase().includes(query)));
+            }
+
+            const sectionHeading = document.getElementById('sectionHeading');
+            if (sectionHeading) {
+                sectionHeading.textContent = query ? `Search: "${query}"` : (category === 'All' ? 'All Apps' : category);
+            }
+
+            const appsGrid = document.getElementById('appsGrid');
+            if (!appsGrid) return;
+
+            if (filtered.length === 0) {
+                appsGrid.innerHTML = `
+                    <div class="col-span-full py-16 text-center">
+                        <div class="w-16 h-16 bg-mint-50 dark:bg-mint-900/20 text-mint-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                            <i class="fa-solid fa-box-open"></i>
+                        </div>
+                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300">No apps available in this category.</p>
+                    </div>`;
+            } else {
+                appsGrid.innerHTML = filtered.map(app => {
+                    let displayName = app.name;
+                    if (query) {
+                        const regex = new RegExp(`(${query})`, 'gi');
+                        displayName = app.name.replace(regex, `<span class="bg-mint-200 dark:bg-mint-900/60 text-mint-800 dark:text-mint-200 px-0.5 rounded">$1</span>`);
+                    }
+
+                    return `
+                        <div class="app-card p-3.5 flex flex-col justify-between">
+                            <div>
+                                <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                                    <img src="${app.icon_url || ''}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                                </div>
+                                <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">${displayName}</h5>
+                                <p class="text-[10px] text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
+                            </div>
+                            <button onclick="handleDownloadClick(${app.id})" class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">Install</button>
+                        </div>
+                    `;
+                }).join('');
+            }
+        };
+
+        // Live Search & Autocomplete
+        function setupLiveSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const autocomplete = document.getElementById('searchAutocomplete');
+            if (!searchInput || !autocomplete) return;
+
+            searchInput.addEventListener('input', (e) => {
+                const q = e.target.value;
+                window.currentSearchQuery = q;
+                filterAndRenderApps();
+
+                if (!q.trim()) {
+                    autocomplete.classList.add('hidden');
+                    return;
+                }
+
+                const matches = (window.allAppsCache || []).filter(app => app.name.toLowerCase().includes(q.toLowerCase()) || app.category.toLowerCase().includes(q.toLowerCase())).slice(0, 5);
+
+                if (matches.length === 0) {
+                    autocomplete.classList.add('hidden');
+                    return;
+                }
+
+                autocomplete.innerHTML = matches.map(app => `
+                    <div onclick="window.location.href='app.html?id=${app.id}'" class="p-3 flex items-center gap-3 hover:bg-mint-50 dark:hover:bg-gray-700/50 cursor-pointer transition">
+                        <img src="${app.icon_url}" class="w-9 h-9 rounded-lg hero-img-contain bg-gray-100 dark:bg-gray-700 p-1">
+                        <div>
+                            <h5 class="font-bold text-xs text-gray-900 dark:text-white">${app.name}</h5>
+                            <p class="text-[10px] text-gray-400">${app.category} • ⭐ ${app.rating || '4.9'}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                autocomplete.classList.remove('hidden');
+            });
+        }
+
+        // Download Click Logic: Guests redirected to user.html with redirect back
+        window.handleDownloadClick = function(appId) {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    window.location.href = `app.html?id=${appId}`;
+                } else {
+                    localStorage.setItem('redirect_after_login', `app.html?id=${appId}`);
+                    window.location.href = 'user.html';
+                }
+            });
+        };
+
+        // Share Website Feature (Native Android API, Desktop Clipboard, Fallback Dialog)
+        window.triggerShareWebsite = function() {
+            const shareData = {
+                title: 'PaliaAPK HUB',
+                text: 'Download Safe & Verified Android APKs from PaliaAPK HUB.',
+                url: 'https://shanpalia.github.io/WebsitePaliaAPK_V.2/'
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData).catch(() => {});
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareData.url).then(() => {
+                    alert('Website link copied to clipboard!');
+                }).catch(() => {
+                    prompt('Copy link:', shareData.url);
+                });
+            } else {
+                prompt('Copy link:', shareData.url);
+            }
+        };
+
+        // Firebase Auth State UI & Avatar Management
         auth.onAuthStateChanged((user) => {
             const loginBtn = document.getElementById('loginBtn');
             const profileBox = document.getElementById('profileBox');
             const profileAvatar = document.getElementById('profileAvatar');
+            const logoutBtn = document.getElementById('logoutBtn');
+
             if (user) {
                 loginBtn?.classList.add('hidden');
                 profileBox?.classList.remove('hidden');
                 const name = user.displayName || user.email.split('@')[0];
                 if (profileAvatar) profileAvatar.textContent = name.substring(0, 2).toUpperCase();
-                profileBox.onclick = () => window.location.href = 'dashboard.html';
+                
+                if (logoutBtn) {
+                    logoutBtn.onclick = () => {
+                        auth.signOut().then(() => {
+                            window.location.href = 'index.html';
+                        });
+                    };
+                }
+
+                // Check if returning from login redirect
+                const redirectUrl = localStorage.getItem('redirect_after_login');
+                if (redirectUrl) {
+                    localStorage.removeItem('redirect_after_login');
+                    window.location.href = redirectUrl;
+                }
             } else {
                 loginBtn?.classList.remove('hidden');
                 profileBox?.classList.add('hidden');
-                if (loginBtn) loginBtn.onclick = () => window.location.href = 'user.html';
+                if (loginBtn) {
+                    loginBtn.onclick = () => {
+                        window.location.href = 'user.html';
+                    };
+                }
             }
         });
-// ===== Hidden Admin Trigger =====
 
-let adminClickCount = 0;
-let adminClickTimer = null;
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    const adminTrigger = document.getElementById("adminTrigger");
-
-    if (!adminTrigger) return;
-
-    let adminClickCount = 0;
-    let adminClickTimer;
-
-    adminTrigger.addEventListener("click", () => {
-
-        adminClickCount++;
-
-        clearTimeout(adminClickTimer);
-
-        adminClickTimer = setTimeout(() => {
-
-            adminClickCount = 0;
-
-        }, 2000);
-
-        if (adminClickCount === 5) {
-
-            window.location.href = "admin.html";
-
-        }
-
-    });
-
-});
         document.addEventListener('DOMContentLoaded', initData);
     </script>
 </body>
