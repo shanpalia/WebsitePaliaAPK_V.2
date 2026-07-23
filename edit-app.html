@@ -1767,23 +1767,40 @@ img{ max-width: 100%; display: block; }
     document.getElementById('formPanel').classList.toggle('is-submitting', isSubmitting);
   }
 
-  function resolveUploaderForSave(id, bucket){
-    var folder = id.replace(/[0-9]+$/, '');
+function resolveUploaderForSave(id, bucket){
+    var d = uploads[id];
 
-if (id === "apk") {
-    folder = "apks";   // APK hamesha apks folder me upload hoga
-}
+    if (d.file) {
 
-return uploadAsset(bucket, folder, d.file)
-        return newUrl;
-      });
+        var oldUrl = d.dbUrl;
+
+        var folder = id.replace(/[0-9]+$/, '');
+
+        // APK hamesha apk folder me upload hogi
+        if (bucket === BUCKETS.apk) {
+            folder = "apk";
+        }
+
+        return uploadAsset(bucket, folder, d.file)
+            .then(function(newUrl){
+
+                if (oldUrl) {
+                    deleteAssetByUrl(bucket, oldUrl);
+                }
+
+                return newUrl;
+            });
     }
-    if(d.removed){
-      if(d.dbUrl){ deleteAssetByUrl(bucket, d.dbUrl); }
-      return Promise.resolve(null);
+
+    if (d.removed) {
+        if (d.dbUrl) {
+            deleteAssetByUrl(bucket, d.dbUrl);
+        }
+        return Promise.resolve(null);
     }
+
     return Promise.resolve(d.dbUrl || null);
-  }
+}
 
   function collectPayload(finalUrls, finalApkSize){
     return {
