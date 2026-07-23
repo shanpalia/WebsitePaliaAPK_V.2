@@ -356,6 +356,38 @@ document.querySelectorAll(".category-btn").forEach(btn => {
 // ===============================
 
 document.addEventListener("DOMContentLoaded", () => {
+
     fetchFeaturedApps();
     fetchApps();
+
+    auth.onAuthStateChanged(function(user){
+
+        const loginBtn = document.getElementById("loginBtn");
+        const profileBox = document.getElementById("profileBox");
+
+        if(user){
+
+            loginBtn.classList.add("hidden");
+            profileBox.classList.remove("hidden");
+
+            document.getElementById("profileName").textContent =
+                user.displayName || user.email.split("@")[0];
+
+            const avatar =
+                (user.displayName || user.email)
+                .substring(0,2)
+                .toUpperCase();
+
+            document.getElementById("profileAvatar").textContent =
+                avatar;
+
+        }else{
+
+            loginBtn.classList.remove("hidden");
+            profileBox.classList.add("hidden");
+
+        }
+
+    });
+
 });
