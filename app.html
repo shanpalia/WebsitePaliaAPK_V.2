@@ -2,6 +2,8 @@
 <html lang="hi" class="h-full">
 <head>
     <meta charset="UTF-8">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">PaliaAPK HUB</title>
     <meta id="metaDesc" name="description" content="Download latest APKs safely on PaliaAPK HUB.">
@@ -255,6 +257,21 @@
 
     <!-- SUPABASE CLIENT & CORE LOGIC -->
     <script>
+        const firebaseConfig = {
+  apiKey: "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",
+  authDomain: "shanpalia-apk-hub.firebaseapp.com",
+  projectId: "shanpalia-apk-hub",
+  storageBucket: "shanpalia-apk-hub.firebasestorage.app",
+  messagingSenderId: "270953807883",
+  appId: "1:270953807883:web:c900f4409938f16477870e",
+  measurementId: "G-7BMQEGPY8C"
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+const auth = firebase.auth();
         const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -315,8 +332,30 @@
                 document.getElementById('appSize').textContent = app.apk_size || 'Varies';
                 document.getElementById('appVersion').textContent = app.version || '1.0';
 
-                // Download Button linkage to download.html?id=APP_ID
-                document.getElementById('downloadBtn').href = `download.html?id=${app.id}`;
+               // Download Button
+
+const downloadBtn = document.getElementById("downloadBtn");
+
+downloadBtn.addEventListener("click", function (e) {
+
+    e.preventDefault();
+
+   auth.onAuthStateChanged(function(user){
+
+        if(user){
+
+            window.location.href = `download.html?id=${app.id}`;
+
+        }else{
+
+            window.location.href =
+            `user.html?redirect=${encodeURIComponent(`download.html?id=${app.id}`)}`;
+
+        }
+
+    });
+
+});
 
                 // Description
                 document.getElementById('appDescription').textContent = app.description || 'No description available.';
