@@ -940,24 +940,43 @@ var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
   }
 
   function loadApp(id){
-    showOnly(stateLoading);
+  showOnly(stateLoading);
 
-    sb.from('apps').select('*').eq('id', id).single()
-      .then(function(res){
-        if(res.error || !res.data){
-          showOnly(stateNotFound);
-          return;
-        }
-        currentApp = res.data;
-        renderAppDetails(currentApp);
-        showOnly(stateLoaded);
-        renderAuthGate();
-      })
-      .catch(function(){
+  console.log("URL App ID:", id);
+
+  sb.from('apps')
+    .select('*')
+    .eq('id', id)
+    .then(function(res){
+
+      console.log("Supabase Response:", res);
+
+      if(res.error){
+        console.error("Supabase Error:", res.error);
         showOnly(stateNotFound);
-      });
-  }
+        return;
+      }
 
+      if(!res.data || res.data.length === 0){
+        console.error("No app found");
+        showOnly(stateNotFound);
+        return;
+      }
+
+      currentApp = res.data[0];
+
+      console.log("Current App:", currentApp);
+
+      renderAppDetails(currentApp);
+      showOnly(stateLoaded);
+      renderAuthGate();
+
+    })
+    .catch(function(err){
+      console.error(err);
+      showOnly(stateNotFound);
+    });
+}
   /* ============================================================
      FIREBASE AUTH GATE — no guest download
      ============================================================ */
