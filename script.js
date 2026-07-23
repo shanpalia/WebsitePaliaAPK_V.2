@@ -13,7 +13,25 @@ const SUPABASE_URL = "https://ralinnuegsbuvlhwpzln.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// ===============================
+// Firebase Authentication
+// ===============================
 
+const firebaseConfig = {
+    apiKey: "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",
+    authDomain: "shanpalia-apk-hub.firebaseapp.com",
+    projectId: "shanpalia-apk-hub",
+    storageBucket: "shanpalia-apk-hub.firebasestorage.app",
+    messagingSenderId: "270953807883",
+    appId: "1:270953807883:web:c900f4409938f16477870e",
+    measurementId: "G-7BMQEGPY8C"
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+const auth = firebase.auth();
 // ===============================
 // Global Elements
 // ===============================
@@ -360,26 +378,29 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchFeaturedApps();
     fetchApps();
 
-    auth.onAuthStateChanged(function(user){
+    const loginBtn = document.getElementById("loginBtn");
+    const profileBox = document.getElementById("profileBox");
 
-        const loginBtn = document.getElementById("loginBtn");
-        const profileBox = document.getElementById("profileBox");
+    // Login button
+    if (loginBtn) {
+        loginBtn.addEventListener("click", function () {
+            location.href = "download.html";
+        });
+    }
+
+    auth.onAuthStateChanged(function(user){
 
         if(user){
 
             loginBtn.classList.add("hidden");
             profileBox.classList.remove("hidden");
 
-            document.getElementById("profileName").textContent =
-                user.displayName || user.email.split("@")[0];
+            const name = user.displayName || user.email.split("@")[0];
 
-            const avatar =
-                (user.displayName || user.email)
-                .substring(0,2)
-                .toUpperCase();
+            document.getElementById("profileName").textContent = name;
 
             document.getElementById("profileAvatar").textContent =
-                avatar;
+                name.substring(0,2).toUpperCase();
 
         }else{
 
