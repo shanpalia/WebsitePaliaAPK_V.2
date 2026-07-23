@@ -142,27 +142,28 @@
             background-color: rgba(0,0,0,0.02);
         }
 
-        /* Play Store Category Chip Styles & Ripple Effect */
-        .category-chip {
+        /* Play Store Category Card Styles & Ripple Effect */
+        .category-card {
             position: relative;
             overflow: hidden;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
-        .category-chip:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.15);
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(22, 163, 74, 0.12);
+            border-color: #bbf7d0;
         }
-        .ripple {
+        .category-ripple {
             position: absolute;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.5);
             transform: scale(0);
-            animation: ripple-anim 0.6s linear;
+            animation: category-ripple-anim 0.6s linear;
             pointer-events: none;
         }
-        @keyframes ripple-anim {
+        @keyframes category-ripple-anim {
             to {
                 transform: scale(4);
                 opacity: 0;
@@ -231,13 +232,23 @@
             </div>
         </section>
 
-        <!-- Sticky Professional Play Store Style Categories System -->
-        <section class="sticky top-[65px] z-40 bg-white/90 dark:bg-[#0b0f19]/95 backdrop-blur-md py-4 mb-6 transition-all border-b border-gray-100 dark:border-gray-800/80">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-sm font-black tracking-tight uppercase text-gray-400 dark:text-gray-500">Explore Categories</h3>
+        <!-- Categories Section (Placed directly below Hero Slider and above Apps/Featured Collections) -->
+        <section class="mb-12" id="categoriesSection">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Categories</h3>
             </div>
-            <div id="categoriesContainer" class="flex sm:flex-wrap items-center gap-2.5 overflow-x-auto sm:overflow-x-visible no-scrollbar py-1">
-                <!-- Dynamically injected category chips -->
+            
+            <!-- Responsive Container: Mobile horizontal scroll/snap, Tablet 4 cols, Desktop 5 cols x 2 rows (10 items total) -->
+            <div id="categoriesContainer" class="grid grid-flow-col auto-cols-[42%] sm:auto-cols-[28%] md:flex md:grid md:grid-cols-5 gap-3.5 overflow-x-auto md:overflow-x-visible no-scrollbar pb-3 snap-x snap-mandatory">
+                <!-- Dynamically injected via JavaScript -->
+            </div>
+
+            <!-- View All Categories CTA Button -->
+            <div class="mt-6 text-center">
+                <a href="category.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 dark:hover:bg-mint-900/30 text-gray-800 dark:text-gray-200 hover:text-mint-600 dark:hover:text-mint-400 font-bold text-xs transition border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <span>View All Categories</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
             </div>
         </section>
 
@@ -254,16 +265,59 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 py-8 mt-12 text-center text-xs text-gray-500">
-        <p>&copy; 2026 PaliaAPK HUB. All rights reserved. • Built with White & Mint Theme</p>
+    <footer class="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 py-12 mt-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="gradient-bg w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm">P</div>
+                        <span class="font-black text-base text-gray-900 dark:text-white">PaliaAPK HUB</span>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Your ultimate destination for verified, secure, and fast Android app downloads.</p>
+                    <div class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                        <a href="#" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition"><i class="fa-brands fa-telegram text-xs"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition"><i class="fa-brands fa-discord text-xs"></i></a>
+                        <a href="#" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition"><i class="fa-brands fa-twitter text-xs"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">Quick Links</h4>
+                    <ul class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                        <li><a href="index.html" class="hover:text-mint-600 transition">Home</a></li>
+                        <li><a href="category.html" class="hover:text-mint-600 transition">Categories</a></li>
+                        <li><a href="top-charts.html" class="hover:text-mint-600 transition">Top Charts</a></li>
+                        <li><a href="dmca.html" class="hover:text-mint-600 transition">DMCA Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">Legal & Safety</h4>
+                    <ul class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                        <li><a href="privacy.html" class="hover:text-mint-600 transition">Privacy Policy</a></li>
+                        <li><a href="terms.html" class="hover:text-mint-600 transition">Terms of Service</a></li>
+                        <li><a href="security.html" class="hover:text-mint-600 transition">Security Check</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">Newsletter</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Subscribe for latest verified updates & app releases.</p>
+                    <form onsubmit="event.preventDefault(); alert('Subscribed successfully!');" class="flex gap-2">
+                        <input type="email" placeholder="Your email..." required class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-xl text-xs w-full outline-none text-gray-800 dark:text-gray-200">
+                        <button type="submit" class="bg-mint-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-mint-700 transition">Join</button>
+                    </form>
+                </div>
+            </div>
+            <div class="border-t border-gray-100 dark:border-gray-800 pt-6 text-center text-xs text-gray-400">
+                <p>&copy; 2026 PaliaAPK HUB. All rights reserved. • Built with White & Mint Green Theme</p>
+            </div>
+        </div>
     </footer>
 
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-    <!-- Script implementing Default + Supabase merged categories & precise app counts -->
+    <!-- Main Logic Script -->
     <script type="module">
-        // Firebase Config (Preserved)
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",
             authDomain: "shanpalia-apk-hub.firebaseapp.com",
@@ -275,86 +329,27 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // Supabase Client (Credentials preserved)
-        const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+        // Supabase Client
+        const SUPABASE_URL = 'https://your-supabase-url.supabase.co';
+        const SUPABASE_KEY = 'your-supabase-anon-key';
         const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-        let allAppsCache = [];
-        let currentCategory = 'All';
+        window.allAppsCache = [];
+        window.currentCategory = 'All';
 
-        const defaultCategoriesList = [
-            'All',
-            'Featured',
-            'Trending',
-            'New Apps',
-            'Recently Updated',
-            'Top Charts',
-            'AI',
-            'Social',
-            'Games',
-           
-            'Music',
-            'Video Players',
-            'Photography',
-            
-            'Education',
-            'Business',
-            
-            'Shopping',
-           
-            'Health',
-            'Books',
-            'Entertainment',
-            'Lifestyle',
-            
-            'Security',
-            'File Manager',
-            
-            'Productivity',
-            'Utilities',
-            'Developer'
+        // Exact 10 default requested categories with matching FontAwesome icons
+        const defaultCategoriesConfig = [
+            { name: 'AI', icon: 'fa-robot' },
+            { name: 'Social', icon: 'fa-comments' },
+            { name: 'Games', icon: 'fa-gamepad' },
+            { name: 'Tools', icon: 'fa-screwdriver-wrench' },
+            { name: 'Music', icon: 'fa-music' },
+            { name: 'Video', icon: 'fa-play' },
+            { name: 'Photography', icon: 'fa-camera' },
+            { name: 'Education', icon: 'fa-graduation-cap' },
+            { name: 'Business', icon: 'fa-briefcase' },
+            { name: 'Health', icon: 'fa-heart-pulse' }
         ];
-
-        // Category Icon Mapping helper
-        const categoryIcons = {
-            'All': 'fa-border-all',
-            'Featured': 'fa-fire',
-            'Trending': 'fa-star',
-            'New Apps': 'fa-wand-magic-sparkles',
-            'Recently Updated': 'fa-rotate',
-            'Top Charts': 'fa-trophy',
-            'AI': 'fa-robot',
-            'Social': 'fa-comments',
-            'Games': 'fa-gamepad',
-            'Tools': 'fa-screwdriver-wrench',
-            'Music': 'fa-music',
-            'Video Players': 'fa-play',
-            'Photography': 'fa-camera',
-            'Personalization': 'fa-palette',
-            'Education': 'fa-graduation-cap',
-            'Business': 'fa-briefcase',
-            'Finance': 'fa-wallet',
-            'Shopping': 'fa-cart-shopping',
-            'Maps': 'fa-map-location-dot',
-            'Travel': 'fa-car',
-            'Food & Drink': 'fa-burger',
-            'Health': 'fa-heart-pulse',
-            'Books': 'fa-book-open',
-            'Entertainment': 'fa-clapperboard',
-            'Lifestyle': 'fa-house',
-            'News': 'fa-newspaper',
-            'Sports': 'fa-futbol',
-            'Kids': 'fa-child',
-            'Weather': 'fa-cloud-sun',
-            'Security': 'fa-shield-halved',
-            'File Manager': 'fa-folder-open',
-            'Cloud Storage': 'fa-cloud',
-            'Communication': 'fa-phone',
-            'Productivity': 'fa-bolt',
-            'Utilities': 'fa-calculator',
-            'Developer': 'fa-code'
-        };
 
         // Dark Mode Setup
         const darkModeToggle = document.getElementById('darkModeToggle');
@@ -380,8 +375,8 @@
             try {
                 const { data: apps, error } = await supabaseClient.from('apps').select('*');
                 if (error) throw error;
-                allAppsCache = apps || [];
-                renderPageData(allAppsCache);
+                window.allAppsCache = apps || [];
+                renderPageData(window.allAppsCache);
             } catch (err) {
                 console.warn('Supabase fallback invoked:', err);
                 loadFallbacks();
@@ -389,18 +384,18 @@
         }
 
         function loadFallbacks() {
-            allAppsCache = [
+            window.allAppsCache = [
                 { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300', 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300'], featured: true },
                 { id: 2, name: 'CyberShield Browser', category: 'Tools', downloads: '850K', rating: 4.8, size: '32 MB', version: 'v1.5', icon_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150', banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800', screenshots: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300', 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=300'], featured: true },
                 { id: 3, name: 'Nova AI Assistant', category: 'AI', downloads: '2.5M', rating: 4.9, size: '64 MB', version: 'v3.0', icon_url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=150', banner_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', screenshots: ['https://images.unsplash.com/photo-1677442136019-21780efad99a?w=300'], featured: false }
             ];
-            renderPageData(allAppsCache);
+            renderPageData(window.allAppsCache);
         }
 
         function renderPageData(apps) {
             renderHeroSlider(apps.filter(a => a.featured || a.is_featured).length > 0 ? apps.filter(a => a.featured || a.is_featured) : apps);
-            renderCategories(apps);
-            filterByCategory(currentCategory, false);
+            renderCategoriesSection(apps);
+            filterAppsByCategory(window.currentCategory, false);
         }
 
         function renderHeroSlider(apps) {
@@ -459,136 +454,98 @@
             }
         }
 
-        // Merge default categories with Supabase categories, preserving all defaults and displaying app counts (including 0)
-        function renderCategories(apps) {
+        // Render Categories Section with Supabase data merge and 0 fallback counts
+        window.renderCategoriesSection = function(appsArray) {
             const container = document.getElementById('categoriesContainer');
             if (!container) return;
 
-            const dbCategories = [...new Set(apps.map(a => a.category).filter(Boolean))];
-            
-            // Merge defaults with any unique Supabase categories automatically appended
-            const mergedCategories = [...defaultCategoriesList];
-            dbCategories.forEach(cat => {
-                if (!mergedCategories.includes(cat)) {
-                    mergedCategories.push(cat);
-                }
-            });
+            container.innerHTML = defaultCategoriesConfig.map(catConfig => {
+                const matchedCount = (appsArray || []).filter(a => a.category && a.category.toLowerCase() === catConfig.name.toLowerCase()).length;
+                const isSelected = window.currentCategory.toLowerCase() === catConfig.name.toLowerCase();
 
-            container.innerHTML = mergedCategories.map(cat => {
-                let count = 0;
-                if (cat === 'All') {
-                    count = apps.length;
-                } else if (cat === 'Featured') {
-                    count = apps.filter(a => a.featured || a.is_featured).length;
-                } else if (cat === 'Trending') {
-                    count = apps.filter(a => parseFloat(a.rating) >= 4.8).length;
-                } else if (cat === 'New Apps') {
-                    count = apps.filter(a => a.version && a.version.includes('1')).length;
-                } else if (cat === 'Recently Updated') {
-                    count = apps.filter(a => a.updated_at || (a.version && a.version.includes('2'))).length;
-                } else if (cat === 'Top Charts') {
-                    count = apps.filter(a => parseFloat(a.rating) >= 4.9).length;
-                } else {
-                    count = apps.filter(a => a.category === cat).length;
-                }
+                const cardClasses = isSelected
+                    ? "category-card snap-start p-4 rounded-2xl bg-mint-600 text-white shadow-lg shadow-mint-600/25 flex flex-col items-center justify-center gap-2 cursor-pointer transform -translate-y-1"
+                    : "category-card snap-start p-4 rounded-2xl bg-white dark:bg-gray-800/90 hover:bg-mint-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-gray-700/80 flex flex-col items-center justify-center gap-2 cursor-pointer shadow-sm";
 
-                const iconClass = categoryIcons[cat] || 'fa-folder';
-                const isSelected = cat === currentCategory;
+                const iconBoxClasses = isSelected
+                    ? "w-11 h-11 rounded-xl bg-white/20 text-white flex items-center justify-center text-base"
+                    : "w-11 h-11 rounded-xl bg-mint-50 dark:bg-mint-900/40 text-mint-600 dark:text-mint-400 flex items-center justify-center text-base";
 
-                const chipClass = isSelected
-                    ? "category-chip bg-mint-600 text-white shadow-md shadow-mint-600/20 px-4 py-2 rounded-full font-bold text-xs whitespace-nowrap flex items-center gap-2 cursor-pointer"
-                    : "category-chip bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-full font-semibold text-xs whitespace-nowrap flex items-center gap-2 cursor-pointer border border-gray-200/60 dark:border-gray-700/60";
+                const countTextClasses = isSelected
+                    ? "text-[11px] text-white/90 font-medium mt-0.5"
+                    : "text-[11px] text-gray-400 font-medium mt-0.5";
 
                 return `
-                    <button onclick="handleCategoryClick(event, '${cat}')" data-category="${cat}" class="${chipClass}">
-                        <i class="fa-solid ${iconClass} text-xs"></i>
-                        <span>${cat}</span>
-                        <span class="opacity-75 text-[10px]">(${count})</span>
-                    </button>
+                    <div onclick="handleCategoryCardClick(event, '${catConfig.name}')" data-category-name="${catConfig.name}" class="${cardClasses}">
+                        <div class="${iconBoxClasses}">
+                            <i class="fa-solid ${catConfig.icon}"></i>
+                        </div>
+                        <div class="text-center w-full">
+                            <h4 class="font-bold text-xs truncate max-w-[110px]">${catConfig.name}</h4>
+                            <p class="${countTextClasses}">${matchedCount} Apps</p>
+                        </div>
+                    </div>
                 `;
             }).join('');
-        }
+        };
 
-        window.handleCategoryClick = function(event, category) {
-            const btn = event.currentTarget;
+        window.handleCategoryCardClick = function(event, categoryName) {
+            const card = event.currentTarget;
             const circle = document.createElement('span');
-            const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+            const diameter = Math.max(card.clientWidth, card.clientHeight);
             const radius = diameter / 2;
             circle.style.width = circle.style.height = `${diameter}px`;
-            circle.style.left = `${event.clientX - btn.getBoundingClientRect().left - radius}px`;
-            circle.style.top = `${event.clientY - btn.getBoundingClientRect().top - radius}px`;
-            circle.classList.add('ripple');
+            circle.style.left = `${event.clientX - card.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${event.clientY - card.getBoundingClientRect().top - radius}px`;
+            circle.classList.add('category-ripple');
             
-            const existingRipple = btn.getElementsByClassName('ripple')[0];
+            const existingRipple = card.getElementsByClassName('category-ripple')[0];
             if (existingRipple) existingRipple.remove();
-            btn.appendChild(circle);
+            card.appendChild(circle);
 
-            filterByCategory(category, true);
+            filterAppsByCategory(categoryName, true);
         };
 
-        window.filterByCategory = function(category, updateUI = true) {
-            currentCategory = category;
-            
-            if (updateUI) {
-                document.querySelectorAll('.category-chip').forEach(btn => {
-                    const catName = btn.getAttribute('data-category');
-                    if (catName === category) {
-                        btn.className = "category-chip bg-mint-600 text-white shadow-md shadow-mint-600/20 px-4 py-2 rounded-full font-bold text-xs whitespace-nowrap flex items-center gap-2 cursor-pointer";
+        window.filterAppsByCategory = function(categoryName, updateUI = true) {
+            window.currentCategory = categoryName;
+
+            if (updateUI && typeof window.allAppsCache !== 'undefined') {
+                window.renderCategoriesSection(window.allAppsCache);
+            }
+
+            if (typeof window.allAppsCache !== 'undefined') {
+                const filteredApps = window.allAppsCache.filter(app => app.category && app.category.toLowerCase() === categoryName.toLowerCase());
+                
+                const sectionHeading = document.getElementById('sectionHeading');
+                if (sectionHeading) sectionHeading.textContent = categoryName;
+
+                const appsGrid = document.getElementById('appsGrid');
+                if (appsGrid) {
+                    if (filteredApps.length === 0) {
+                        appsGrid.innerHTML = `
+                            <div class="col-span-full py-16 text-center">
+                                <div class="w-16 h-16 bg-mint-50 dark:bg-mint-900/20 text-mint-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                                    <i class="fa-solid fa-box-open"></i>
+                                </div>
+                                <p class="text-sm font-bold text-gray-700 dark:text-gray-300">No apps available in this category.</p>
+                            </div>`;
                     } else {
-                        btn.className = "category-chip bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-full font-semibold text-xs whitespace-nowrap flex items-center gap-2 cursor-pointer border border-gray-200/60 dark:border-gray-700/60";
+                        appsGrid.innerHTML = filteredApps.map(app => `
+                            <div class="app-card p-3.5 flex flex-col justify-between">
+                                <div>
+                                    <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                                        <img src="${app.icon_url || ''}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                                    </div>
+                                    <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">${app.name}</h5>
+                                    <p class="text-[10px] text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
+                                </div>
+                                <button onclick="window.location.href='app.html?id=${app.id}'" class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">Install</button>
+                            </div>
+                        `).join('');
                     }
-                });
+                }
             }
-
-            let filtered = [];
-            if (category === 'All') {
-                filtered = allAppsCache;
-            } else if (category === 'Featured') {
-                filtered = allAppsCache.filter(a => a.featured || a.is_featured);
-            } else if (category === 'Trending') {
-                filtered = allAppsCache.filter(a => parseFloat(a.rating) >= 4.8);
-            } else if (category === 'New Apps') {
-                filtered = allAppsCache.filter(a => a.version && a.version.includes('1'));
-            } else if (category === 'Recently Updated') {
-                filtered = allAppsCache.filter(a => a.updated_at || (a.version && a.version.includes('2')));
-            } else if (category === 'Top Charts') {
-                filtered = allAppsCache.filter(a => parseFloat(a.rating) >= 4.9);
-            } else {
-                filtered = allAppsCache.filter(a => a.category === category);
-            }
-
-            document.getElementById('sectionHeading').textContent = category;
-            renderAppsGrid(filtered);
         };
-
-        function renderAppsGrid(apps) {
-            const container = document.getElementById('appsGrid');
-            if (!container) return;
-
-            if (apps.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full py-16 text-center">
-                        <div class="w-16 h-16 bg-mint-50 dark:bg-mint-900/20 text-mint-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
-                            <i class="fa-solid fa-box-open"></i>
-                        </div>
-                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300">No apps available in this category.</p>
-                    </div>`;
-                return;
-            }
-
-            container.innerHTML = apps.map(app => `
-                <div class="app-card p-3.5 flex flex-col justify-between">
-                    <div>
-                        <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
-                            <img src="${app.icon_url || ''}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
-                        </div>
-                        <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">${app.name}</h5>
-                        <p class="text-[10px] text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
-                    </div>
-                    <button onclick="window.location.href='app.html?id=${app.id}'" class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">Install</button>
-                </div>
-            `).join('');
-        }
 
         // Firebase Auth State UI
         auth.onAuthStateChanged((user) => {
