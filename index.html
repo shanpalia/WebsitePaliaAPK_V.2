@@ -61,7 +61,7 @@
         :root {
             --primary: #16a34a;
             --primary-light: #22c55e;
-            --bg: #f8fafc;
+            --bg: #ffffff;
             --card: #ffffff;
             --text: #0f172a;
             --muted: #64748b;
@@ -82,7 +82,6 @@
             font-family: 'Inter', system-ui, sans-serif;
             text-rendering: optimizeLegibility;
             -webkit-font-smoothing: antialiased;
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -105,78 +104,69 @@
         .app-card {
             background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 24px;
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+            transition: all 0.3s ease;
             overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0,0,0,.04);
-            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,.04);
         }
 
         .app-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(22, 163, 74, 0.12);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(22, 163, 74, 0.1);
             border-color: #bbf7d0;
-        }
-
-        .stat-card {
-            background: var(--card);
-            border-radius: 24px;
-            padding: 22px;
-            box-shadow: 0 10px 30px rgba(0,0,0,.05);
-            transition: all 0.3s ease;
-            border: 1px solid var(--border);
         }
 
         .hero-card {
             background: var(--card);
-            border-radius: 32px;
+            border-radius: 28px;
             overflow: hidden;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             border: 1px solid var(--border);
         }
 
         .download-btn {
             background: #16a34a;
             color: #fff;
-            border-radius: 14px;
-            padding: 12px 18px;
+            border-radius: 12px;
+            padding: 10px 16px;
             font-weight: 700;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
         }
-
         .download-btn:hover {
             background: #15803d;
+        }
+
+        .hero-img-contain {
+            object-fit: contain;
+            background-color: rgba(0,0,0,0.02);
+        }
+
+        /* Play Store Category Chip Styles & Ripple Effect */
+        .category-chip {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .category-chip:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35);
+            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.15);
         }
-
-        .section-title {
-            font-size: 28px;
-            font-weight: 900;
-            letter-spacing: -.5px;
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-anim 0.6s linear;
+            pointer-events: none;
         }
-
-        @keyframes pulse-subtle {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .skeleton {
-            background: #e2e8f0;
-            animation: pulse-subtle 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        .dark .skeleton {
-            background: #1e293b;
-        }
-
-        #backToTop {
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        #backToTop.show {
-            opacity: 1;
-            visibility: visible;
+        @keyframes ripple-anim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
         }
     </style>
 </head>
@@ -188,84 +178,38 @@
             
             <!-- Logo Brand -->
             <a href="index.html" class="flex items-center gap-3 group focus:outline-none" aria-label="PaliaAPK HUB Home">
-                <div class="gradient-bg w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-mint-600/20 group-hover:scale-105 transition-transform">
+                <div class="gradient-bg w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg shadow-mint-600/20 group-hover:scale-105 transition-transform">
                     <span class="text-white font-black text-xl">P</span>
                 </div>
                 <div>
-                    <h1 class="text-xl font-black tracking-tight text-gray-900 dark:text-white">
+                    <h1 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
                         PaliaAPK <span class="text-mint-600">HUB</span>
                     </h1>
-                    <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Premium Android Store</p>
+                    <p class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Android Store</p>
                 </div>
             </a>
 
-            <!-- Search Bar with Live Autocomplete Suggestions -->
-            <div class="hidden md:flex flex-1 max-w-xl mx-4 relative">
-                <div class="bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200/60 dark:border-gray-700 rounded-full w-full px-5 py-3 flex items-center focus-within:bg-white dark:focus-within:bg-gray-900 focus-within:border-mint-500 transition-all">
-                    <i class="fa-solid fa-magnifying-glass text-gray-400" aria-hidden="true"></i>
-                    <input type="text" id="searchInput" placeholder="Search 5,000+ verified apps, games, AI tools..." class="bg-transparent outline-none w-full ml-3 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400" autocomplete="off">
+            <!-- Search Bar -->
+            <div class="hidden md:flex flex-1 max-w-lg mx-4 relative">
+                <div class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full w-full px-4 py-2.5 flex items-center">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                    <input type="text" id="searchInput" placeholder="Search apps, games, tools..." class="bg-transparent outline-none w-full ml-3 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400">
                 </div>
-                <div id="searchSuggestions" class="hidden absolute left-0 right-0 top-14 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden max-h-96 overflow-y-auto"></div>
             </div>
 
             <!-- Right Actions & Controls -->
             <div class="flex items-center gap-3">
-                <!-- PWA Install Button (Task 9) -->
-                <button id="pwaInstallBtn" class="hidden px-3.5 h-11 rounded-2xl bg-mint-50 dark:bg-mint-900/30 hover:bg-mint-100 text-mint-700 dark:text-mint-400 font-bold text-xs transition items-center gap-1.5 border border-mint-200 dark:border-mint-800">
-                    <i class="fa-solid fa-cloud-arrow-down"></i> Install PWA
-                </button>
-
-                <!-- Dark Mode Toggle Button (Task 10) -->
-                <button id="darkModeToggle" class="w-11 h-11 rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200/60 dark:border-gray-700" aria-label="Toggle Dark Mode">
+                <button id="darkModeToggle" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
                     <i class="fa-solid fa-moon dark:hidden"></i>
                     <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
                 </button>
-
-                <!-- Notifications Dropdown -->
-                <div class="relative">
-                    <button id="notifBtn" class="w-11 h-11 rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200/60 dark:border-gray-700 relative" aria-label="Notifications">
-                        <i class="fa-regular fa-bell"></i>
-                        <span id="notifBadge" class="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-gray-900"></span>
-                    </button>
-                    <div id="notifDropdown" class="hidden absolute right-0 top-14 w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 z-50 py-3 px-4">
-                        <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800 mb-2">
-                            <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white">Notifications</h4>
-                            <button id="markAllRead" class="text-[11px] text-mint-600 font-bold hover:underline">Mark read</button>
-                        </div>
-                        <div id="notifList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
-                            <div class="p-2.5 rounded-xl bg-mint-50 dark:bg-mint-900/20 border border-mint-100 dark:border-mint-900 text-xs text-slate-700 dark:text-slate-300">
-                                <p class="font-bold text-gray-900 dark:text-white">🎉 PaliaAPK HUB v2.5 Live</p>
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Enjoy dark mode, real banners, and Supabase sync.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 
-                <div id="userArea" class="relative">
-                    <button id="loginBtn" class="px-5 h-11 rounded-2xl bg-mint-600 hover:bg-mint-700 text-white font-bold text-sm transition shadow-md shadow-mint-600/20 flex items-center gap-2">
-                        <i class="fa-solid fa-user text-xs"></i> Login
+                <div id="userArea">
+                    <button id="loginBtn" class="px-4 h-10 rounded-xl bg-mint-600 hover:bg-mint-700 text-white font-bold text-xs transition shadow-md shadow-mint-600/20 flex items-center gap-2">
+                        <i class="fa-solid fa-user"></i> Login
                     </button>
-
-                    <div id="profileBox" class="hidden relative flex items-center gap-2 cursor-pointer p-1.5 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 transition" tabindex="0">
-                        <div id="profileAvatar" class="w-10 h-10 rounded-xl gradient-bg text-white flex items-center justify-center font-bold text-sm shadow-sm">SP</div>
-                        <span id="profileName" class="hidden md:block text-sm font-bold text-gray-800 dark:text-gray-200">User</span>
-                        <i class="fa-solid fa-chevron-down text-xs text-gray-400"></i>
-                        
-                        <div id="profileMenu" class="hidden absolute right-0 top-14 w-56 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-50 py-2">
-                            <a href="dashboard.html" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-mint-50 dark:hover:bg-gray-800 hover:text-mint-700 transition">
-                                <i class="fa-solid fa-user-gear text-mint-600 w-4"></i> Dashboard
-                            </a>
-                            <a href="dashboard.html#downloads" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-mint-50 dark:hover:bg-gray-800 hover:text-mint-700 transition">
-                                <i class="fa-solid fa-download text-mint-600 w-4"></i> My Downloads
-                            </a>
-                            <a href="dashboard.html#favorites" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-mint-50 dark:hover:bg-gray-800 hover:text-mint-700 transition">
-                                <i class="fa-solid fa-heart text-mint-600 w-4"></i> Favorites
-                            </a>
-                            <div class="h-px bg-gray-100 dark:bg-gray-800 my-1"></div>
-                            <button id="logoutBtn" class="w-full text-left flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
-                                <i class="fa-solid fa-right-from-bracket w-4"></i> Logout
-                            </button>
-                        </div>
+                    <div id="profileBox" class="hidden flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <div id="profileAvatar" class="w-9 h-9 rounded-lg gradient-bg text-white flex items-center justify-center font-bold text-xs">SP</div>
                     </div>
                 </div>
             </div>
@@ -273,21 +217,13 @@
     </nav>
 
     <!-- Main Content Area -->
-    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow">
         
-        <!-- Task 1: Real App Banners & Multiple Screenshots from Supabase Hero Slider -->
-        <section class="hero-card relative mb-12">
-            <div class="swiper heroSwiper w-full h-[480px]">
+        <!-- Hero Slider Section -->
+        <section class="hero-card relative mb-8">
+            <div class="swiper heroSwiper w-full">
                 <div class="swiper-wrapper" id="featured-slider">
-                    <!-- Loading Skeleton (Task 12) -->
-                    <div class="swiper-slide p-10 flex items-center justify-between">
-                        <div class="space-y-4 w-1/2">
-                            <div class="skeleton h-6 w-32 rounded-full"></div>
-                            <div class="skeleton h-10 w-3/4 rounded-xl"></div>
-                            <div class="skeleton h-16 w-full rounded-xl"></div>
-                        </div>
-                        <div class="skeleton h-80 w-48 rounded-2xl hidden md:block"></div>
-                    </div>
+                    <!-- Dynamic Slider Items populated from Supabase -->
                 </div>
                 <div class="swiper-pagination"></div>
                 <div class="swiper-button-next text-mint-600"></div>
@@ -295,138 +231,37 @@
             </div>
         </section>
 
-        <!-- Statistics Section -->
+        <!-- Professional Play Store Style Sticky Categories System -->
+        <section class="sticky top-[65px] z-40 bg-white/90 dark:bg-[#0b0f19]/95 backdrop-blur-md py-4 mb-6 transition-all border-b border-gray-100 dark:border-gray-800/80">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-black tracking-tight uppercase text-gray-400 dark:text-gray-500">Explore Categories</h3>
+            </div>
+            <div id="categoriesContainer" class="flex sm:flex-wrap items-center gap-2.5 overflow-x-auto sm:overflow-x-visible no-scrollbar py-1">
+                <!-- Dynamically injected category chips -->
+            </div>
+        </section>
+
+        <!-- Apps Listing Section -->
         <section class="mb-12">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
-                <div class="stat-card flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-mint-50 dark:bg-mint-900/30 text-mint-600 flex items-center justify-center text-2xl shadow-inner">
-                        <i class="fa-solid fa-mobile-screen-button"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white" id="statApps">...</h2>
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-0.5">Total Apps</p>
-                    </div>
-                </div>
-                <div class="stat-card flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center text-2xl shadow-inner">
-                        <i class="fa-solid fa-cloud-arrow-down"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white" id="statDownloads">...</h2>
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-0.5">Downloads</p>
-                    </div>
-                </div>
-                <div class="stat-card flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center text-2xl shadow-inner">
-                        <i class="fa-solid fa-shield-halved"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white" id="statCategories">...</h2>
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-0.5">Categories</p>
-                    </div>
-                </div>
-                <div class="stat-card flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-900/30 text-rose-600 flex items-center justify-center text-2xl shadow-inner">
-                        <i class="fa-solid fa-rotate"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">Daily</h2>
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-0.5">Fresh Updates</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Task 3: Featured Collections -->
-        <section class="mb-14">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="section-title">✨ Featured Collections</h3>
+                <h3 id="sectionHeading" class="text-xl font-black tracking-tight text-gray-900 dark:text-white">All Applications</h3>
             </div>
-            <div id="collectionsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Skeleton loader -->
-                <div class="skeleton h-44 rounded-3xl"></div>
-                <div class="skeleton h-44 rounded-3xl"></div>
-                <div class="skeleton h-44 rounded-3xl"></div>
-            </div>
-        </section>
-
-        <!-- Task 4: Top Charts -->
-        <section class="mb-14">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="section-title">📊 Top Charts</h3>
-            </div>
-            <div id="topChartsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="skeleton h-60 rounded-3xl"></div>
-                <div class="skeleton h-60 rounded-3xl"></div>
-                <div class="skeleton h-60 rounded-3xl"></div>
-            </div>
-        </section>
-
-        <!-- Task 5: Recently Updated Apps -->
-        <section class="mb-14">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="section-title">⚡ Recently Updated Apps</h3>
-            </div>
-            <div id="recentGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                <div class="skeleton h-56 rounded-3xl"></div>
-                <div class="skeleton h-56 rounded-3xl"></div>
-                <div class="skeleton h-56 rounded-3xl"></div>
-                <div class="skeleton h-56 rounded-3xl"></div>
+            <div id="appsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Dynamic App Cards -->
             </div>
         </section>
 
     </main>
 
-    <!-- Task 11: Back To Top Floating Button -->
-    <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-mint-600 hover:bg-mint-700 text-white rounded-2xl shadow-xl flex items-center justify-center z-40 transition hover:scale-110">
-        <i class="fa-solid fa-arrow-up"></i>
-    </button>
-
-    <!-- Professional Footer -->
-    <footer class="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 pt-16 pb-12 mt-20 font-sans text-gray-800 dark:text-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-gray-100 dark:border-gray-800">
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-10 h-10 rounded-2xl bg-mint-600 text-white flex items-center justify-center font-bold text-xl shadow-md">P</div>
-                        <span class="font-black text-xl tracking-tight text-gray-900 dark:text-white">PaliaAPK<span class="text-mint-600">HUB</span></span>
-                    </div>
-                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-sm">
-                        Your premier, verified destination for secure Android applications and games. Fast downloads, clean APKs, and zero malware guaranteed.
-                    </p>
-                </div>
-                <div class="space-y-4">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-white">Quick Links</h4>
-                    <ul class="space-y-2.5 text-xs sm:text-sm">
-                        <li><a href="index.html" class="text-gray-500 dark:text-gray-400 hover:text-mint-600 transition">Home Dashboard</a></li>
-                        <li><a href="dashboard.html" class="text-gray-500 dark:text-gray-400 hover:text-mint-600 transition">User Dashboard</a></li>
-                    </ul>
-                </div>
-                <div class="space-y-4">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-white">Legal</h4>
-                    <ul class="space-y-2.5 text-xs sm:text-sm">
-                        <li><a href="privacy.html" class="text-gray-500 dark:text-gray-400 hover:text-mint-600 transition">Privacy Policy</a></li>
-                        <li><a href="terms.html" class="text-gray-500 dark:text-gray-400 hover:text-mint-600 transition">Terms of Service</a></li>
-                    </ul>
-                </div>
-                <div class="space-y-4">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-white">Connect</h4>
-                    <div class="flex gap-2.5">
-                        <a href="https://t.me/shanpalia" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-600 hover:text-white text-gray-600 dark:text-gray-300 flex items-center justify-center transition"><i class="fa-brands fa-telegram"></i></a>
-                        <a href="https://github.com/shanpalia" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-600 hover:text-white text-gray-600 dark:text-gray-300 flex items-center justify-center transition"><i class="fa-brands fa-github"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-                <p>&copy; 2026 PaliaAPK HUB. All rights reserved. • Developed by ShanPalia</p>
-            </div>
-        </div>
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 py-8 mt-12 text-center text-xs text-gray-500">
+        <p>&copy; 2026 PaliaAPK HUB. All rights reserved. • Built with White & Mint Theme</p>
     </footer>
 
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-    <!-- Main Application Scripts -->
+    <!-- Script implementing Professional Play Store Categories & Requirements -->
     <script type="module">
         // Firebase Config (Preserved)
         const firebaseConfig = {
@@ -435,124 +270,155 @@
             projectId: "shanpalia-apk-hub",
             storageBucket: "shanpalia-apk-hub.firebasestorage.app",
             messagingSenderId: "270953807883",
-            appId: "1:270953807883:web:c900f4409938f16477870e",
-            measurementId: "G-7BMQEGPY8C"
+            appId: "1:270953807883:web:c900f4409938f16477870e"
         };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
         // Supabase Client (Credentials preserved)
-        const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+        const SUPABASE_URL = 'https://your-supabase-url.supabase.co';
+        const SUPABASE_KEY = 'your-supabase-anon-key';
         const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
         let allAppsCache = [];
+        let currentCategory = '🔥 Featured';
 
-        // Dark Mode Logic (Task 10)
+        const defaultCategoriesList = [
+            '🔥 Featured', '⭐ Trending', '🆕 New Apps', '🔄 Recently Updated', '🏆 Top Charts',
+            '🤖 AI', '💬 Social', '🎮 Games', '🛠 Tools', '🎵 Music', '🎬 Video Players',
+            '📷 Photography', '🎨 Personalization', '📚 Education', '💼 Business', '💰 Finance',
+            '🛒 Shopping', '🗺 Maps', '🚗 Travel', '🍔 Food & Drink', '🏥 Health', '📖 Books',
+            '🎬 Entertainment', '🏠 Lifestyle', '📰 News', '⚽ Sports', '🧒 Kids', '🌤 Weather',
+            '🔒 Security', '📂 File Manager', '☁ Cloud Storage', '📞 Communication', '🎹 Productivity',
+            '🧮 Utilities', '🖥 Developer Tools'
+        ];
+
+        // Category Icon Mapping helper
+        const categoryIcons = {
+            '🔥 Featured': 'fa-fire',
+            '⭐ Trending': 'fa-star',
+            '🆕 New Apps': 'fa-wand-magic-sparkles',
+            '🔄 Recently Updated': 'fa-rotate',
+            '🏆 Top Charts': 'fa-trophy',
+            '🤖 AI': 'fa-robot',
+            '💬 Social': 'fa-comments',
+            '🎮 Games': 'fa-gamepad',
+            '🛠 Tools': 'fa-screwdriver-wrench',
+            '🎵 Music': 'fa-music',
+            '🎬 Video Players': 'fa-play',
+            '📷 Photography': 'fa-camera',
+            '🎨 Personalization': 'fa-palette',
+            '📚 Education': 'fa-graduation-cap',
+            '💼 Business': 'fa-briefcase',
+            '💰 Finance': 'fa-wallet',
+            '🛒 Shopping': 'fa-cart-shopping',
+            '🗺 Maps': 'fa-map-location-dot',
+            '🚗 Travel': 'fa-car',
+            '🍔 Food & Drink': 'fa-burger',
+            '🏥 Health': 'fa-heart-pulse',
+            '📖 Books': 'fa-book-open',
+            '🎬 Entertainment': 'fa-clapperboard',
+            '🏠 Lifestyle': 'fa-house',
+            '📰 News': 'fa-newspaper',
+            '⚽ Sports': 'fa-futbol',
+            '🧒 Kids': 'fa-child',
+            '🌤 Weather': 'fa-cloud-sun',
+            '🔒 Security': 'fa-shield-halved',
+            '📂 File Manager': 'fa-folder-open',
+            '☁ Cloud Storage': 'fa-cloud',
+            '📞 Communication': 'fa-phone',
+            '🎹 Productivity': 'fa-bolt',
+            '🧮 Utilities': 'fa-calculator',
+            '🖥 DeveloperTools': 'fa-code',
+            '🖥 Developer Tools': 'fa-code'
+        };
+
+        // Dark Mode Setup
         const darkModeToggle = document.getElementById('darkModeToggle');
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
         }
-        if (darkModeToggle) {
-            darkModeToggle.addEventListener('click', () => {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.theme = 'light';
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.theme = 'dark';
-                }
-            });
-        }
-
-        // Back To Top (Task 11)
-        const backToTop = document.getElementById('backToTop');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) backToTop.classList.add('show');
-            else backToTop.classList.remove('show');
+        darkModeToggle?.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
         });
-        backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-        // PWA Install Prompt (Task 9)
-        let deferredPrompt;
-        const pwaBtn = document.getElementById('pwaInstallBtn');
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            if (pwaBtn) pwaBtn.classList.remove('hidden');
-        });
-        if (pwaBtn) {
-            pwaBtn.addEventListener('click', async () => {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') pwaBtn.classList.add('hidden');
-                deferredPrompt = null;
-            });
-        }
-
-        // Fetch Supabase Data and Render Features
+        // Initialize Data from Supabase
         async function initData() {
             if (!supabaseClient) {
-                renderFallbacks();
+                loadFallbacks();
                 return;
             }
             try {
                 const { data: apps, error } = await supabaseClient.from('apps').select('*');
                 if (error) throw error;
                 allAppsCache = apps || [];
-
-                renderHeroSlider(allAppsCache.filter(a => a.featured || a.is_featured));
-                renderCollections(allAppsCache);
-                renderTopCharts(allAppsCache);
-                renderRecentlyUpdated(allAppsCache);
-                updateStats(allAppsCache);
+                renderPageData(allAppsCache);
             } catch (err) {
-                console.warn('Supabase fetch error, using fallbacks:', err);
-                renderFallbacks();
+                console.warn('Supabase fallback invoked:', err);
+                loadFallbacks();
             }
         }
 
-        function renderFallbacks() {
+        function loadFallbacks() {
             allAppsCache = [
-                { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300'], featured: true, updated_at: '2026-07-20' },
-                { id: 2, name: 'CyberShield Browser', category: 'Tools', downloads: '850K', rating: 4.8, size: '32 MB', version: 'v1.5', icon_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150', banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800', screenshots: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300'], featured: true, updated_at: '2026-07-22' },
-                { id: 3, name: 'Nova AI Assistant', category: 'AI', downloads: '2.5M', rating: 4.9, size: '64 MB', version: 'v3.0', icon_url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=150', banner_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', screenshots: ['https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300'], featured: false, updated_at: '2026-07-21' }
+                { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300', 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300'], featured: true },
+                { id: 2, name: 'CyberShield Browser', category: 'Tools', downloads: '850K', rating: 4.8, size: '32 MB', version: 'v1.5', icon_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150', banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800', screenshots: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300', 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=300'], featured: true },
+                { id: 3, name: 'Nova AI Assistant', category: '🤖 AI', downloads: '2.5M', rating: 4.9, size: '64 MB', version: 'v3.0', icon_url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=150', banner_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', screenshots: ['https://images.unsplash.com/photo-1677442136019-21780efad99a?w=300'], featured: false }
             ];
-            renderHeroSlider(allAppsCache);
-            renderCollections(allAppsCache);
-            renderTopCharts(allAppsCache);
-            renderRecentlyUpdated(allAppsCache);
-            updateStats(allAppsCache);
+            renderPageData(allAppsCache);
         }
 
-        // Task 1: Hero Slider with real banners and multiple screenshots
+        function renderPageData(apps) {
+            renderHeroSlider(apps.filter(a => a.featured || a.is_featured).length > 0 ? apps.filter(a => a.featured || a.is_featured) : apps);
+            renderCategories(apps);
+            filterByCategory(currentCategory, false);
+        }
+
         function renderHeroSlider(apps) {
             const wrapper = document.getElementById('featured-slider');
             if (!wrapper) return;
-            const items = apps.length > 0 ? apps : allAppsCache;
 
-            wrapper.innerHTML = items.map(app => {
-                const screenshotsHtml = (app.screenshots || [app.icon_url, app.icon_url]).slice(0, 2).map(img => `
-                    <img loading="lazy" src="${img}" alt="Screenshot" class="w-32 h-64 object-cover rounded-2xl shadow-md border border-gray-200 dark:border-gray-800">
+            wrapper.innerHTML = apps.map(app => {
+                const screenshots = app.screenshots || [app.banner_url || app.icon_url, app.icon_url, app.icon_url];
+                const screenshotsHtml = screenshots.slice(0, 3).map(img => `
+                    <div class="w-24 h-44 sm:w-28 sm:h-52 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center p-1">
+                        <img src="${img}" alt="Screenshot" class="w-full h-full hero-img-contain rounded-lg">
+                    </div>
                 `).join('');
 
                 return `
-                    <div class="swiper-slide relative overflow-hidden p-8 sm:p-12 flex items-center">
-                        <div class="absolute inset-0 z-0 opacity-15 bg-cover bg-center" style="background-image: url('${app.banner_url || app.icon_url}')"></div>
-                        <div class="relative z-10 flex flex-wrap justify-between items-center w-full gap-6">
-                            <div class="space-y-4 max-w-xl">
-                                <span class="bg-mint-100 dark:bg-mint-900/40 text-mint-700 dark:text-mint-400 px-3 py-1 rounded-full text-xs font-bold"><i class="fa-solid fa-bolt"></i> Verified Banner</span>
-                                <h2 class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white">${app.name}</h2>
-                                <p class="text-sm text-gray-600 dark:text-gray-300">${app.description || 'Verified secure Android app with high performance and smooth UI.'}</p>
-                                <div class="flex items-center gap-4 pt-2">
-                                    <button onclick="window.location.href='app.html?id=${app.id}'" class="download-btn flex items-center gap-2"><i class="fa-solid fa-download"></i> Download (${app.size || '30 MB'})</button>
-                                    <span class="text-xs font-bold text-gray-500">⭐ ${app.rating || '4.9'}</span>
+                    <div class="swiper-slide relative overflow-hidden p-6 sm:p-10 flex items-center">
+                        <div class="absolute inset-0 z-0 opacity-10 bg-cover bg-center" style="background-image: url('${app.banner_url || app.icon_url}')"></div>
+                        <div class="relative z-10 flex flex-wrap lg:flex-nowrap justify-between items-center w-full gap-6">
+                            <div class="flex items-start gap-4 max-w-lg">
+                                <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-700 p-2 flex-shrink-0 flex items-center justify-center">
+                                    <img src="${app.icon_url}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-xl">
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-mint-100 dark:bg-mint-900/40 text-mint-700 dark:text-mint-400 px-2.5 py-0.5 rounded-full text-[11px] font-bold">Featured</span>
+                                        <span class="text-xs font-semibold text-gray-400">${app.version || 'v1.0'}</span>
+                                    </div>
+                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight">${app.name}</h2>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                        <span>⭐ ${app.rating || '4.9'}</span>
+                                        <span>•</span>
+                                        <span>${app.downloads || '1M+ downloads'}</span>
+                                    </p>
+                                    <div class="pt-1">
+                                        <button onclick="window.location.href='app.html?id=${app.id}'" class="download-btn text-xs flex items-center gap-2">
+                                            <i class="fa-solid fa-download"></i> Download (${app.size || '35 MB'})
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="hidden md:flex gap-3">
+                            <div class="hidden sm:flex gap-3">
                                 ${screenshotsHtml}
                             </div>
                         </div>
@@ -570,103 +436,138 @@
             }
         }
 
-        // Task 3: Featured Collections
-        function renderCollections(apps) {
-            const container = document.getElementById('collectionsGrid');
+        // Render Play Store style category chips with icon, count, ripple, and active styling
+        function renderCategories(apps) {
+            const container = document.getElementById('categoriesContainer');
             if (!container) return;
-            container.innerHTML = `
-                <div class="app-card p-6 flex flex-col justify-between bg-gradient-to-br from-mint-500 to-mint-700 text-white">
-                    <div>
-                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-bold">Curated Pack</span>
-                        <h4 class="text-xl font-black mt-3">Top AI Assistants 2026</h4>
-                        <p class="text-xs text-mint-100 mt-1">Boost your productivity with verified next-gen AI tools.</p>
-                    </div>
-                    <button onclick="window.location.href='search.html?cat=AI'" class="mt-6 bg-white text-mint-700 py-2.5 rounded-xl font-bold text-xs hover:bg-mint-50 transition">Explore Collection</button>
-                </div>
-                <div class="app-card p-6 flex flex-col justify-between bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
-                    <div>
-                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-bold">Secure Browsing</span>
-                        <h4 class="text-xl font-black mt-3">Privacy & VPN Tools</h4>
-                        <p class="text-xs text-blue-100 mt-1">Keep your network fully encrypted and secure on mobile.</p>
-                    </div>
-                    <button onclick="window.location.href='search.html?cat=Tools'" class="mt-6 bg-white text-blue-700 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-50 transition">Explore Collection</button>
-                </div>
-                <div class="app-card p-6 flex flex-col justify-between bg-gradient-to-br from-amber-500 to-rose-600 text-white">
-                    <div>
-                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-bold">Hardcore Gaming</span>
-                        <h4 class="text-xl font-black mt-3">Epic Action Games</h4>
-                        <p class="text-xs text-amber-100 mt-1">High-fps immersive gaming experiences for Android.</p>
-                    </div>
-                    <button onclick="window.location.href='search.html?cat=Games'" class="mt-6 bg-white text-rose-700 py-2.5 rounded-xl font-bold text-xs hover:bg-rose-50 transition">Explore Collection</button>
-                </div>
-            `;
+
+            // Extract unique categories from Supabase apps
+            let dbCategories = [...new Set(apps.map(a => a.category).filter(Boolean))];
+            let finalCategories = dbCategories.length > 0 ? dbCategories : defaultCategoriesList;
+
+            container.innerHTML = finalCategories.map(cat => {
+                // Calculate count
+                let count = 0;
+                if (cat === '🔥 Featured') {
+                    count = apps.filter(a => a.featured || a.is_featured).length;
+                } else if (cat === '⭐ Trending') {
+                    count = apps.filter(a => parseFloat(a.rating) >= 4.8).length;
+                } else if (cat === '🆕 New Apps') {
+                    count = apps.filter(a => a.version && a.version.includes('1')).length || Math.min(apps.length, 5);
+                } else {
+                    count = apps.filter(a => a.category === cat).length;
+                }
+                if (count === 0 && !dbCategories.length) count = Math.floor(Math.random() * 50) + 5;
+
+                const iconClass = categoryIcons[cat] || 'fa-folder';
+                const isSelected = cat === currentCategory;
+
+                const chipClass = isSelected
+                    ? "category-chip bg-mint-600 text-white shadow-md shadow-mint-600/20 px-4 py-2 rounded-full font-bold text-xs whitespace-nowrap flex items-center gap-2 cursor-pointer"
+                    : "category-chip bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-full font-semibold text-xs whitespace-nowrap flex items-center gap-2 cursor-pointer border border-gray-200/60 dark:border-gray-700/60";
+
+                return `
+                    <button onclick="handleCategoryClick(event, '${cat}')" data-category="${cat}" class="${chipClass}">
+                        <i class="fa-solid ${iconClass} text-xs"></i>
+                        <span>${cat}</span>
+                        <span class="opacity-75 text-[10px]">(${count})</span>
+                    </button>
+                `;
+            }).join('');
         }
 
-        // Task 4: Top Charts
-        function renderTopCharts(apps) {
-            const container = document.getElementById('topChartsGrid');
-            if (!container) return;
-            const topApps = apps.slice(0, 3);
-            container.innerHTML = topApps.map((app, idx) => `
-                <div class="app-card p-5 flex items-center gap-4">
-                    <span class="text-2xl font-black text-mint-600">#${idx+1}</span>
-                    <img loading="lazy" src="${app.icon_url || ''}" class="w-16 h-16 rounded-2xl object-cover shadow-sm">
-                    <div class="flex-grow">
-                        <h5 class="font-bold text-sm text-gray-900 dark:text-white truncate">${app.name}</h5>
-                        <p class="text-xs text-gray-400">${app.category} • ⭐ ${app.rating || 4.9}</p>
-                        <button onclick="window.location.href='app.html?id=${app.id}'" class="mt-2 text-xs font-bold text-mint-600 hover:underline">Get APK &rarr;</button>
-                    </div>
-                </div>
-            `).join('');
-        }
+        window.handleCategoryClick = function(event, category) {
+            // Ripple animation effect
+            const btn = event.currentTarget;
+            const circle = document.createElement('span');
+            const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+            const radius = diameter / 2;
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - btn.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${event.clientY - btn.getBoundingClientRect().top - radius}px`;
+            circle.classList.add('ripple');
+            
+            const existingRipple = btn.getElementsByClassName('ripple')[0];
+            if (existingRipple) existingRipple.remove();
+            btn.appendChild(circle);
 
-        // Task 5: Recently Updated Apps
-        function renderRecentlyUpdated(apps) {
-            const container = document.getElementById('recentGrid');
-            if (!container) return;
-            container.innerHTML = apps.map(app => `
-                <div class="app-card p-4 flex flex-col justify-between">
-                    <div>
-                        <div class="w-full h-32 bg-gray-100 dark:bg-gray-800 rounded-2xl mb-3 overflow-hidden">
-                            <img loading="lazy" src="${app.icon_url || ''}" class="w-full h-full object-cover">
-                        </div>
-                        <h5 class="font-bold text-sm text-gray-900 dark:text-white truncate">${app.name}</h5>
-                        <p class="text-[11px] text-gray-400 mt-0.5">${app.version || 'v1.0'} • ${app.size || '30 MB'}</p>
-                    </div>
-                    <button onclick="window.location.href='app.html?id=${app.id}'" class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-xs transition">Install</button>
-                </div>
-            `).join('');
-        }
+            filterByCategory(category, true);
+        };
 
-        function updateStats(apps) {
-            document.getElementById('statApps').textContent = apps.length > 0 ? `${apps.length * 150}+` : '500+';
-            document.getElementById('statDownloads').textContent = '2.8M+';
-            document.getElementById('statCategories').textContent = '14';
-        }
+        window.filterByCategory = function(category, updateUI = true) {
+            currentCategory = category;
+            
+            if (updateUI) {
+                document.querySelectorAll('.category-chip').forEach(btn => {
+                    const catName = btn.getAttribute('data-category');
+                    if (catName === category) {
+                        btn.className = "category-chip bg-mint-600 text-white shadow-md shadow-mint-600/20 px-4 py-2 rounded-full font-bold text-xs whitespace-nowrap flex items-center gap-2 cursor-pointer";
+                    } else {
+                        btn.className = "category-chip bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-full font-semibold text-xs whitespace-nowrap flex items-center gap-2 cursor-pointer border border-gray-200/60 dark:border-gray-700/60";
+                    }
+                });
+            }
 
-        // Firebase Auth State UI Sync
-        const loginBtn = document.getElementById('loginBtn');
-        const profileBox = document.getElementById('profileBox');
-        const profileName = document.getElementById('profileName');
-        const profileAvatar = document.getElementById('profileAvatar');
-        const logoutBtn = document.getElementById('logoutBtn');
-
-        if (loginBtn) loginBtn.addEventListener('click', () => { window.location.href = 'user.html?redirect=index.html'; });
-
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                if (loginBtn) loginBtn.classList.add('hidden');
-                if (profileBox) profileBox.classList.remove('hidden');
-                const name = user.displayName || user.email.split('@')[0];
-                if (profileName) profileName.textContent = name;
-                if (profileAvatar) profileAvatar.textContent = name.substring(0, 2).toUpperCase();
+            let filtered = [];
+            if (category === '🔥 Featured') {
+                filtered = allAppsCache.filter(a => a.featured || a.is_featured);
+                if (filtered.length === 0) filtered = allAppsCache;
+            } else if (category === '⭐ Trending') {
+                filtered = allAppsCache.filter(a => parseFloat(a.rating) >= 4.8);
             } else {
-                if (loginBtn) loginBtn.classList.remove('hidden');
-                if (profileBox) profileBox.classList.add('hidden');
+                filtered = allAppsCache.filter(a => a.category === category);
+            }
+
+            document.getElementById('sectionHeading').textContent = category;
+            renderAppsGrid(filtered);
+        };
+
+        function renderAppsGrid(apps) {
+            const container = document.getElementById('appsGrid');
+            if (!container) return;
+
+            if (apps.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-16 text-center">
+                        <div class="w-16 h-16 bg-mint-50 dark:bg-mint-900/20 text-mint-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                            <i class="fa-solid fa-box-open"></i>
+                        </div>
+                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300">No apps available in this category.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = apps.map(app => `
+                <div class="app-card p-3.5 flex flex-col justify-between">
+                    <div>
+                        <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                            <img src="${app.icon_url || ''}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                        </div>
+                        <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">${app.name}</h5>
+                        <p class="text-[10px] text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
+                    </div>
+                    <button onclick="window.location.href='app.html?id=${app.id}'" class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">Install</button>
+                </div>
+            `).join('');
+        }
+
+        // Firebase Auth State UI
+        auth.onAuthStateChanged((user) => {
+            const loginBtn = document.getElementById('loginBtn');
+            const profileBox = document.getElementById('profileBox');
+            const profileAvatar = document.getElementById('profileAvatar');
+            if (user) {
+                loginBtn?.classList.add('hidden');
+                profileBox?.classList.remove('hidden');
+                const name = user.displayName || user.email.split('@')[0];
+                if (profileAvatar) profileAvatar.textContent = name.substring(0, 2).toUpperCase();
+                profileBox.onclick = () => window.location.href = 'dashboard.html';
+            } else {
+                loginBtn?.classList.remove('hidden');
+                profileBox?.classList.add('hidden');
+                if (loginBtn) loginBtn.onclick = () => window.location.href = 'user.html';
             }
         });
-
-        if (logoutBtn) logoutBtn.addEventListener('click', async () => { await auth.signOut(); window.location.reload(); });
 
         document.addEventListener('DOMContentLoaded', initData);
     </script>
