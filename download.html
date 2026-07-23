@@ -1172,6 +1172,7 @@ if (!currentApp.apk_url.startsWith("https://")) {
     show(stateLoggedIn);
     return;
 }
+     console.log("APK URL:", currentApp.apk_url);
     triggerFileDownload(currentApp.apk_url, (currentApp.name || 'app') + '.apk');
 
     hide(stateCountdown);
