@@ -380,13 +380,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const loginBtn = document.getElementById("loginBtn");
     const profileBox = document.getElementById("profileBox");
-
+    const profileMenu = document.getElementById("profileMenu");
     // Login button
     if (loginBtn) {
         loginBtn.addEventListener("click", function () {
             location.href = "download.html";
         });
     }
+    // ===============================
+// Profile Dropdown
+// ===============================
+
+if (profileBox && profileMenu) {
+
+    profileBox.addEventListener("click", function (e) {
+
+        e.stopPropagation();
+
+        profileMenu.classList.toggle("hidden");
+
+    });
+
+}
+
+document.addEventListener("click", function () {
+
+    if (profileMenu) {
+
+        profileMenu.classList.add("hidden");
+
+    }
+
+});
 
     auth.onAuthStateChanged(function(user){
 
