@@ -198,8 +198,31 @@ box-shadow:0 10px 30px rgba(0,0,0,.06);
         <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-green-50 flex items-center justify-center">
             <i class="fa-regular fa-bell"></i>
         </button>
-        <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-green-50 flex items-center justify-center">
-            <i class="fa-regular fa-user"></i>
+        <div id="userArea">
+
+    <button id="loginBtn"
+        class="px-4 h-10 rounded-xl bg-green-600 text-white font-semibold">
+        Login
+    </button>
+
+    <div id="profileBox"
+         class="hidden flex items-center gap-2 cursor-pointer">
+
+        <div id="profileAvatar"
+             class="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">
+            SP
+        </div>
+
+        <span id="profileName"
+              class="hidden md:block text-sm font-semibold">
+            User
+        </span>
+
+        <i class="fa-solid fa-chevron-down text-xs"></i>
+
+    </div>
+
+</div>
         </button>
     </div>
 </div>
