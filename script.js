@@ -384,9 +384,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const logoutBtn = document.getElementById("logoutBtn");
     // Login button
     if (loginBtn) {
-        loginBtn.addEventListener("click", function () {
-            location.href = "download.html";
-        });
+       loginBtn.addEventListener("click", function () {
+
+    location.href = "user.html?redirect=index.html";
+
+});
     }
     // ===============================
 // Profile Dropdown
