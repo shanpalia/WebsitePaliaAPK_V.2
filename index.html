@@ -209,7 +209,7 @@ box-shadow:0 10px 30px rgba(0,0,0,.06);
     </button>
 
     <div id="profileBox"
-         class="hidden flex items-center gap-2 cursor-pointer">
+         class="hidden relative flex items-center gap-2 cursor-pointer"
 
         <div id="profileAvatar"
              class="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">
@@ -222,7 +222,32 @@ box-shadow:0 10px 30px rgba(0,0,0,.06);
         </span>
 
         <i class="fa-solid fa-chevron-down text-xs"></i>
+<div id="profileMenu"
+     class="hidden absolute right-0 top-14 w-56 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
 
+    <a href="#"
+       class="block px-4 py-3 hover:bg-gray-50">
+        👤 My Profile
+    </a>
+
+    <a href="#"
+       class="block px-4 py-3 hover:bg-gray-50">
+        📥 My Downloads
+    </a>
+
+    <a href="#"
+       class="block px-4 py-3 hover:bg-gray-50">
+        ❤️ Favorites
+    </a>
+
+    <button id="logoutBtn"
+            class="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600">
+
+        🚪 Logout
+
+    </button>
+
+</div>
     </div>
 
 </div>
