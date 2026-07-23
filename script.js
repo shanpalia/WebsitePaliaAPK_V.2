@@ -381,6 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const loginBtn = document.getElementById("loginBtn");
     const profileBox = document.getElementById("profileBox");
     const profileMenu = document.getElementById("profileMenu");
+    const logoutBtn = document.getElementById("logoutBtn");
     // Login button
     if (loginBtn) {
         loginBtn.addEventListener("click", function () {
@@ -402,6 +403,7 @@ if (profileBox && profileMenu) {
     });
 
 }
+    
 
 document.addEventListener("click", function () {
 
@@ -412,7 +414,33 @@ document.addEventListener("click", function () {
     }
 
 });
+// ===============================
+// Logout
+// ===============================
 
+if (logoutBtn) {
+
+    logoutBtn.addEventListener("click", async function (e) {
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        try {
+
+            await auth.signOut();
+
+            location.reload();
+
+        } catch (error) {
+
+            console.error(error);
+            alert("Logout failed.");
+
+        }
+
+    });
+
+}
     auth.onAuthStateChanged(function(user){
 
         if(user){
