@@ -231,7 +231,7 @@
             </div>
         </section>
 
-        <!-- Professional Play Store Style Sticky Categories System -->
+        <!-- Sticky Professional Play Store Style Categories System -->
         <section class="sticky top-[65px] z-40 bg-white/90 dark:bg-[#0b0f19]/95 backdrop-blur-md py-4 mb-6 transition-all border-b border-gray-100 dark:border-gray-800/80">
             <div class="flex items-center justify-between mb-3">
                 <h3 class="text-sm font-black tracking-tight uppercase text-gray-400 dark:text-gray-500">Explore Categories</h3>
@@ -244,7 +244,7 @@
         <!-- Apps Listing Section -->
         <section class="mb-12">
             <div class="flex items-center justify-between mb-6">
-                <h3 id="sectionHeading" class="text-xl font-black tracking-tight text-gray-900 dark:text-white">All Applications</h3>
+                <h3 id="sectionHeading" class="text-xl font-black tracking-tight text-gray-900 dark:text-white">All</h3>
             </div>
             <div id="appsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 <!-- Dynamic App Cards -->
@@ -261,7 +261,7 @@
     <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-    <!-- Script implementing Professional Play Store Categories & Requirements -->
+    <!-- Script implementing Default + Supabase merged categories & precise app counts -->
     <script type="module">
         // Firebase Config (Preserved)
         const firebaseConfig = {
@@ -276,61 +276,90 @@
         const auth = firebase.auth();
 
         // Supabase Client (Credentials preserved)
-        const SUPABASE_URL = 'https://your-supabase-url.supabase.co';
-        const SUPABASE_KEY = 'your-supabase-anon-key';
+        const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
         const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
         let allAppsCache = [];
-        let currentCategory = '🔥 Featured';
+        let currentCategory = 'All';
 
         const defaultCategoriesList = [
-            '🔥 Featured', '⭐ Trending', '🆕 New Apps', '🔄 Recently Updated', '🏆 Top Charts',
-            '🤖 AI', '💬 Social', '🎮 Games', '🛠 Tools', '🎵 Music', '🎬 Video Players',
-            '📷 Photography', '🎨 Personalization', '📚 Education', '💼 Business', '💰 Finance',
-            '🛒 Shopping', '🗺 Maps', '🚗 Travel', '🍔 Food & Drink', '🏥 Health', '📖 Books',
-            '🎬 Entertainment', '🏠 Lifestyle', '📰 News', '⚽ Sports', '🧒 Kids', '🌤 Weather',
-            '🔒 Security', '📂 File Manager', '☁ Cloud Storage', '📞 Communication', '🎹 Productivity',
-            '🧮 Utilities', '🖥 Developer Tools'
+            'All',
+            'Featured',
+            'Trending',
+            'New Apps',
+            'Recently Updated',
+            'Top Charts',
+            'AI',
+            'Social',
+            'Games',
+            'Tools',
+            'Music',
+            'Video Players',
+            'Photography',
+            'Personalization',
+            'Education',
+            'Business',
+            'Finance',
+            'Shopping',
+            'Maps',
+            'Travel',
+            'Food & Drink',
+            'Health',
+            'Books',
+            'Entertainment',
+            'Lifestyle',
+            'News',
+            'Sports',
+            'Kids',
+            'Weather',
+            'Security',
+            'File Manager',
+            'Cloud Storage',
+            'Communication',
+            'Productivity',
+            'Utilities',
+            'Developer'
         ];
 
         // Category Icon Mapping helper
         const categoryIcons = {
-            '🔥 Featured': 'fa-fire',
-            '⭐ Trending': 'fa-star',
-            '🆕 New Apps': 'fa-wand-magic-sparkles',
-            '🔄 Recently Updated': 'fa-rotate',
-            '🏆 Top Charts': 'fa-trophy',
-            '🤖 AI': 'fa-robot',
-            '💬 Social': 'fa-comments',
-            '🎮 Games': 'fa-gamepad',
-            '🛠 Tools': 'fa-screwdriver-wrench',
-            '🎵 Music': 'fa-music',
-            '🎬 Video Players': 'fa-play',
-            '📷 Photography': 'fa-camera',
-            '🎨 Personalization': 'fa-palette',
-            '📚 Education': 'fa-graduation-cap',
-            '💼 Business': 'fa-briefcase',
-            '💰 Finance': 'fa-wallet',
-            '🛒 Shopping': 'fa-cart-shopping',
-            '🗺 Maps': 'fa-map-location-dot',
-            '🚗 Travel': 'fa-car',
-            '🍔 Food & Drink': 'fa-burger',
-            '🏥 Health': 'fa-heart-pulse',
-            '📖 Books': 'fa-book-open',
-            '🎬 Entertainment': 'fa-clapperboard',
-            '🏠 Lifestyle': 'fa-house',
-            '📰 News': 'fa-newspaper',
-            '⚽ Sports': 'fa-futbol',
-            '🧒 Kids': 'fa-child',
-            '🌤 Weather': 'fa-cloud-sun',
-            '🔒 Security': 'fa-shield-halved',
-            '📂 File Manager': 'fa-folder-open',
-            '☁ Cloud Storage': 'fa-cloud',
-            '📞 Communication': 'fa-phone',
-            '🎹 Productivity': 'fa-bolt',
-            '🧮 Utilities': 'fa-calculator',
-            '🖥 DeveloperTools': 'fa-code',
-            '🖥 Developer Tools': 'fa-code'
+            'All': 'fa-border-all',
+            'Featured': 'fa-fire',
+            'Trending': 'fa-star',
+            'New Apps': 'fa-wand-magic-sparkles',
+            'Recently Updated': 'fa-rotate',
+            'Top Charts': 'fa-trophy',
+            'AI': 'fa-robot',
+            'Social': 'fa-comments',
+            'Games': 'fa-gamepad',
+            'Tools': 'fa-screwdriver-wrench',
+            'Music': 'fa-music',
+            'Video Players': 'fa-play',
+            'Photography': 'fa-camera',
+            'Personalization': 'fa-palette',
+            'Education': 'fa-graduation-cap',
+            'Business': 'fa-briefcase',
+            'Finance': 'fa-wallet',
+            'Shopping': 'fa-cart-shopping',
+            'Maps': 'fa-map-location-dot',
+            'Travel': 'fa-car',
+            'Food & Drink': 'fa-burger',
+            'Health': 'fa-heart-pulse',
+            'Books': 'fa-book-open',
+            'Entertainment': 'fa-clapperboard',
+            'Lifestyle': 'fa-house',
+            'News': 'fa-newspaper',
+            'Sports': 'fa-futbol',
+            'Kids': 'fa-child',
+            'Weather': 'fa-cloud-sun',
+            'Security': 'fa-shield-halved',
+            'File Manager': 'fa-folder-open',
+            'Cloud Storage': 'fa-cloud',
+            'Communication': 'fa-phone',
+            'Productivity': 'fa-bolt',
+            'Utilities': 'fa-calculator',
+            'Developer': 'fa-code'
         };
 
         // Dark Mode Setup
@@ -369,7 +398,7 @@
             allAppsCache = [
                 { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300', 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300'], featured: true },
                 { id: 2, name: 'CyberShield Browser', category: 'Tools', downloads: '850K', rating: 4.8, size: '32 MB', version: 'v1.5', icon_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150', banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800', screenshots: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300', 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=300'], featured: true },
-                { id: 3, name: 'Nova AI Assistant', category: '🤖 AI', downloads: '2.5M', rating: 4.9, size: '64 MB', version: 'v3.0', icon_url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=150', banner_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', screenshots: ['https://images.unsplash.com/photo-1677442136019-21780efad99a?w=300'], featured: false }
+                { id: 3, name: 'Nova AI Assistant', category: 'AI', downloads: '2.5M', rating: 4.9, size: '64 MB', version: 'v3.0', icon_url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=150', banner_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', screenshots: ['https://images.unsplash.com/photo-1677442136019-21780efad99a?w=300'], featured: false }
             ];
             renderPageData(allAppsCache);
         }
@@ -436,28 +465,38 @@
             }
         }
 
-        // Render Play Store style category chips with icon, count, ripple, and active styling
+        // Merge default categories with Supabase categories, preserving all defaults and displaying app counts (including 0)
         function renderCategories(apps) {
             const container = document.getElementById('categoriesContainer');
             if (!container) return;
 
-            // Extract unique categories from Supabase apps
-            let dbCategories = [...new Set(apps.map(a => a.category).filter(Boolean))];
-            let finalCategories = dbCategories.length > 0 ? dbCategories : defaultCategoriesList;
+            const dbCategories = [...new Set(apps.map(a => a.category).filter(Boolean))];
+            
+            // Merge defaults with any unique Supabase categories automatically appended
+            const mergedCategories = [...defaultCategoriesList];
+            dbCategories.forEach(cat => {
+                if (!mergedCategories.includes(cat)) {
+                    mergedCategories.push(cat);
+                }
+            });
 
-            container.innerHTML = finalCategories.map(cat => {
-                // Calculate count
+            container.innerHTML = mergedCategories.map(cat => {
                 let count = 0;
-                if (cat === '🔥 Featured') {
+                if (cat === 'All') {
+                    count = apps.length;
+                } else if (cat === 'Featured') {
                     count = apps.filter(a => a.featured || a.is_featured).length;
-                } else if (cat === '⭐ Trending') {
+                } else if (cat === 'Trending') {
                     count = apps.filter(a => parseFloat(a.rating) >= 4.8).length;
-                } else if (cat === '🆕 New Apps') {
-                    count = apps.filter(a => a.version && a.version.includes('1')).length || Math.min(apps.length, 5);
+                } else if (cat === 'New Apps') {
+                    count = apps.filter(a => a.version && a.version.includes('1')).length;
+                } else if (cat === 'Recently Updated') {
+                    count = apps.filter(a => a.updated_at || (a.version && a.version.includes('2'))).length;
+                } else if (cat === 'Top Charts') {
+                    count = apps.filter(a => parseFloat(a.rating) >= 4.9).length;
                 } else {
                     count = apps.filter(a => a.category === cat).length;
                 }
-                if (count === 0 && !dbCategories.length) count = Math.floor(Math.random() * 50) + 5;
 
                 const iconClass = categoryIcons[cat] || 'fa-folder';
                 const isSelected = cat === currentCategory;
@@ -477,7 +516,6 @@
         }
 
         window.handleCategoryClick = function(event, category) {
-            // Ripple animation effect
             const btn = event.currentTarget;
             const circle = document.createElement('span');
             const diameter = Math.max(btn.clientWidth, btn.clientHeight);
@@ -509,11 +547,18 @@
             }
 
             let filtered = [];
-            if (category === '🔥 Featured') {
+            if (category === 'All') {
+                filtered = allAppsCache;
+            } else if (category === 'Featured') {
                 filtered = allAppsCache.filter(a => a.featured || a.is_featured);
-                if (filtered.length === 0) filtered = allAppsCache;
-            } else if (category === '⭐ Trending') {
+            } else if (category === 'Trending') {
                 filtered = allAppsCache.filter(a => parseFloat(a.rating) >= 4.8);
+            } else if (category === 'New Apps') {
+                filtered = allAppsCache.filter(a => a.version && a.version.includes('1'));
+            } else if (category === 'Recently Updated') {
+                filtered = allAppsCache.filter(a => a.updated_at || (a.version && a.version.includes('2')));
+            } else if (category === 'Top Charts') {
+                filtered = allAppsCache.filter(a => parseFloat(a.rating) >= 4.9);
             } else {
                 filtered = allAppsCache.filter(a => a.category === category);
             }
