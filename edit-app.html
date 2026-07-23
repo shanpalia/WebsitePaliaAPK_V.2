@@ -1727,11 +1727,18 @@ img{ max-width: 100%; display: block; }
     }
 
     sb.from('apps').select('*').eq('id', appId).single()
-      .then(function(res){
-        if(res.error || !res.data){
-          throw (res.error || new Error('App not found.'));
-        }
-        populateForm(res.data);
+  .then(function(res){
+
+    console.log("App ID:", appId);
+    console.log("Supabase Error:", res.error);
+    console.log("Supabase Data:", res.data);
+
+    if(res.error || !res.data){
+      throw (res.error || new Error('App not found.'));
+    }
+
+    populateForm(res.data);
+       
         appLoaded = true;
         btnUpdate.disabled = false;
         btnDelete.disabled = false;
