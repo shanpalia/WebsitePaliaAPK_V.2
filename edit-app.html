@@ -1768,11 +1768,13 @@ img{ max-width: 100%; display: block; }
   }
 
   function resolveUploaderForSave(id, bucket){
-    var d = uploads[id];
-    if(d.file){
-      var oldUrl = d.dbUrl;
-      return uploadAsset(bucket, id.replace(/[0-9]+$/, ''), d.file).then(function(newUrl){
-        if(oldUrl){ deleteAssetByUrl(bucket, oldUrl); }
+    var folder = id.replace(/[0-9]+$/, '');
+
+if (id === "apk") {
+    folder = "apks";   // APK hamesha apks folder me upload hoga
+}
+
+return uploadAsset(bucket, folder, d.file)
         return newUrl;
       });
     }
