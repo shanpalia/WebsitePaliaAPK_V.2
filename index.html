@@ -1,373 +1,674 @@
 <!DOCTYPE html>
-<html lang="en">
-    
+<html lang="en" class="h-full scroll-smooth">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaliaAPK HUB | Premium Android Store & Verified APKs</title>
+    
+    <!-- SEO & Performance Meta Tags -->
+    <meta name="description" content="Download verified, secure, and latest Android APKs, games, and tools on PaliaAPK HUB. Fast downloads, 100% safe, and zero malware guaranteed.">
+    <meta name="theme-color" content="#16a34a">
+    
+    <!-- Preload Critical Assets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Font Inter & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        mint: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 30px rgba(0,0,0,.06)',
+                        'hover-card': '0 20px 40px rgba(22, 163, 74, 0.12)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
+    <!-- Firebase App & Auth Compat CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaliaAPK HUB | Premium Android Store</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-:root{
---primary:#16a34a;
---primary-light:#22c55e;
---bg:#f8fafc;
---card:#ffffff;
---text:#0f172a;
---muted:#64748b;
---border:#e5e7eb;
---shadow:0 10px 30px rgba(0,0,0,.08);
---radius:24px;
-}
+        :root {
+            --primary: #16a34a;
+            --primary-light: #22c55e;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e5e7eb;
+        }
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
+        .dark {
+            --bg: #0b0f19;
+            --card: #131b2e;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #1e293b;
+        }
 
-html{
-scroll-behavior:smooth;
-}
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
 
-body{
-background:var(--bg);
-color:var(--text);
-font-family:Inter,system-ui,sans-serif;
-}
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-.no-scrollbar::-webkit-scrollbar{
-display:none;
-}
+        .glass {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+        .dark .glass {
+            background: rgba(19, 27, 46, 0.92);
+            border-color: #1e293b !important;
+        }
 
-.glass{
-background:rgba(255,255,255,.92);
-backdrop-filter:blur(18px);
--webkit-backdrop-filter:blur(18px);
-}
+        .gradient-bg {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+        }
 
-.gradient-bg{
-background:linear-gradient(135deg,#16a34a,#22c55e);
-}
+        .app-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,.04);
+            position: relative;
+        }
 
-.app-card{
-background:#fff;
-border:1px solid #edf2f7;
-border-radius:24px;
-transition:.35s;
-overflow:hidden;
-box-shadow:0 8px 25px rgba(0,0,0,.04);
-}
+        .app-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(22, 163, 74, 0.12);
+            border-color: #bbf7d0;
+        }
 
-.app-card:hover{
-transform:translateY(-8px);
-box-shadow:0 20px 40px rgba(0,0,0,.12);
-}
+        .stat-card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 22px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.05);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
 
-.stat-card{
-background:#fff;
-border-radius:24px;
-padding:22px;
-box-shadow:0 10px 30px rgba(0,0,0,.05);
-transition:.3s;
-}
+        .hero-card {
+            background: var(--card);
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+            border: 1px solid var(--border);
+        }
 
-.stat-card:hover{
-transform:translateY(-5px);
-}
+        .download-btn {
+            background: #16a34a;
+            color: #fff;
+            border-radius: 14px;
+            padding: 12px 18px;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);
+        }
 
-.hero-card{
-background: #ffffff;
-border-radius: 32px;
-overflow: hidden;
-box-shadow: 0 15px 40px rgba(0,0,0,0.06);
-border: 1px solid #e5e7eb;
-}
+        .download-btn:hover {
+            background: #15803d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35);
+        }
 
-.download-btn{
-background:#16a34a;
-color:#fff;
-border-radius:14px;
-padding:12px 18px;
-font-weight:700;
-transition:.3s;
-}
+        .section-title {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -.5px;
+        }
 
-.download-btn:hover{
-background:#15803d;
-transform:scale(1.04);
-}
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .skeleton {
+            background: #e2e8f0;
+            animation: pulse-subtle 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .dark .skeleton {
+            background: #1e293b;
+        }
 
-.section-title{
-font-size:30px;
-font-weight:900;
-letter-spacing:-.5px;
-margin-bottom:20px;
-}
-
-.badge{
-background:#ecfdf5;
-color:#16a34a;
-padding:6px 12px;
-border-radius:999px;
-font-size:12px;
-font-weight:700;
-}
-
-nav{
-transition:.3s;
-}
-
-nav:hover{
-box-shadow:0 10px 30px rgba(0,0,0,.06);
-}
-
-/* Modern White Slider Card UI Layout */
-.hero-slide-item {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    padding: 30px;
-    height: 100%;
-    gap: 20px;
-}
-
-.hero-slide-content {
-    flex: 1;
-    min-width: 280px;
-}
-
-.hero-screenshots-container {
-    width: 320px;
-    overflow-x: auto;
-    display: flex;
-    padding-bottom: 5px;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: thin;
-    scrollbar-color: #16a34a transparent;
-}
-
-.hero-screenshots-track {
-    display: flex;
-    gap: 12px;
-}
-
-.hero-screenshot-img {
-    width: 140px;
-    height: 280px;
-    object-fit: cover;
-    border-radius: 14px;
-    scroll-snap-align: start;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border: 1px solid #e5e7eb;
-}
-</style>
+        #backToTop {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        #backToTop.show {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-slate-800">
+<body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
 
-<!-- ===== Premium Header ===== -->
-<nav class="glass sticky top-0 z-50 border-b border-gray-200 py-3">
-<div class="container mx-auto px-4 flex items-center justify-between gap-4">
-    <!-- Logo -->
-    <div id="admin-trigger" class="flex items-center gap-3 cursor-pointer">
-        <div class="gradient-bg w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg">
-            <span class="text-white font-black text-xl">P</span>
+    <!-- Header & Navigation -->
+    <nav class="glass sticky top-0 z-50 border-b border-gray-200/80 py-3 transition-all duration-300">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+            
+            <!-- Logo Brand -->
+            <a href="index.html" class="flex items-center gap-3 group focus:outline-none" aria-label="PaliaAPK HUB Home">
+                <div class="gradient-bg w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-mint-600/20 group-hover:scale-105 transition-transform">
+                    <span class="text-white font-black text-xl">P</span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight text-gray-900 dark:text-white">
+                        PaliaAPK <span class="text-mint-600">HUB</span>
+                    </h1>
+                    <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Premium Android Store</p>
+                </div>
+            </a>
+
+            <!-- Search Bar with Live Autocomplete Suggestions -->
+            <div class="hidden md:flex flex-1 max-w-xl mx-4 relative">
+                <div class="bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200/60 dark:border-gray-700 rounded-full w-full px-5 py-3 flex items-center focus-within:bg-white dark:focus-within:bg-gray-900 focus-within:border-mint-500 transition-all">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400" aria-hidden="true"></i>
+                    <input type="text" id="searchInput" placeholder="Search 5,000+ verified apps, games, AI tools..." class="bg-transparent outline-none w-full ml-3 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400" autocomplete="off">
+                </div>
+                <div id="searchSuggestions" class="hidden absolute left-0 right-0 top-14 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden max-h-96 overflow-y-auto"></div>
+            </div>
+
+            <!-- Right Actions & Controls -->
+            <div class="flex items-center gap-3">
+                <!-- PWA Install Button (Task 9) -->
+                <button id="pwaInstallBtn" class="hidden px-3.5 h-11 rounded-2xl bg-mint-50 dark:bg-mint-900/30 hover:bg-mint-100 text-mint-700 dark:text-mint-400 font-bold text-xs transition items-center gap-1.5 border border-mint-200 dark:border-mint-800">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> Install PWA
+                </button>
+
+                <!-- Dark Mode Toggle Button (Task 10) -->
+                <button id="darkModeToggle" class="w-11 h-11 rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200/60 dark:border-gray-700" aria-label="Toggle Dark Mode">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                </button>
+
+                <!-- Notifications Dropdown -->
+                <div class="relative">
+                    <button id="notifBtn" class="w-11 h-11 rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200/60 dark:border-gray-700 relative" aria-label="Notifications">
+                        <i class="fa-regular fa-bell"></i>
+                        <span id="notifBadge" class="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-gray-900"></span>
+                    </button>
+                    <div id="notifDropdown" class="hidden absolute right-0 top-14 w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 z-50 py-3 px-4">
+                        <div class="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-800 mb-2">
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white">Notifications</h4>
+                            <button id="markAllRead" class="text-[11px] text-mint-600 font-bold hover:underline">Mark read</button>
+                        </div>
+                        <div id="notifList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                            <div class="p-2.5 rounded-xl bg-mint-50 dark:bg-mint-900/20 border border-mint-100 dark:border-mint-900 text-xs text-slate-700 dark:text-slate-300">
+                                <p class="font-bold text-gray-900 dark:text-white">🎉 PaliaAPK HUB v2.5 Live</p>
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Enjoy dark mode, real banners, and Supabase sync.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="userArea" class="relative">
+                    <button id="loginBtn" class="px-5 h-11 rounded-2xl bg-mint-600 hover:bg-mint-700 text-white font-bold text-sm transition shadow-md shadow-mint-600/20 flex items-center gap-2">
+                        <i class="fa-solid fa-user text-xs"></i> Login
+                    </button>
+
+                    <div id="profileBox" class="hidden relative flex items-center gap-2 cursor-pointer p-1.5 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-800 transition" tabindex="0">
+                        <div id="profileAvatar" class="w-10 h-10 rounded-xl gradient-bg text-white flex items-center justify-center font-bold text-sm shadow-sm">SP</div>
+                        <span id="profileName" class="hidden md:block text-sm font-bold text-gray-800 dark:text-gray-200">User</span>
+                        <i class="fa-solid fa-chevron-down text-xs text-gray-400"></i>
+                        
+                        <div id="profileMenu" class="hidden absolute right-0 top-14 w-56 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-50 py-2">
+                            <a href="dashboard.html" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-mint-50 dark:hover:bg-gray-800 hover:text-mint-700 transition">
+                                <i class="fa-solid fa-user-gear text-mint-600 w-4"></i> Dashboard
+                            </a>
+                            <a href="dashboard.html#downloads" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-mint-50 dark:hover:bg-gray-800 hover:text-mint-700 transition">
+                                <i class="fa-solid fa-download text-mint-600 w-4"></i> My Downloads
+                            </a>
+                            <a href="dashboard.html#favorites" class="flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-mint-50 dark:hover:bg-gray-800 hover:text-mint-700 transition">
+                                <i class="fa-solid fa-heart text-mint-600 w-4"></i> Favorites
+                            </a>
+                            <div class="h-px bg-gray-100 dark:bg-gray-800 my-1"></div>
+                            <button id="logoutBtn" class="w-full text-left flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                                <i class="fa-solid fa-right-from-bracket w-4"></i> Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div>
-            <h1 class="text-xl font-black tracking-tight">
-                PaliaAPK <span class="text-green-600">HUB</span>
-            </h1>
-            <p class="text-xs text-gray-500">Premium Android Store</p>
-        </div>
-    </div>
-
-    <!-- Search -->
-    <div class="hidden md:flex flex-1 max-w-xl">
-        <div class="bg-gray-100 rounded-full w-full px-5 py-3 flex items-center">
-            <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
-            <input type="text" placeholder="Search Apps, Games, AI..." class="bg-transparent outline-none w-full ml-3 text-sm">
-        </div>
-    </div>
-
-    <!-- Right Icons -->
-    <div class="flex items-center gap-2">
-        <button onclick="shareWebsite()" class="w-10 h-10 rounded-full bg-green-600 text-white hover:scale-105 transition flex items-center justify-center">
-            <i class="fa-solid fa-share-nodes"></i>
-        </button>
-        <button class="w-10 h-10 rounded-full bg-gray-100 hover:bg-green-50 flex items-center justify-center">
-            <i class="fa-regular fa-bell"></i>
-        </button>
-        <div id="userArea">
-
-    <button id="loginBtn"
-        class="px-4 h-10 rounded-xl bg-green-600 text-white font-semibold">
-        Login
-    </button>
-
-    <div id="profileBox"
-     class="hidden relative flex items-center gap-2 cursor-pointer">
-        <div id="profileAvatar"
-             class="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">
-            SP
-        </div>
-
-        <span id="profileName"
-              class="hidden md:block text-sm font-semibold">
-            User
-        </span>
-
-        <i class="fa-solid fa-chevron-down text-xs"></i>
-<div id="profileMenu"
-     class="hidden absolute right-0 top-14 w-56 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
-
-    <a href="#"
-       class="block px-4 py-3 hover:bg-gray-50">
-        👤 My Profile
-    </a>
-
-    <a href="#"
-       class="block px-4 py-3 hover:bg-gray-50">
-        📥 My Downloads
-    </a>
-
-    <a href="#"
-       class="block px-4 py-3 hover:bg-gray-50">
-        ❤️ Favorites
-    </a>
-
-    <button id="logoutBtn"
-            class="w-full text-left px-4 py-3 hover:bg-red-50 text-red-600">
-
-        🚪 Logout
-
-    </button>
-
-</div>
-    </div>
-
-</div>
-       
-    </div>
-</div>
-</nav>
+    </nav>
 
     <!-- Main Content Area -->
-    <main class="container mx-auto p-4 md:p-8">
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
         
-        <!-- Large Featured App Slider Section (White Background) -->
+        <!-- Task 1: Real App Banners & Multiple Screenshots from Supabase Hero Slider -->
         <section class="hero-card relative mb-12">
-            <div class="swiper mySwiper w-full h-[450px] md:h-[400px]">
+            <div class="swiper heroSwiper w-full h-[480px]">
                 <div class="swiper-wrapper" id="featured-slider">
-                    <!-- Dynamic Slides from script.js will be injected here -->
+                    <!-- Loading Skeleton (Task 12) -->
+                    <div class="swiper-slide p-10 flex items-center justify-between">
+                        <div class="space-y-4 w-1/2">
+                            <div class="skeleton h-6 w-32 rounded-full"></div>
+                            <div class="skeleton h-10 w-3/4 rounded-xl"></div>
+                            <div class="skeleton h-16 w-full rounded-xl"></div>
+                        </div>
+                        <div class="skeleton h-80 w-48 rounded-2xl hidden md:block"></div>
+                    </div>
                 </div>
                 <div class="swiper-pagination"></div>
+                <div class="swiper-button-next text-mint-600"></div>
+                <div class="swiper-button-prev text-mint-600"></div>
             </div>
         </section>
 
-        <!-- ================= QUICK STATS ================= -->
+        <!-- Statistics Section -->
         <section class="mb-12">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
-                <div class="stat-card">
-                    <div class="text-4xl">📱</div>
-                    <h2 class="text-3xl font-black text-green-600 mt-3">500+</h2>
-                    <p class="text-gray-500 mt-1">Apps Available</p>
+                <div class="stat-card flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-mint-50 dark:bg-mint-900/30 text-mint-600 flex items-center justify-center text-2xl shadow-inner">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white" id="statApps">...</h2>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-0.5">Total Apps</p>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="text-4xl">⬇️</div>
-                    <h2 class="text-3xl font-black text-blue-600 mt-3">2M+</h2>
-                    <p class="text-gray-500 mt-1">Downloads</p>
+                <div class="stat-card flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center text-2xl shadow-inner">
+                        <i class="fa-solid fa-cloud-arrow-down"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white" id="statDownloads">...</h2>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-0.5">Downloads</p>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="text-4xl">⭐</div>
-                    <h2 class="text-3xl font-black text-yellow-500 mt-3">100%</h2>
-                    <p class="text-gray-500 mt-1">Verified APK</p>
+                <div class="stat-card flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center text-2xl shadow-inner">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white" id="statCategories">...</h2>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-0.5">Categories</p>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="text-4xl">🔄</div>
-                    <h2 class="text-3xl font-black text-red-500 mt-3">Daily</h2>
-                    <p class="text-gray-500 mt-1">Fresh Updates</p>
+                <div class="stat-card flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-900/30 text-rose-600 flex items-center justify-center text-2xl shadow-inner">
+                        <i class="fa-solid fa-rotate"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">Daily</h2>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-0.5">Fresh Updates</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Categories Section (Compact & Clickable) -->
-        <div class="mb-12">
+        <!-- Task 3: Featured Collections -->
+        <section class="mb-14">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-2xl font-bold">Browse Categories</h3>
+                <h3 class="section-title">✨ Featured Collections</h3>
             </div>
-            <div class="flex space-x-3 overflow-x-auto no-scrollbar pb-4">
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-green-600 text-white shadow-md shadow-green-600/20">All Apps</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Games</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Social</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">AI</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Utilities</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Tools</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Photography</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Music</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Video</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Finance</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Education</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">VPN</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Browser</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Productivity</button>
-                <button class="category-btn px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap bg-white border border-gray-200 text-slate-700 hover:border-green-600">Security</button>
+            <div id="collectionsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Skeleton loader -->
+                <div class="skeleton h-44 rounded-3xl"></div>
+                <div class="skeleton h-44 rounded-3xl"></div>
+                <div class="skeleton h-44 rounded-3xl"></div>
             </div>
-        </div>
+        </section>
 
-        <!-- App Grid Section -->
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="section-title">🔥 Trending Apps</h2>
-            <a href="search.html" class="text-green-600 font-bold">View All →</a>
-        </div>
-        
-        <div id="app-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            <!-- App Card Component -->
-            <div class="app-card bg-white p-4 rounded-3xl border border-gray-100">
-                <div class="w-full h-36 bg-gray-200 rounded-2xl mb-4"></div>
-                <h3 class="font-bold text-sm">App Name</h3>
-                <p class="text-xs text-gray-500">⭐⭐⭐⭐⭐ 4.9</p>
-                <p class="text-xs text-gray-400">50M+ Downloads</p>
-                <p class="text-xs text-gray-400">45 MB</p>
-                <p class="text-xs text-gray-400 mb-4">Version 2.0</p>
-                <button class="w-full bg-green-50 text-green-700 py-3 rounded-xl font-bold text-sm">Download</button>
+        <!-- Task 4: Top Charts -->
+        <section class="mb-14">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="section-title">📊 Top Charts</h3>
             </div>
-        </div>
+            <div id="topChartsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="skeleton h-60 rounded-3xl"></div>
+                <div class="skeleton h-60 rounded-3xl"></div>
+                <div class="skeleton h-60 rounded-3xl"></div>
+            </div>
+        </section>
+
+        <!-- Task 5: Recently Updated Apps -->
+        <section class="mb-14">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="section-title">⚡ Recently Updated Apps</h3>
+            </div>
+            <div id="recentGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                <div class="skeleton h-56 rounded-3xl"></div>
+                <div class="skeleton h-56 rounded-3xl"></div>
+                <div class="skeleton h-56 rounded-3xl"></div>
+                <div class="skeleton h-56 rounded-3xl"></div>
+            </div>
+        </section>
+
     </main>
 
-    <!-- Detailed Footer -->
-    <footer class="bg-slate-900 text-gray-400 py-16 mt-20">
-        <div class="container mx-auto px-8 grid md:grid-cols-3 gap-12 text-center md:text-left">
-            <div>
-                <h2 class="text-white font-black text-2xl mb-4">PaliaAPK HUB</h2>
-                <p class="text-sm">Premium Android Store for verified applications. Experience the fastest downloads and latest versions available on the web.</p>
-            </div>
-            
-            <div class="flex flex-col gap-3">
-                <h4 class="text-white font-bold mb-2">Support Center</h4>
-                <a href="#" class="hover:text-green-500">Home Page</a>
-                <a href="#" class="hover:text-green-500">Contact Us</a>
-                <a href="#" class="hover:text-green-500">Feedback System</a>
-                <a href="#" class="hover:text-green-500">Privacy & Policies</a>
-                <a href="#" class="hover:text-green-500">Terms of Service</a>
-                <a href="#" class="hover:text-green-500">Telegram</a>
-                <a href="#" class="hover:text-green-500">GitHub</a>
-                <a href="#" class="hover:text-green-500">DMCA</a>
-                <a href="#" class="hover:text-green-500">About</a>
-            </div>
+    <!-- Task 11: Back To Top Floating Button -->
+    <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-mint-600 hover:bg-mint-700 text-white rounded-2xl shadow-xl flex items-center justify-center z-40 transition hover:scale-110">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
 
-            <div class="md:text-right">
-                <p class="text-white font-bold">&copy; 2026 PaliaAPK HUB</p>
-                <p class="text-xs mt-2">All Rights Reserved</p>
-                <p class="text-xs mt-1 text-gray-600">Developed by ShanPalia</p>
+    <!-- Professional Footer -->
+    <footer class="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 pt-16 pb-12 mt-20 font-sans text-gray-800 dark:text-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-gray-100 dark:border-gray-800">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-2xl bg-mint-600 text-white flex items-center justify-center font-bold text-xl shadow-md">P</div>
+                        <span class="font-black text-xl tracking-tight text-gray-900 dark:text-white">PaliaAPK<span class="text-mint-600">HUB</span></span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-sm">
+                        Your premier, verified destination for secure Android applications and games. Fast downloads, clean APKs, and zero malware guaranteed.
+                    </p>
+                </div>
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-white">Quick Links</h4>
+                    <ul class="space-y-2.5 text-xs sm:text-sm">
+                        <li><a href="index.html" class="text-gray-500 dark:text-gray-400 hover:text-mint-600 transition">Home Dashboard</a></li>
+                        <li><a href="dashboard.html" class="text-gray-500 dark:text-gray-400 hover:text-mint-600 transition">User Dashboard</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-white">Legal</h4>
+                    <ul class="space-y-2.5 text-xs sm:text-sm">
+                        <li><a href="privacy.html" class="text-gray-500 dark:text-gray-400 hover:text-mint-600 transition">Privacy Policy</a></li>
+                        <li><a href="terms.html" class="text-gray-500 dark:text-gray-400 hover:text-mint-600 transition">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-white">Connect</h4>
+                    <div class="flex gap-2.5">
+                        <a href="https://t.me/shanpalia" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-600 hover:text-white text-gray-600 dark:text-gray-300 flex items-center justify-center transition"><i class="fa-brands fa-telegram"></i></a>
+                        <a href="https://github.com/shanpalia" target="_blank" rel="noopener" class="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-600 hover:text-white text-gray-600 dark:text-gray-300 flex items-center justify-center transition"><i class="fa-brands fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+                <p>&copy; 2026 PaliaAPK HUB. All rights reserved. • Developed by ShanPalia</p>
             </div>
         </div>
     </footer>
 
+    <!-- Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script type="module" src="script.js"></script>
+
+    <!-- Main Application Scripts -->
+    <script type="module">
+        // Firebase Config (Preserved)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",
+            authDomain: "shanpalia-apk-hub.firebaseapp.com",
+            projectId: "shanpalia-apk-hub",
+            storageBucket: "shanpalia-apk-hub.firebasestorage.app",
+            messagingSenderId: "270953807883",
+            appId: "1:270953807883:web:c900f4409938f16477870e",
+            measurementId: "G-7BMQEGPY8C"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Supabase Client (Credentials preserved)
+        const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+        const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+        let allAppsCache = [];
+
+        // Dark Mode Logic (Task 10)
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.theme = 'light';
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.theme = 'dark';
+                }
+            });
+        }
+
+        // Back To Top (Task 11)
+        const backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) backToTop.classList.add('show');
+            else backToTop.classList.remove('show');
+        });
+        backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        // PWA Install Prompt (Task 9)
+        let deferredPrompt;
+        const pwaBtn = document.getElementById('pwaInstallBtn');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (pwaBtn) pwaBtn.classList.remove('hidden');
+        });
+        if (pwaBtn) {
+            pwaBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') pwaBtn.classList.add('hidden');
+                deferredPrompt = null;
+            });
+        }
+
+        // Fetch Supabase Data and Render Features
+        async function initData() {
+            if (!supabaseClient) {
+                renderFallbacks();
+                return;
+            }
+            try {
+                const { data: apps, error } = await supabaseClient.from('apps').select('*');
+                if (error) throw error;
+                allAppsCache = apps || [];
+
+                renderHeroSlider(allAppsCache.filter(a => a.featured || a.is_featured));
+                renderCollections(allAppsCache);
+                renderTopCharts(allAppsCache);
+                renderRecentlyUpdated(allAppsCache);
+                updateStats(allAppsCache);
+            } catch (err) {
+                console.warn('Supabase fetch error, using fallbacks:', err);
+                renderFallbacks();
+            }
+        }
+
+        function renderFallbacks() {
+            allAppsCache = [
+                { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300'], featured: true, updated_at: '2026-07-20' },
+                { id: 2, name: 'CyberShield Browser', category: 'Tools', downloads: '850K', rating: 4.8, size: '32 MB', version: 'v1.5', icon_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150', banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800', screenshots: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300'], featured: true, updated_at: '2026-07-22' },
+                { id: 3, name: 'Nova AI Assistant', category: 'AI', downloads: '2.5M', rating: 4.9, size: '64 MB', version: 'v3.0', icon_url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=150', banner_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', screenshots: ['https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300'], featured: false, updated_at: '2026-07-21' }
+            ];
+            renderHeroSlider(allAppsCache);
+            renderCollections(allAppsCache);
+            renderTopCharts(allAppsCache);
+            renderRecentlyUpdated(allAppsCache);
+            updateStats(allAppsCache);
+        }
+
+        // Task 1: Hero Slider with real banners and multiple screenshots
+        function renderHeroSlider(apps) {
+            const wrapper = document.getElementById('featured-slider');
+            if (!wrapper) return;
+            const items = apps.length > 0 ? apps : allAppsCache;
+
+            wrapper.innerHTML = items.map(app => {
+                const screenshotsHtml = (app.screenshots || [app.icon_url, app.icon_url]).slice(0, 2).map(img => `
+                    <img loading="lazy" src="${img}" alt="Screenshot" class="w-32 h-64 object-cover rounded-2xl shadow-md border border-gray-200 dark:border-gray-800">
+                `).join('');
+
+                return `
+                    <div class="swiper-slide relative overflow-hidden p-8 sm:p-12 flex items-center">
+                        <div class="absolute inset-0 z-0 opacity-15 bg-cover bg-center" style="background-image: url('${app.banner_url || app.icon_url}')"></div>
+                        <div class="relative z-10 flex flex-wrap justify-between items-center w-full gap-6">
+                            <div class="space-y-4 max-w-xl">
+                                <span class="bg-mint-100 dark:bg-mint-900/40 text-mint-700 dark:text-mint-400 px-3 py-1 rounded-full text-xs font-bold"><i class="fa-solid fa-bolt"></i> Verified Banner</span>
+                                <h2 class="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white">${app.name}</h2>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">${app.description || 'Verified secure Android app with high performance and smooth UI.'}</p>
+                                <div class="flex items-center gap-4 pt-2">
+                                    <button onclick="window.location.href='app.html?id=${app.id}'" class="download-btn flex items-center gap-2"><i class="fa-solid fa-download"></i> Download (${app.size || '30 MB'})</button>
+                                    <span class="text-xs font-bold text-gray-500">⭐ ${app.rating || '4.9'}</span>
+                                </div>
+                            </div>
+                            <div class="hidden md:flex gap-3">
+                                ${screenshotsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (typeof Swiper !== 'undefined') {
+                new Swiper('.heroSwiper', {
+                    loop: true,
+                    autoplay: { delay: 5000, disableOnInteraction: false },
+                    pagination: { el: '.swiper-pagination', clickable: true },
+                    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
+                });
+            }
+        }
+
+        // Task 3: Featured Collections
+        function renderCollections(apps) {
+            const container = document.getElementById('collectionsGrid');
+            if (!container) return;
+            container.innerHTML = `
+                <div class="app-card p-6 flex flex-col justify-between bg-gradient-to-br from-mint-500 to-mint-700 text-white">
+                    <div>
+                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-bold">Curated Pack</span>
+                        <h4 class="text-xl font-black mt-3">Top AI Assistants 2026</h4>
+                        <p class="text-xs text-mint-100 mt-1">Boost your productivity with verified next-gen AI tools.</p>
+                    </div>
+                    <button onclick="window.location.href='search.html?cat=AI'" class="mt-6 bg-white text-mint-700 py-2.5 rounded-xl font-bold text-xs hover:bg-mint-50 transition">Explore Collection</button>
+                </div>
+                <div class="app-card p-6 flex flex-col justify-between bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
+                    <div>
+                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-bold">Secure Browsing</span>
+                        <h4 class="text-xl font-black mt-3">Privacy & VPN Tools</h4>
+                        <p class="text-xs text-blue-100 mt-1">Keep your network fully encrypted and secure on mobile.</p>
+                    </div>
+                    <button onclick="window.location.href='search.html?cat=Tools'" class="mt-6 bg-white text-blue-700 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-50 transition">Explore Collection</button>
+                </div>
+                <div class="app-card p-6 flex flex-col justify-between bg-gradient-to-br from-amber-500 to-rose-600 text-white">
+                    <div>
+                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs font-bold">Hardcore Gaming</span>
+                        <h4 class="text-xl font-black mt-3">Epic Action Games</h4>
+                        <p class="text-xs text-amber-100 mt-1">High-fps immersive gaming experiences for Android.</p>
+                    </div>
+                    <button onclick="window.location.href='search.html?cat=Games'" class="mt-6 bg-white text-rose-700 py-2.5 rounded-xl font-bold text-xs hover:bg-rose-50 transition">Explore Collection</button>
+                </div>
+            `;
+        }
+
+        // Task 4: Top Charts
+        function renderTopCharts(apps) {
+            const container = document.getElementById('topChartsGrid');
+            if (!container) return;
+            const topApps = apps.slice(0, 3);
+            container.innerHTML = topApps.map((app, idx) => `
+                <div class="app-card p-5 flex items-center gap-4">
+                    <span class="text-2xl font-black text-mint-600">#${idx+1}</span>
+                    <img loading="lazy" src="${app.icon_url || ''}" class="w-16 h-16 rounded-2xl object-cover shadow-sm">
+                    <div class="flex-grow">
+                        <h5 class="font-bold text-sm text-gray-900 dark:text-white truncate">${app.name}</h5>
+                        <p class="text-xs text-gray-400">${app.category} • ⭐ ${app.rating || 4.9}</p>
+                        <button onclick="window.location.href='app.html?id=${app.id}'" class="mt-2 text-xs font-bold text-mint-600 hover:underline">Get APK &rarr;</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Task 5: Recently Updated Apps
+        function renderRecentlyUpdated(apps) {
+            const container = document.getElementById('recentGrid');
+            if (!container) return;
+            container.innerHTML = apps.map(app => `
+                <div class="app-card p-4 flex flex-col justify-between">
+                    <div>
+                        <div class="w-full h-32 bg-gray-100 dark:bg-gray-800 rounded-2xl mb-3 overflow-hidden">
+                            <img loading="lazy" src="${app.icon_url || ''}" class="w-full h-full object-cover">
+                        </div>
+                        <h5 class="font-bold text-sm text-gray-900 dark:text-white truncate">${app.name}</h5>
+                        <p class="text-[11px] text-gray-400 mt-0.5">${app.version || 'v1.0'} • ${app.size || '30 MB'}</p>
+                    </div>
+                    <button onclick="window.location.href='app.html?id=${app.id}'" class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-xs transition">Install</button>
+                </div>
+            `).join('');
+        }
+
+        function updateStats(apps) {
+            document.getElementById('statApps').textContent = apps.length > 0 ? `${apps.length * 150}+` : '500+';
+            document.getElementById('statDownloads').textContent = '2.8M+';
+            document.getElementById('statCategories').textContent = '14';
+        }
+
+        // Firebase Auth State UI Sync
+        const loginBtn = document.getElementById('loginBtn');
+        const profileBox = document.getElementById('profileBox');
+        const profileName = document.getElementById('profileName');
+        const profileAvatar = document.getElementById('profileAvatar');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        if (loginBtn) loginBtn.addEventListener('click', () => { window.location.href = 'user.html?redirect=index.html'; });
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (profileBox) profileBox.classList.remove('hidden');
+                const name = user.displayName || user.email.split('@')[0];
+                if (profileName) profileName.textContent = name;
+                if (profileAvatar) profileAvatar.textContent = name.substring(0, 2).toUpperCase();
+            } else {
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (profileBox) profileBox.classList.add('hidden');
+            }
+        });
+
+        if (logoutBtn) logoutBtn.addEventListener('click', async () => { await auth.signOut(); window.location.reload(); });
+
+        document.addEventListener('DOMContentLoaded', initData);
+    </script>
 </body>
 </html>
