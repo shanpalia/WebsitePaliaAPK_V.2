@@ -149,6 +149,8 @@
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            flex-shrink: 0;
+            width: 130px;
         }
         .category-card:hover {
             transform: translateY(-4px);
@@ -232,14 +234,24 @@
             </div>
         </section>
 
-        <!-- Categories Section (Placed directly below Hero Slider and above Apps/Featured Collections) -->
+        <!-- Categories Section (Placed directly below Hero Slider and above Apps) -->
         <section class="mb-12" id="categoriesSection">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Categories</h3>
+                
+                <!-- Desktop & Tablet Navigation Arrows -->
+                <div class="hidden sm:flex items-center gap-2">
+                    <button id="categoryPrevBtn" onclick="scrollCategories(-1)" class="w-11 h-11 rounded-full bg-white dark:bg-gray-800 text-mint-600 dark:text-mint-400 shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-mint-600 hover:text-white transition-all transform hover:scale-105">
+                        <i class="fa-solid fa-chevron-left text-sm"></i>
+                    </button>
+                    <button id="categoryNextBtn" onclick="scrollCategories(1)" class="w-11 h-11 rounded-full bg-white dark:bg-gray-800 text-mint-600 dark:text-mint-400 shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-mint-600 hover:text-white transition-all transform hover:scale-105">
+                        <i class="fa-solid fa-chevron-right text-sm"></i>
+                    </button>
+                </div>
             </div>
             
-            <!-- Responsive Container: Mobile horizontal scroll/snap, Tablet 4 cols, Desktop 5 cols x 2 rows (10 items total) -->
-            <div id="categoriesContainer" class="grid grid-flow-col auto-cols-[42%] sm:auto-cols-[28%] md:flex md:grid md:grid-cols-5 gap-3.5 overflow-x-auto md:overflow-x-visible no-scrollbar pb-3 snap-x snap-mandatory">
+            <!-- Horizontal Scrolling Categories Container -->
+            <div id="categoriesContainer" class="flex gap-3.5 overflow-x-auto no-scrollbar pb-3 scroll-smooth snap-x snap-mandatory">
                 <!-- Dynamically injected via JavaScript -->
             </div>
 
@@ -337,8 +349,9 @@
         window.allAppsCache = [];
         window.currentCategory = 'All';
 
-        // Exact 10 default requested categories with matching FontAwesome icons
+        // Exact 10 requested categories with All included first
         const defaultCategoriesConfig = [
+            { name: 'All', icon: 'fa-fire' },
             { name: 'AI', icon: 'fa-robot' },
             { name: 'Social', icon: 'fa-comments' },
             { name: 'Games', icon: 'fa-gamepad' },
@@ -385,8 +398,8 @@
 
         function loadFallbacks() {
             window.allAppsCache = [
-                { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300', 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300'], featured: true },
-                { id: 2, name: 'CyberShield Browser', category: 'Tools', downloads: '850K', rating: 4.8, size: '32 MB', version: 'v1.5', icon_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150', banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800', screenshots: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300', 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=300'], featured: true },
+                { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300'], featured: true },
+                { id: 2, name: 'CyberShield Browser', category: 'Tools', downloads: '850K', rating: 4.8, size: '32 MB', version: 'v1.5', icon_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150', banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800', screenshots: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300'], featured: true },
                 { id: 3, name: 'Nova AI Assistant', category: 'AI', downloads: '2.5M', rating: 4.9, size: '64 MB', version: 'v3.0', icon_url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=150', banner_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', screenshots: ['https://images.unsplash.com/photo-1677442136019-21780efad99a?w=300'], featured: false }
             ];
             renderPageData(window.allAppsCache);
@@ -396,6 +409,7 @@
             renderHeroSlider(apps.filter(a => a.featured || a.is_featured).length > 0 ? apps.filter(a => a.featured || a.is_featured) : apps);
             renderCategoriesSection(apps);
             filterAppsByCategory(window.currentCategory, false);
+            setupCategoryScrollListeners();
         }
 
         function renderHeroSlider(apps) {
@@ -454,13 +468,16 @@
             }
         }
 
-        // Render Categories Section with Supabase data merge and 0 fallback counts
+        // Render Categories Section with Supabase app counts and 0 fallback states
         window.renderCategoriesSection = function(appsArray) {
             const container = document.getElementById('categoriesContainer');
             if (!container) return;
 
             container.innerHTML = defaultCategoriesConfig.map(catConfig => {
-                const matchedCount = (appsArray || []).filter(a => a.category && a.category.toLowerCase() === catConfig.name.toLowerCase()).length;
+                const matchedCount = catConfig.name === 'All' 
+                    ? (appsArray || []).length 
+                    : (appsArray || []).filter(a => a.category && a.category.toLowerCase() === catConfig.name.toLowerCase()).length;
+                
                 const isSelected = window.currentCategory.toLowerCase() === catConfig.name.toLowerCase();
 
                 const cardClasses = isSelected
@@ -487,6 +504,8 @@
                     </div>
                 `;
             }).join('');
+
+            setTimeout(updateCategoryArrowVisibility, 50);
         };
 
         window.handleCategoryCardClick = function(event, categoryName) {
@@ -514,10 +533,12 @@
             }
 
             if (typeof window.allAppsCache !== 'undefined') {
-                const filteredApps = window.allAppsCache.filter(app => app.category && app.category.toLowerCase() === categoryName.toLowerCase());
+                const filteredApps = categoryName === 'All' 
+                    ? window.allAppsCache 
+                    : window.allAppsCache.filter(app => app.category && app.category.toLowerCase() === categoryName.toLowerCase());
                 
                 const sectionHeading = document.getElementById('sectionHeading');
-                if (sectionHeading) sectionHeading.textContent = categoryName;
+                if (sectionHeading) sectionHeading.textContent = categoryName === 'All' ? 'All Apps' : categoryName;
 
                 const appsGrid = document.getElementById('appsGrid');
                 if (appsGrid) {
@@ -546,6 +567,54 @@
                 }
             }
         };
+
+        // Smooth Category Scrolling with Arrows and Wheel
+        window.scrollCategories = function(direction) {
+            const container = document.getElementById('categoriesContainer');
+            if (!container) return;
+            const scrollAmount = 300;
+            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+            setTimeout(updateCategoryArrowVisibility, 300);
+        };
+
+        function updateCategoryArrowVisibility() {
+            const container = document.getElementById('categoriesContainer');
+            const prevBtn = document.getElementById('categoryPrevBtn');
+            const nextBtn = document.getElementById('categoryNextBtn');
+            if (!container || !prevBtn || !nextBtn) return;
+
+            const scrollLeft = container.scrollLeft;
+            const maxScrollLeft = container.scrollWidth - container.clientWidth;
+
+            if (scrollLeft <= 5) {
+                prevBtn.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                prevBtn.classList.remove('opacity-0', 'pointer-events-none');
+            }
+
+            if (scrollLeft >= maxScrollLeft - 5) {
+                nextBtn.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                nextBtn.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function setupCategoryScrollListeners() {
+            const container = document.getElementById('categoriesContainer');
+            if (!container) return;
+
+            container.addEventListener('scroll', updateCategoryArrowVisibility);
+            
+            // Mouse wheel horizontal scrolling for desktop
+            container.addEventListener('wheel', (evt) => {
+                if (evt.deltaY !== 0) {
+                    evt.preventDefault();
+                    container.scrollLeft += evt.deltaY;
+                }
+            }, { passive: false });
+
+            window.addEventListener('resize', updateCategoryArrowVisibility);
+        }
 
         // Firebase Auth State UI
         auth.onAuthStateChanged((user) => {
