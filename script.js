@@ -253,7 +253,7 @@ async function fetchApps() {
                     <p class="text-sm text-gray-600 mt-4 line-clamp-2">${escapeHTML(app.description)}</p>
                     <div class="flex gap-3 mt-5">
                         <a href="app.html?id=${app.id}" class="flex-1 text-center border border-green-600 text-green-600 rounded-xl py-3 font-bold text-sm">Details</a>
-                        <a href="${app.apk_url}" class="flex-1 text-center bg-green-600 text-white rounded-xl py-3 font-bold text-sm">Download</a>
+                       <a href="app.html?id=${app.id}" class="flex-1 text-center bg-green-600 text-white rounded-xl py-3 font-bold text-sm">Download</a>
                     </div>
                 </div>
             </div>
@@ -290,7 +290,7 @@ if (searchInput) {
                             <span class="badge">⭐ ${app.rating}</span>
                             <span class="badge">${app.apk_size || "Unknown Size"}</span>
                         </div>
-                        <a href="${app.apk_url}" class="download-btn w-full text-center mt-4 block">Download</a>
+                       <a href="app.html?id=${app.id}" class="download-btn w-full text-center mt-4 block">Download</a>
                     </div>
                 </div>
             `;
@@ -360,7 +360,10 @@ document.querySelectorAll(".category-btn").forEach(btn => {
                         <p class="text-sm text-gray-600 mt-4 line-clamp-2">${escapeHTML(app.description)}</p>
                         <div class="flex gap-3 mt-5">
                             <a href="app.html?id=${app.id}" class="flex-1 text-center border border-green-600 text-green-600 rounded-xl py-3 font-bold text-sm">Details</a>
-                            <a href="${app.apk_url}" class="flex-1 text-center bg-green-600 text-white rounded-xl py-3 font-bold text-sm">Download</a>
+                            <a href="app.html?id=${app.id}"
+class="flex-1 text-center bg-green-600 text-white rounded-xl py-3 font-bold text-sm">
+Download
+</a>
                         </div>
                     </div>
                 </div>
