@@ -1,780 +1,197 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi" class="h-full">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Secure Download — PaliaAPK HUB</title>
-<meta name="description" content="Download this app securely from PaliaAPK HUB. Login required.">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-<style>
-/* ==========================================================================
-   0. RESET & TOKENS
-   ========================================================================== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-
-:root{
-  --mint-50:  #F3FBF8;
-  --mint-100: #E4F5EF;
-  --mint-200: #C7EBDD;
-  --mint-300: #93DCC2;
-  --mint-400: #4FCBA0;
-  --mint-500: #22B287;
-  --mint-600: #189070;
-  --mint-700: #10745A;
-  --mint-800: #0B5745;
-
-  --ink-900: #12211D;
-  --ink-700: #33473F;
-  --ink-500: #5D726A;
-  --ink-300: #8FA39C;
-  --ink-100: #E4ECE9;
-
-  --white: #FFFFFF;
-  --paper: #FAFDFC;
-  --line:  #E3EEE9;
-
-  --danger: #E5484D;
-  --danger-bg: #FDEDEE;
-  --warn: #E8A73B;
-  --warn-bg: #FDF4E4;
-  --ok: #22B287;
-  --ok-bg: #E4F5EF;
-
-  --shadow-sm: 0 1px 2px rgba(18,33,29,0.06), 0 1px 1px rgba(18,33,29,0.04);
-  --shadow-md: 0 8px 24px rgba(18,33,29,0.08), 0 2px 6px rgba(18,33,29,0.05);
-  --shadow-lg: 0 20px 48px rgba(18,33,29,0.14), 0 4px 12px rgba(18,33,29,0.06);
-  --shadow-focus: 0 0 0 3px rgba(34,178,135,0.25);
-
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 26px;
-  --radius-pill: 999px;
-
-  --font-display: 'Sora', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-
-  --topbar-h: 64px;
-  --ease: cubic-bezier(.4,0,.2,1);
-}
-
-@media (prefers-reduced-motion: reduce){
-  *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
-}
-
-body{
-  font-family: var(--font-body);
-  background: var(--paper);
-  color: var(--ink-900);
-  -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
-}
-
-a{ color: inherit; text-decoration: none; }
-button{ font-family: inherit; cursor: pointer; }
-ul{ list-style: none; }
-img{ max-width: 100%; display: block; }
-
-:focus-visible{ outline: none; box-shadow: var(--shadow-focus); border-radius: var(--radius-sm); }
-
-::-webkit-scrollbar{ width: 8px; height: 8px; }
-::-webkit-scrollbar-track{ background: transparent; }
-::-webkit-scrollbar-thumb{ background: var(--mint-200); border-radius: var(--radius-pill); }
-::-webkit-scrollbar-thumb:hover{ background: var(--mint-300); }
-
-@keyframes spin{ to{ transform: rotate(360deg); } }
-@keyframes fade-up{ from{ opacity:0; transform: translateY(10px); } to{ opacity:1; transform: translateY(0); } }
-@keyframes pulse-dot{ 0%,100%{ opacity:1; transform: scale(1); } 50%{ opacity:.4; transform: scale(.7); } }
-
-/* ==========================================================================
-   1. TOPBAR
-   ========================================================================== */
-.topbar{
-  height: var(--topbar-h);
-  background: rgba(250,253,252,0.9);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 20px;
-  position: sticky;
-  top: 0;
-  z-index: 40;
-}
-.topbar-back{
-  display: flex; align-items: center; justify-content: center;
-  width: 38px; height: 38px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--line);
-  background: var(--white);
-  color: var(--ink-700);
-  flex-shrink: 0;
-}
-.topbar-back:hover{ background: var(--mint-50); border-color: var(--mint-200); }
-.topbar-back svg{ width: 18px; height: 18px; }
-
-.topbar-brand{ display: flex; align-items: center; gap: 10px; }
-.topbar-brand__mark{
-  width: 34px; height: 34px;
-  border-radius: 10px;
-  background: linear-gradient(155deg, var(--mint-400), var(--mint-700));
-  display: flex; align-items: center; justify-content: center;
-  color: var(--white);
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 14px;
-  flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
-}
-.topbar-brand__text strong{
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 14.5px;
-  letter-spacing: -0.01em;
-  display: block;
-  line-height: 1.2;
-}
-.topbar-brand__text span{ font-size: 10.5px; color: var(--ink-300); font-weight: 500; }
-
-.topbar-spacer{ flex: 1; }
-
-.secure-badge{
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11.5px; font-weight: 700;
-  color: var(--mint-700);
-  background: var(--mint-100);
-  border: 1px solid var(--mint-200);
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
-  white-space: nowrap;
-}
-.secure-badge svg{ width: 13px; height: 13px; }
-
-/* ==========================================================================
-   2. PAGE / CONTAINER
-   ========================================================================== */
-.page-body{ padding: 32px 20px 70px; }
-.container{ max-width: 540px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
-
-.state{ animation: fade-up 0.28s var(--ease); }
-.state[hidden]{ display: none !important; }
-
-/* ---- loading state ---- */
-.loading-card{
-  display: flex; flex-direction: column; align-items: center; gap: 14px;
-  text-align: center; padding: 70px 24px; color: var(--ink-300);
-}
-.loading-spinner{
-  width: 34px; height: 34px; border-radius: 50%;
-  border: 3px solid var(--mint-100); border-top-color: var(--mint-500);
-  animation: spin 0.8s linear infinite;
-}
-.loading-card p{ font-size: 13px; font-weight: 600; color: var(--ink-500); }
-
-/* ---- error state ---- */
-.error-card{
-  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px;
-  padding: 56px 30px;
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-}
-.error-card__icon{
-  width: 60px; height: 60px; border-radius: 50%;
-  background: var(--danger-bg); color: var(--danger);
-  display: flex; align-items: center; justify-content: center;
-}
-.error-card__icon svg{ width: 27px; height: 27px; }
-.error-card h2{ font-family: var(--font-display); font-size: 18px; font-weight: 800; }
-.error-card p{ font-size: 13.5px; color: var(--ink-500); line-height: 1.6; max-width: 360px; }
-
-/* ==========================================================================
-   3. APP DETAILS CARD
-   ========================================================================== */
-.app-card{
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  padding: 26px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.app-card__top{ display: flex; gap: 16px; align-items: center; }
-.app-icon{
-  width: 76px; height: 76px;
-  border-radius: 20px;
-  background: var(--mint-100);
-  border: 1px solid var(--mint-200);
-  overflow: hidden;
-  flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--mint-500);
-}
-.app-icon img{ width: 100%; height: 100%; object-fit: cover; }
-.app-icon svg{ width: 32px; height: 32px; }
-
-.app-meta{ min-width: 0; }
-.app-meta h1{
-  font-family: var(--font-display);
-  font-size: 19px; font-weight: 800;
-  letter-spacing: -0.01em;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.app-meta__dev{ font-size: 12.5px; color: var(--ink-300); font-weight: 600; margin-top: 2px; }
-.app-meta__rating{ display: flex; align-items: center; gap: 5px; margin-top: 6px; font-size: 12px; font-weight: 700; color: var(--ink-700); }
-.app-meta__rating svg{ width: 13px; height: 13px; color: var(--warn); }
-
-.pill-row{ display: flex; flex-wrap: wrap; gap: 8px; }
-.pill{
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11.5px; font-weight: 700;
-  color: var(--ink-700);
-  background: var(--paper);
-  border: 1px solid var(--line);
-  padding: 6px 11px;
-  border-radius: var(--radius-pill);
-}
-.pill svg{ width: 13px; height: 13px; color: var(--mint-500); }
-
-/* ==========================================================================
-   4. LOGIN REQUIRED CARD
-   ========================================================================== */
-.login-card{
-  background: linear-gradient(180deg, var(--mint-50), var(--white));
-  border: 1px solid var(--mint-200);
-  border-radius: var(--radius-xl);
-  padding: 34px 26px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 12px;
-}
-.login-card__icon{
-  width: 58px; height: 58px; border-radius: 50%;
-  background: var(--white);
-  border: 1px solid var(--mint-200);
-  color: var(--mint-600);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: var(--shadow-sm);
-}
-.login-card__icon svg{ width: 25px; height: 25px; }
-.login-card h2{ font-family: var(--font-display); font-size: 18px; font-weight: 800; margin-top: 4px; }
-.login-card p{ font-size: 13.5px; color: var(--ink-500); line-height: 1.6; max-width: 360px; }
-
-.login-card__actions{ display: flex; gap: 10px; width: 100%; margin-top: 10px; flex-wrap: wrap; }
-.login-card__actions .btn{ flex: 1; min-width: 140px; justify-content: center; }
-
-.locked-note{
-  display: flex; align-items: center; gap: 8px;
-  font-size: 11.5px; color: var(--ink-300); font-weight: 600;
-  margin-top: 4px;
-}
-.locked-note svg{ width: 13px; height: 13px; }
-
-.auth-alert{
-  display: none;
-  width: 100%;
-  padding: 11px 13px;
-  border-radius: var(--radius-md);
-  background: var(--danger-bg);
-  color: var(--danger);
-  font-size: 12.5px;
-  font-weight: 600;
-  text-align: left;
-}
-.auth-alert.is-visible{ display: block; }
-
-.auth-form{
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 4px;
-}
-.auth-field{ display: flex; flex-direction: column; gap: 5px; text-align: left; }
-.auth-field label{ font-size: 11.5px; font-weight: 700; color: var(--ink-700); }
-.auth-field input{
-  border: 1px solid var(--line);
-  background: var(--white);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  font-size: 13.5px;
-  font-family: inherit;
-  color: var(--ink-900);
-  width: 100%;
-}
-.auth-field input:focus{ outline: none; border-color: var(--mint-500); box-shadow: var(--shadow-focus); }
-
-.auth-divider{
-  display: flex; align-items: center; gap: 10px;
-  width: 100%;
-  color: var(--ink-300);
-  font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
-  margin: 2px 0;
-}
-.auth-divider::before, .auth-divider::after{ content: ''; flex: 1; height: 1px; background: var(--line); }
-
-.btn-google{
-  width: 100%;
-  justify-content: center;
-  background: var(--white);
-  border-color: var(--line);
-  color: var(--ink-700);
-}
-.btn-google:hover{ border-color: var(--ink-300); background: var(--paper); }
-
-.btn-spinner{
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.4);
-  border-top-color: var(--white);
-  display: none;
-  animation: spin 0.7s linear infinite;
-}
-.btn-secondary .btn-spinner, .btn-google .btn-spinner{ border-color: rgba(16,116,90,0.25); border-top-color: var(--mint-700); }
-.btn.is-loading .btn-spinner{ display: inline-block; }
-.btn.is-loading svg{ display: none; }
-
-.session-row{
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px;
-  font-size: 12px;
-  color: var(--ink-500);
-  font-weight: 600;
-  padding-bottom: 4px;
-  margin-bottom: 4px;
-  border-bottom: 1px dashed var(--line);
-}
-.session-row span{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.session-signout{
-  border: none; background: none;
-  color: var(--mint-700);
-  font-size: 12px; font-weight: 700;
-  flex-shrink: 0;
-}
-.session-signout:hover{ text-decoration: underline; }
-
-/* ==========================================================================
-   5. TRUST BADGES + DOWNLOAD CARD (logged in)
-   ========================================================================== */
-.trust-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.trust-item{
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  text-align: center;
-  padding: 14px 8px;
-  background: var(--ok-bg);
-  border: 1px solid rgba(34,178,135,0.2);
-  border-radius: var(--radius-md);
-}
-.trust-item svg{ width: 20px; height: 20px; color: var(--ok); }
-.trust-item span{ font-size: 10.5px; font-weight: 700; color: var(--mint-700); line-height: 1.3; }
-
-.info-list{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.info-item{
-  display: flex; flex-direction: column; gap: 2px;
-  padding: 12px 14px;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-}
-.info-item span{ font-size: 10px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; color: var(--ink-300); }
-.info-item strong{ font-size: 13px; font-weight: 700; color: var(--ink-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.btn{
-  display: inline-flex; align-items: center; gap: 9px;
-  padding: 13px 20px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 700;
-  border: 1.5px solid transparent;
-  transition: transform 0.12s var(--ease), box-shadow 0.12s var(--ease);
-}
-.btn svg{ width: 17px; height: 17px; }
-.btn:hover{ transform: translateY(-1px); }
-.btn:disabled{ opacity: 0.65; cursor: not-allowed; transform: none; }
-
-.btn-secondary{ background: var(--white); border-color: var(--line); color: var(--ink-700); }
-.btn-secondary:hover{ border-color: var(--mint-300); background: var(--mint-50); }
-
-.btn-primary{
-  background: linear-gradient(135deg, var(--mint-500), var(--mint-700));
-  color: var(--white);
-  box-shadow: var(--shadow-sm);
-}
-.btn-primary:hover{ box-shadow: var(--shadow-md); }
-
-.btn-download{
-  width: 100%;
-  justify-content: center;
-  padding: 17px 20px;
-  font-size: 15.5px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--mint-500), var(--mint-700));
-  color: var(--white);
-  box-shadow: var(--shadow-md);
-}
-.btn-download:hover{ box-shadow: var(--shadow-lg); }
-.btn-download svg{ width: 19px; height: 19px; }
-
-.download-hint{
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  font-size: 11.5px; color: var(--ink-300); font-weight: 600;
-}
-.download-hint svg{ width: 13px; height: 13px; color: var(--mint-500); }
-
-/* ==========================================================================
-   6. COUNTDOWN / PREPARING / SUCCESS
-   ========================================================================== */
-.countdown-card{
-  display: flex; flex-direction: column; align-items: center; gap: 14px;
-  text-align: center;
-  padding: 46px 24px;
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-}
-.countdown-number{
-  font-family: var(--font-display);
-  font-size: 56px;
-  font-weight: 800;
-  color: var(--mint-600);
-  line-height: 1;
-  min-width: 70px;
-}
-.countdown-number.is-text{ font-size: 17px; letter-spacing: -0.01em; }
-.countdown-ring{
-  width: 96px; height: 96px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  background: conic-gradient(var(--mint-500) var(--ring-progress, 0%), var(--mint-100) 0);
-  transition: background 0.9s linear;
-}
-.countdown-ring__inner{
-  width: 78px; height: 78px; border-radius: 50%;
-  background: var(--white);
-  display: flex; align-items: center; justify-content: center;
-}
-.countdown-card p{ font-size: 13px; color: var(--ink-500); font-weight: 600; }
-
-.success-card{
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-  text-align: center;
-  padding: 44px 26px;
-  background: var(--ok-bg);
-  border: 1px solid rgba(34,178,135,0.25);
-  border-radius: var(--radius-xl);
-}
-.success-card__icon{
-  width: 58px; height: 58px; border-radius: 50%;
-  background: var(--white);
-  color: var(--ok);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: var(--shadow-sm);
-}
-.success-card__icon svg{ width: 26px; height: 26px; }
-.success-card h2{ font-family: var(--font-display); font-size: 17.5px; font-weight: 800; color: var(--mint-800); }
-.success-card p{ font-size: 13.5px; color: var(--mint-700); line-height: 1.6; max-width: 340px; }
-.success-card .btn{ margin-top: 6px; }
-
-/* ==========================================================================
-   7. TOASTS
-   ========================================================================== */
-.toast-stack{
-  position: fixed; bottom: 20px; right: 20px; left: 20px;
-  z-index: 90;
-  display: flex; flex-direction: column; gap: 10px;
-  align-items: flex-end;
-}
-.toast{
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 13px 14px;
-  border-radius: var(--radius-md);
-  background: var(--white);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-lg);
-  font-size: 12.5px;
-  color: var(--ink-700);
-  max-width: 340px;
-  width: 100%;
-  animation: fade-up 0.22s var(--ease);
-}
-.toast__icon{ width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.toast__icon svg{ width: 13px; height: 13px; }
-.toast--error .toast__icon{ background: var(--danger-bg); color: var(--danger); }
-.toast__body strong{ display: block; font-size: 12.5px; }
-.toast__body span{ color: var(--ink-300); font-size: 11.5px; }
-
-/* ==========================================================================
-   8. RESPONSIVE
-   ========================================================================== */
-@media (max-width: 480px){
-  .trust-grid{ gap: 6px; }
-  .info-list{ grid-template-columns: 1fr; }
-  .login-card__actions .btn{ min-width: 0; }
-  .app-meta h1{ font-size: 16.5px; }
-  .countdown-number{ font-size: 44px; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download App - PaliaAPK HUB</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mint: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Firebase App & Auth CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
-<body>
+<body class="h-full bg-gray-50 text-gray-800 flex flex-col font-sans antialiased selection:bg-mint-100 selection:text-mint-700">
 
-  <!-- ============================================================
-       TOPBAR
-       ============================================================ -->
-  <header class="topbar">
-    <button class="topbar-back" id="btnBack" aria-label="Go back">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-    </button>
-    <div class="topbar-brand">
-      <div class="topbar-brand__mark">PA</div>
-      <div class="topbar-brand__text">
-        <strong>PaliaAPK HUB</strong>
-        <span>APK Store</span>
-      </div>
-    </div>
-    <div class="topbar-spacer"></div>
-    <span class="secure-badge">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
-      Secure Download
-    </span>
-  </header>
+    <!-- HEADER -->
+    <header class="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <a id="backBtn" href="index.html" class="w-10 h-10 rounded-xl bg-mint-50 text-mint-600 flex items-center justify-center hover:bg-mint-100 transition" aria-label="Back">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </a>
+                <a href="index.html" class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-mint-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-mint-500/20">P</div>
+                    <span class="font-bold text-lg tracking-tight text-gray-900 hidden sm:inline">PaliaAPK<span class="text-mint-600">HUB</span></span>
+                </a>
+            </div>
 
-  <!-- ============================================================
-       PAGE BODY
-       ============================================================ -->
-  <main class="page-body">
-    <div class="container">
+            <!-- USER PROFILE / AUTH HEADER SECTION -->
+            <div class="relative">
+                <div id="authHeaderLoggedOut" class="hidden">
+                    <button id="headerLoginBtn" class="bg-mint-600 hover:bg-mint-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition shadow-sm">Login</button>
+                </div>
+                <div id="authHeaderLoggedIn" class="hidden items-center gap-3 cursor-pointer select-none" id="profileDropdownTrigger">
+                    <div id="avatarContainer" class="w-10 h-10 rounded-full overflow-hidden bg-mint-100 text-mint-700 font-bold flex items-center justify-center border-2 border-mint-500/20">
+                        <!-- Dynamic Avatar Image or Initials -->
+                    </div>
+                    <div class="hidden md:block text-left">
+                        <p id="headerUserName" class="text-xs font-bold text-gray-800 truncate max-w-[120px]">User</p>
+                        <p id="headerUserEmail" class="text-[10px] text-gray-400 truncate max-w-[140px]">email@example.com</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs text-gray-400 ml-1"></i>
+                </div>
 
-      <!-- LOADING -->
-      <section class="state loading-card" id="stateLoading">
-        <div class="loading-spinner"></div>
-        <p>Loading app details…</p>
-      </section>
-
-      <!-- NOT FOUND -->
-      <section class="state error-card" id="stateNotFound" hidden>
-        <div class="error-card__icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <!-- DROPDOWN MENU -->
+                <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-50">
+                    <a href="dashboard.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"><i class="fa-solid fa-download mr-2 text-gray-400"></i> My Downloads</a>
+                    <a href="dashboard.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"><i class="fa-solid fa-bookmark mr-2 text-gray-400"></i> Favorites</a>
+                    <a href="dashboard.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition"><i class="fa-solid fa-gear mr-2 text-gray-400"></i> Settings</a>
+                    <div class="border-t border-gray-100 my-1"></div>
+                    <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition"><i class="fa-solid fa-right-from-bracket mr-2"></i> Logout</button>
+                </div>
+            </div>
         </div>
-        <h2>App not found</h2>
-        <p>We couldn't find an app matching this link. It may have been removed, or the link may be incorrect.</p>
-        <a class="btn btn-primary" href="index.html">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg>
-          Back to PaliaAPK HUB
-        </a>
-      </section>
+    </header>
 
-      <!-- MAIN CONTENT (app loaded) -->
-      <div class="state" id="stateLoaded" hidden style="display:flex; flex-direction:column; gap:18px;">
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 flex items-center justify-center">
 
-        <!-- App details -->
-        <section class="app-card">
-          <div class="app-card__top">
-            <div class="app-icon" id="appIcon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8 12h8M12 8v8"/></svg>
+        <!-- LOADING SKELETON -->
+        <div id="pageLoader" class="w-full bg-white rounded-3xl p-8 border border-gray-100 shadow-sm animate-pulse space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="w-20 h-20 bg-gray-200 rounded-2xl"></div>
+                <div class="space-y-2 flex-1">
+                    <div class="h-6 bg-gray-200 rounded-lg w-1/2"></div>
+                    <div class="h-4 bg-gray-200 rounded-lg w-1/4"></div>
+                </div>
             </div>
-            <div class="app-meta">
-              <h1 id="appName">App name</h1>
-              <div class="app-meta__dev" id="appDeveloper">Developer</div>
-              <div class="app-meta__rating" id="appRatingRow" hidden>
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                <span id="appRating">4.8</span>
-              </div>
+            <div class="h-40 bg-gray-200 rounded-2xl"></div>
+        </div>
+
+        <!-- AUTH CARD (Shown if not logged in) -->
+        <div id="authCard" class="hidden w-full bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-6 max-w-md mx-auto text-center">
+            <div class="w-16 h-16 bg-mint-50 text-mint-600 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold">
+                <i class="fa-solid fa-lock"></i>
             </div>
-          </div>
-          <div class="pill-row">
-            <span class="pill" id="pillVersion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>v—</span>
-            <span class="pill" id="pillCategory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Category</span>
-            <span class="pill" id="pillSize"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15V6a2 2 0 00-2-2H5a2 2 0 00-2 2v9m18 0H3m18 0l-2.5-3.5-4 5-3-3.5L4 15"/></svg>Size —</span>
-            <span class="pill" id="pillDownloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg>0 downloads</span>
-          </div>
-        </section>
-
-        <!-- LOGGED OUT: login required -->
-        <section class="login-card" id="stateLoggedOut" hidden>
-          <div class="login-card__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
-          </div>
-          <h2>Login Required</h2>
-          <p>Please login or create an account to download this APK.</p>
-
-          <div class="auth-alert" id="authAlert"></div>
-
-        <form class="auth-form" id="authForm" autocomplete="off">
-
-    <!-- Hidden fields to reduce browser autofill -->
-    <input type="text" autocomplete="username" style="display:none">
-    <input type="password" autocomplete="current-password" style="display:none">
-
-    <div class="auth-field">
-        <label for="authEmail">Email</label>
-        <input
-            type="email"
-            id="authEmail"
-            name="download_email"
-            placeholder="Enter your email"
-            autocomplete="off"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            required>
-    </div>
-
-    <div class="auth-field">
-        <label for="authPassword">Password</label>
-        <input
-            type="password"
-            id="authPassword"
-            name="download_password"
-            placeholder="Enter your password"
-            autocomplete="new-password"
-            minlength="6"
-            required>
-    </div>
-
-    <div class="login-card__actions">
-
-        <button type="submit" class="btn btn-secondary" id="btnLogin">
-            <span class="btn-spinner"></span>
-            <span class="btn-label">Login</span>
-        </button>
-
-        <button type="button" class="btn btn-primary" id="btnSignup">
-            <span class="btn-spinner"></span>
-            <span class="btn-label">Create Account</span>
-        </button>
-
-    </div>
-
-</form>
-          <div class="auth-divider"><span>OR</span></div>
-
-          <button type="button" class="btn btn-google" id="btnGoogle">
-            <svg viewBox="0 0 24 24" width="17" height="17"><path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47a5.54 5.54 0 01-2.4 3.63v3h3.89c2.28-2.1 3.56-5.2 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.91l-3.89-3c-1.08.73-2.46 1.16-4.04 1.16-3.1 0-5.73-2.09-6.67-4.9H1.3v3.09A12 12 0 0012 24z"/><path fill="#FBBC05" d="M5.33 14.35a7.2 7.2 0 010-4.7V6.56H1.3a12 12 0 000 10.88l4.03-3.09z"/><path fill="#EA4335" d="M12 4.75c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.94 1.19 15.24 0 12 0A12 12 0 001.3 6.56l4.03 3.09C6.27 6.84 8.9 4.75 12 4.75z"/></svg>
-            <span class="btn-spinner"></span>
-            <span class="btn-label">Continue with Google</span>
-          </button>
-
-          <div class="locked-note">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
-            Download link is hidden until you sign in
-          </div>
-        </section>
-
-        <!-- LOGGED IN: trust + download -->
-        <section class="app-card" id="stateLoggedIn" hidden>
-          <div class="session-row">
-            <span id="sessionEmail">Signed in</span>
-            <button type="button" class="session-signout" id="btnSignOut">Sign out</button>
-          </div>
-
-          <div class="trust-grid">
-            <div class="trust-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg>
-              <span>Verified APK</span>
+            <div class="space-y-1">
+                <h2 class="text-xl font-bold text-gray-900">Authentication Required</h2>
+                <p class="text-sm text-gray-500">Please login or sign up to download this APK securely.</p>
             </div>
-            <div class="trust-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
-              <span>Virus Scan Passed</span>
+
+            <!-- Google Login Button -->
+            <button id="googleLoginBtn" class="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-2xl transition flex items-center justify-center gap-3 shadow-sm text-sm">
+                <i class="fa-brands fa-google text-red-500"></i> Continue with Google
+            </button>
+
+            <div class="flex items-center my-4">
+                <div class="flex-grow border-t border-gray-100"></div>
+                <span class="px-3 text-xs text-gray-400 uppercase font-medium">Or email</span>
+                <div class="flex-grow border-t border-gray-100"></div>
             </div>
-            <div class="trust-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/><circle cx="12" cy="15" r="1.5"/></svg>
-              <span>Safe Download</span>
+
+            <!-- Email Auth Form -->
+            <form id="emailAuthForm" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
+                    <input type="email" id="authEmail" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:bg-white focus:border-mint-500 transition" placeholder="name@example.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+                    <input type="password" id="authPassword" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:bg-white focus:border-mint-500 transition" placeholder="••••••••">
+                </div>
+                <div id="authErrorMsg" class="text-xs text-red-500 hidden"></div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" id="loginSubmitBtn" class="flex-1 bg-mint-600 hover:bg-mint-700 text-white font-semibold py-3 rounded-xl transition text-sm shadow-md shadow-mint-600/20">Login</button>
+                    <button type="button" id="signupSubmitBtn" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition text-sm">Sign Up</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- DOWNLOAD CARD (Shown if logged in) -->
+        <div id="downloadCard" class="hidden w-full bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
+            <div class="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+                <img id="appIcon" src="" alt="App Icon" class="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gray-100 object-cover shadow-md border border-gray-100">
+                <div class="space-y-2 flex-1">
+                    <h1 id="appName" class="text-2xl font-bold text-gray-900 tracking-tight">App Name</h1>
+                    <p class="text-sm text-gray-500 font-medium">Developer: <span id="appDeveloper" class="text-gray-700">Developer</span></p>
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-2 pt-1">
+                        <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold">Version: <span id="appVersion">1.0</span></span>
+                        <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold">Size: <span id="appSize">Varies</span></span>
+                    </div>
+                </div>
             </div>
-          </div>
 
-          <div class="info-list">
-            <div class="info-item"><span>APK Size</span><strong id="infoSize">—</strong></div>
-            <div class="info-item"><span>Version</span><strong id="infoVersion">—</strong></div>
-            <div class="info-item"><span>Android Version</span><strong id="infoAndroid">—</strong></div>
-            <div class="info-item"><span>Developer</span><strong id="infoDeveloper">—</strong></div>
-            <div class="info-item" style="grid-column: 1 / -1;"><span>Download Count</span><strong id="infoDownloads">—</strong></div>
-          </div>
-
-          <button type="button" class="btn btn-download" id="btnDownload">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg>
-            Download APK
-          </button>
-          <div class="download-hint">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/></svg>
-            Scanned and verified by PaliaAPK HUB
-          </div>
-        </section>
-
-        <!-- COUNTDOWN -->
-        <section class="countdown-card" id="stateCountdown" hidden>
-          <div class="countdown-ring" id="countdownRing" style="--ring-progress:0%;">
-            <div class="countdown-ring__inner">
-              <span class="countdown-number" id="countdownNumber">3</span>
+            <!-- COUNTDOWN / PROGRESS BOX -->
+            <div id="countdownBox" class="bg-mint-50 border border-mint-100 rounded-2xl p-6 text-center space-y-3">
+                <div class="w-12 h-12 rounded-full bg-mint-600 text-white flex items-center justify-center mx-auto text-lg font-bold shadow-md shadow-mint-500/20" id="countdownTimer">
+                    5
+                </div>
+                <h3 class="font-bold text-gray-900">Your download is getting ready...</h3>
+                <p class="text-xs text-gray-500">Please wait while we prepare your secure APK package.</p>
             </div>
-          </div>
-          <p id="countdownLabel">Preparing your download…</p>
-        </section>
 
-        <!-- SUCCESS -->
-        <section class="success-card" id="stateSuccess" hidden>
-          <div class="success-card__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>
-          </div>
-          <h2>Download Started</h2>
-          <p>Thank you for downloading from PaliaAPK HUB.</p>
-          <button type="button" class="btn btn-secondary" id="btnDownloadAgain">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
-            Download Again
-          </button>
-        </section>
+            <!-- DOWNLOAD READY BOX (Hidden initially) -->
+            <div id="readyBox" class="hidden bg-mint-50 border border-mint-100 rounded-2xl p-6 text-center space-y-4">
+                <div class="w-12 h-12 rounded-full bg-mint-600 text-white flex items-center justify-center mx-auto text-lg font-bold shadow-md shadow-mint-500/20">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 text-lg">Ready to Download</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Click the button below to start downloading your app.</p>
+                </div>
+                <a id="finalDownloadBtn" href="#" class="inline-flex items-center justify-center gap-2 bg-mint-600 hover:bg-mint-700 text-white font-semibold py-3.5 px-8 rounded-2xl transition shadow-lg shadow-mint-600/20 w-full sm:w-auto">
+                    <i class="fa-solid fa-download"></i> Download APK Now
+                </a>
+            </div>
+        </div>
 
-      </div>
+    </main>
 
-    </div>
-  </main>
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-100 mt-16 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-mint-600 text-white flex items-center justify-center font-bold text-sm">P</div>
+                <span class="font-bold text-gray-900">PaliaAPK HUB</span>
+            </div>
+            <p>&copy; 2026 PaliaAPK HUB. All rights reserved. Developer by ShanPalia</p>
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="hover:text-mint-600 transition">Home</a>
+                <a href="dashboard.html" class="hover:text-mint-600 transition">Dashboard</a>
+            </div>
+        </div>
+    </footer>
 
-  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+    <!-- CONFIGURATION & COMPLETE APP LOGIC -->
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  <!-- ============================================================
-       SUPABASE (apps table) — regular script, exposes window.supabase
-       ============================================================ -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
-  <!-- ============================================================
-       FIREBASE 10.7.1 — Modular SDK via ESM imports (no compat, no
-       global `firebase` object). Authentication only.
-       ============================================================ -->
-<script type="module">
-  "use strict";
-
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import {
-    getAuth,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    GoogleAuthProvider,
-    signInWithPopup,
-    signOut
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-  /* ============================================================
-     CONFIG — replace with your own project credentials
-     ============================================================ */
- var FIREBASE_CONFIG = {
+        // Firebase Configuration
+       const firebaseConfig = {
   apiKey: "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",
   authDomain: "shanpalia-apk-hub.firebaseapp.com",
   projectId: "shanpalia-apk-hub",
@@ -783,453 +200,262 @@ img{ max-width: 100%; display: block; }
   appId: "1:270953807883:web:c900f4409938f16477870e",
   measurementId: "G-7BMQEGPY8C"
 };
-  var SUPABASE_URL = "https://ralinnuegsbuvlhwpzln.supabase.co";
-
-var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE";
-
-  /* ---------- one Firebase app, one Supabase client ---------- */
-  var firebaseApp = initializeApp(FIREBASE_CONFIG);
-  var auth = getAuth(firebaseApp);
-  var googleProvider = new GoogleAuthProvider();
-
-  var sb = (window.supabase && typeof window.supabase.createClient === 'function')
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-    : null;
-
-  /* ============================================================
-     DOM REFERENCES
-     ============================================================ */
-  var stateLoading   = document.getElementById('stateLoading');
-  var stateNotFound  = document.getElementById('stateNotFound');
-  var stateLoaded    = document.getElementById('stateLoaded');
-  var stateLoggedOut = document.getElementById('stateLoggedOut');
-  var stateLoggedIn  = document.getElementById('stateLoggedIn');
-  var stateCountdown = document.getElementById('stateCountdown');
-  var stateSuccess   = document.getElementById('stateSuccess');
-
-  var toastStack = document.getElementById('toastStack');
-
-  var appIcon        = document.getElementById('appIcon');
-  var appNameEl       = document.getElementById('appName');
-  var appDeveloperEl  = document.getElementById('appDeveloper');
-  var appRatingRow    = document.getElementById('appRatingRow');
-  var appRatingEl     = document.getElementById('appRating');
-  var pillVersion     = document.getElementById('pillVersion');
-  var pillCategory    = document.getElementById('pillCategory');
-  var pillSize        = document.getElementById('pillSize');
-  var pillDownloads   = document.getElementById('pillDownloads');
-
-  var infoSize      = document.getElementById('infoSize');
-  var infoVersion   = document.getElementById('infoVersion');
-  var infoAndroid   = document.getElementById('infoAndroid');
-  var infoDeveloper = document.getElementById('infoDeveloper');
-  var infoDownloads = document.getElementById('infoDownloads');
-
-  var btnBack          = document.getElementById('btnBack');
-  var btnDownload       = document.getElementById('btnDownload');
-  var btnDownloadAgain  = document.getElementById('btnDownloadAgain');
-
-  var authForm      = document.getElementById('authForm');
-  var authEmail     = document.getElementById('authEmail');
-  var authPassword  = document.getElementById('authPassword');
-  var authAlert     = document.getElementById('authAlert');
-  var btnLogin       = document.getElementById('btnLogin');
-  var btnSignup      = document.getElementById('btnSignup');
-  var btnGoogle      = document.getElementById('btnGoogle');
-  var btnSignOut     = document.getElementById('btnSignOut');
-  var sessionEmail   = document.getElementById('sessionEmail');
-
-  var countdownRing   = document.getElementById('countdownRing');
-  var countdownNumber = document.getElementById('countdownNumber');
-  var countdownLabel  = document.getElementById('countdownLabel');
-
-  /* ============================================================
-     TOASTS
-     ============================================================ */
-  var TOAST_ERROR_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-
-  function showToast(title, message){
-    var el = document.createElement('div');
-    el.className = 'toast toast--error';
-    el.innerHTML =
-      '<div class="toast__icon">' + TOAST_ERROR_ICON + '</div>' +
-      '<div class="toast__body"><strong></strong><span></span></div>';
-    el.querySelector('strong').textContent = title;
-    el.querySelector('span').textContent = message || '';
-    toastStack.appendChild(el);
-    window.setTimeout(function(){ if(el.parentNode) el.remove(); }, 5000);
-  }
-
-  /* ============================================================
-     STATE HELPERS
-     ============================================================ */
-  function show(el){ if(el) el.hidden = false; }
-  function hide(el){ if(el) el.hidden = true; }
-
-  function showOnly(el){
-    [stateLoading, stateNotFound, stateLoaded].forEach(hide);
-    show(el);
-  }
-
-  /* ============================================================
-     READ id FROM URL
-     ============================================================ */
-  var params = new URLSearchParams(window.location.search);
-  var appId = params.get('id');
-
-  btnBack.addEventListener('click', function(){
-    if(window.history.length > 1){ window.history.back(); }
-    else { window.location.href = 'index.html'; }
-  });
-
-  if(!appId){
-    showOnly(stateNotFound);
-  } else if(!sb){
-    showOnly(stateNotFound);
-    showToast('Supabase not configured', 'Add your project URL and anon key at the top of the script.');
-  } else {
-    loadApp(appId);
-  }
-
-  /* ============================================================
-     LOAD APP FROM SUPABASE
-     ============================================================ */
-  var currentApp = null;
-
-  function formatSize(app){
-    if(app.apk_size) return app.apk_size;
-    if(app.apk_size_bytes){
-      var b = app.apk_size_bytes;
-      if(b < 1024 * 1024) return (b / 1024).toFixed(2) + ' KB';
-      if(b < 1024 * 1024 * 1024) return (b / (1024 * 1024)).toFixed(2) + ' MB';
-      return (b / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
-    }
-    return '—';
-  }
-
-  function formatDownloads(n){
-    n = n || 0;
-    if(n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-    if(n >= 1000) return (n / 1000).toFixed(1) + 'K';
-    return String(n);
-  }
-
-  function renderAppDetails(app){
-    appNameEl.textContent = app.name || 'Untitled app';
-    appDeveloperEl.textContent = app.developer || 'Unknown developer';
-
-    if(app.icon_url){
-      appIcon.innerHTML = '<img src="' + app.icon_url + '" alt="' + (app.name || 'App') + ' icon">';
-    }
-
-    if(app.rating){
-      appRatingEl.textContent = Number(app.rating).toFixed(1);
-      show(appRatingRow);
-    }
-
-    pillVersion.lastChild.textContent = app.version ? ' v' + app.version : ' v—';
-    pillCategory.lastChild.textContent = ' ' + (app.category || 'App');
-    pillSize.lastChild.textContent = ' ' + formatSize(app);
-    pillDownloads.lastChild.textContent = ' ' + formatDownloads(app.downloads) + ' downloads';
-
-    infoSize.textContent = formatSize(app);
-    infoVersion.textContent = app.version ? 'v' + app.version : '—';
-    infoAndroid.textContent = app.android_version || '—';
-    infoDeveloper.textContent = app.developer || '—';
-    infoDownloads.textContent = formatDownloads(app.downloads) + ' downloads';
-  }
-
-  function loadApp(id){
-  showOnly(stateLoading);
-
-  console.log("URL App ID:", id);
-
-  sb.from('apps')
-    .select('*')
-    .eq('id', id)
-    .then(function(res){
-
-      console.log("Supabase Response:", res);
-
-      if(res.error){
-        console.error("Supabase Error:", res.error);
-        showOnly(stateNotFound);
-        return;
-      }
-
-      if(!res.data || res.data.length === 0){
-        console.error("No app found");
-        showOnly(stateNotFound);
-        return;
-      }
-
-      currentApp = res.data[0];
-
-      console.log("Current App:", currentApp);
-
-      renderAppDetails(currentApp);
-      showOnly(stateLoaded);
-      renderAuthGate();
-
-    })
-    .catch(function(err){
-      console.error(err);
-      showOnly(stateNotFound);
-    });
-}
-  /* ============================================================
-     FIREBASE AUTH GATE — no guest download
-     ============================================================ */
-  var authUser = undefined; /* undefined = not yet resolved, null = signed out */
-
-  onAuthStateChanged(auth, function(user){
-    authUser = user || null;
-    renderAuthGate();
-  });
-
-  function renderAuthGate(){
-    if(!currentApp || authUser === undefined) return; /* wait for both app + auth to resolve */
-
-    hide(stateCountdown);
-    hide(stateSuccess);
-
-    if(authUser){
-      hide(stateLoggedOut);
-      show(stateLoggedIn);
-      show(btnDownload);
-      sessionEmail.textContent = 'Signed in as ' + (authUser.email || authUser.displayName || 'user');
-    } else {
-      hide(stateLoggedIn);
-      show(stateLoggedOut);
-      hideAuthAlert();
-    }
-  }
-
-  /* ---------- auth form helpers ---------- */
-  function showAuthAlert(message){
-    authAlert.textContent = message;
-    authAlert.classList.add('is-visible');
-  }
-  function hideAuthAlert(){ authAlert.classList.remove('is-visible'); }
-
-  function mapAuthError(err){
-    var code = (err && err.code) || '';
-    switch(code){
-      case 'auth/invalid-email': return 'That email address looks invalid.';
-      case 'auth/user-not-found':
-      case 'auth/wrong-password':
-      case 'auth/invalid-credential': return 'Incorrect email or password.';
-      case 'auth/email-already-in-use': return 'An account with this email already exists — try logging in instead.';
-      case 'auth/weak-password': return 'Password must be at least 6 characters.';
-      case 'auth/popup-closed-by-user': return 'Google sign-in was cancelled.';
-      case 'auth/network-request-failed': return 'Network error — please check your connection.';
-      default: return (err && err.message) ? err.message : 'Something went wrong. Please try again.';
-    }
-  }
-
-  function setAuthBtnLoading(btn, isLoading, label){
-    btn.disabled = isLoading;
-    btn.classList.toggle('is-loading', isLoading);
-    var labelEl = btn.querySelector('.btn-label');
-    if(labelEl) labelEl.textContent = label;
-  }
-
-  /* ---------- login (email + password) ---------- */
-  authForm.addEventListener('submit', function(e){
-    e.preventDefault();
-    hideAuthAlert();
-
-    var email = authEmail.value.trim();
-    var password = authPassword.value;
-    if(!email || !password){ showAuthAlert('Please enter your email and password.'); return; }
-
-    setAuthBtnLoading(btnLogin, true, 'Logging in…');
-
-    signInWithEmailAndPassword(auth, email, password)
-      .then(function(){
-        setAuthBtnLoading(btnLogin, false, 'Login');
-        authForm.reset();
-      })
-      .catch(function(err){
-        setAuthBtnLoading(btnLogin, false, 'Login');
-        showAuthAlert(mapAuthError(err));
-      });
-  });
-
-  /* ---------- create account (email + password) ---------- */
-  btnSignup.addEventListener('click', function(){
-    hideAuthAlert();
-
-    var email = authEmail.value.trim();
-    var password = authPassword.value;
-    if(!email || !password){ showAuthAlert('Please enter an email and password to create an account.'); return; }
-    if(password.length < 6){ showAuthAlert('Password must be at least 6 characters.'); return; }
-
-    setAuthBtnLoading(btnSignup, true, 'Creating account…');
-
-    createUserWithEmailAndPassword(auth, email, password)
-      .then(function(){
-        setAuthBtnLoading(btnSignup, false, 'Create Account');
-        authForm.reset();
-      })
-      .catch(function(err){
-        setAuthBtnLoading(btnSignup, false, 'Create Account');
-        showAuthAlert(mapAuthError(err));
-      });
-  });
-
-  /* ---------- Google sign-in ---------- */
-  btnGoogle.addEventListener('click', function(){
-    hideAuthAlert();
-    setAuthBtnLoading(btnGoogle, true, 'Opening Google sign-in…');
-
-    signInWithPopup(auth, googleProvider)
-      .then(function(){
-        setAuthBtnLoading(btnGoogle, false, 'Continue with Google');
-      })
-      .catch(function(err){
-        setAuthBtnLoading(btnGoogle, false, 'Continue with Google');
-        showAuthAlert(mapAuthError(err));
-      });
-  });
-
-  /* ---------- sign out ---------- */
-  btnSignOut.addEventListener('click', function(){
-    signOut(auth).catch(function(err){
-      showToast('Sign out failed', mapAuthError(err));
-    });
-  });
-
-  /* ============================================================
-     DOWNLOAD FLOW — countdown → increment counter → trigger file
-     ============================================================ */
-  var isDownloading = false;
-
-  function setRing(step, total){
-    var pct = Math.round(((total - step + 1) / total) * 100);
-    countdownRing.style.setProperty('--ring-progress', pct + '%');
-  }
-
-  function runCountdown(){
-    return new Promise(function(resolve){
-      var steps = [3, 2, 1];
-      var i = 0;
-
-      function tick(){
-        if(i < steps.length){
-          countdownNumber.textContent = steps[i];
-          countdownNumber.classList.remove('is-text');
-          countdownLabel.textContent = 'Your download will begin shortly…';
-          setRing(i + 1, steps.length + 1);
-          i++;
-          window.setTimeout(tick, 800);
-        } else {
-          countdownNumber.textContent = '';
-          countdownNumber.classList.add('is-text');
-          countdownNumber.textContent = 'Preparing Download...';
-          setRing(steps.length + 1, steps.length + 1);
-          window.setTimeout(resolve, 700);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
-      }
-      tick();
-    });
-  }
+        const auth = firebase.auth();
 
-  async function incrementDownloadCount(){
-    try{
-      var res = await sb
-        .from('apps')
-        .update({
-    downloads: Number(currentApp.downloads || 0) + 1
-})
-        .eq('id', currentApp.id)
-        .select()
-        .single();
-      if(!res.error && res.data){
-        currentApp = res.data;
-        infoDownloads.textContent = formatDownloads(currentApp.downloads) + ' downloads';
-        pillDownloads.lastChild.textContent = ' ' + formatDownloads(currentApp.downloads) + ' downloads';
-      }
-    } catch(err){
-      console.warn('Could not update download count:', err);
-    }
-  }
+        // URL Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const appId = urlParams.get('id');
 
- function triggerFileDownload(url, filename){
+        // DOM Elements
+        const pageLoader = document.getElementById('pageLoader');
+        const authCard = document.getElementById('authCard');
+        const downloadCard = document.getElementById('downloadCard');
+        const authHeaderLoggedOut = document.getElementById('authHeaderLoggedOut');
+        const authHeaderLoggedIn = document.getElementById('authHeaderLoggedIn');
+        const avatarContainer = document.getElementById('avatarContainer');
+        const headerUserName = document.getElementById('headerUserName');
+        const headerUserEmail = document.getElementById('headerUserEmail');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const profileDropdownTrigger = document.getElementById('authHeaderLoggedIn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        const emailAuthForm = document.getElementById('emailAuthForm');
+        const authEmailInput = document.getElementById('authEmail');
+        const authPasswordInput = document.getElementById('authPassword');
+        const authErrorMsg = document.getElementById('authErrorMsg');
+        const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+        const signupSubmitBtn = document.getElementById('signupSubmitBtn');
+        const countdownTimer = document.getElementById('countdownTimer');
+        const countdownBox = document.getElementById('countdownBox');
+        const readyBox = document.getElementById('readyBox');
+        const finalDownloadBtn = document.getElementById('finalDownloadBtn');
+        const backBtn = document.getElementById('backBtn');
 
-    fetch(url)
-        .then(function(response){
+        let currentAppData = null;
 
-            if(!response.ok){
-                throw new Error("Download failed");
-            }
+        // Set back button link to app page if ID is present
+        if (appId) {
+            backBtn.href = `app.html?id=${appId}`;
+        }
 
-            return response.blob();
-
-        })
-        .then(function(blob){
-
-            var blobUrl = window.URL.createObjectURL(blob);
-
-            var link = document.createElement("a");
-            link.href = blobUrl;
-            link.download = filename || "app.apk";
-            link.rel = "noopener";
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            window.URL.revokeObjectURL(blobUrl);
-
-        })
-        .catch(function(err){
-            console.error(err);
-            alert("Download failed.");
+        // Toggle Profile Dropdown
+        profileDropdownTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', () => {
+            profileDropdown.classList.add('hidden');
         });
 
-}
+        // Initialize App & Auth state listener
+        async function init() {
+            if (!appId) {
+                document.body.innerHTML = '<div class="flex items-center justify-center h-screen text-gray-500 font-medium">No App ID specified in URL.</div>';
+                return;
+            }
 
-  async function startDownload(){
-    if(isDownloading) return;
-    if(!authUser){
-      showToast('Login required', 'Please login to download this APK.');
-      return;
-    }
-    if(!currentApp || !currentApp.apk_url){
-      showToast('File unavailable', 'This app does not have a downloadable APK yet.');
-      return;
-    }
+            try {
+                // Fetch app data from Supabase
+                const { data: app, error } = await _supabase
+                    .from('apps')
+                    .select('*')
+                    .eq('id', appId)
+                    .single();
 
-    isDownloading = true;
-    hide(stateLoggedIn);
-    hide(stateSuccess);
-    show(stateCountdown);
-    countdownRing.style.setProperty('--ring-progress', '0%');
+                if (error || !app) {
+                    document.body.innerHTML = '<div class="flex items-center justify-center h-screen text-gray-500 font-medium">App not found.</div>';
+                    return;
+                }
 
-    await runCountdown();
-    await incrementDownloadCount();
-if (!currentApp.apk_url.startsWith("https://")) {
-    showToast("Invalid APK URL", "APK link is not valid.");
-    isDownloading = false;
-    hide(stateCountdown);
-    show(stateLoggedIn);
-    return;
-}
-     console.log("APK URL:", currentApp.apk_url);
-    triggerFileDownload(currentApp.apk_url, (currentApp.name || 'app') + '.apk');
+                currentAppData = app;
 
-    hide(stateCountdown);
-    show(stateSuccess);
-    isDownloading = false;
-  }
+                // Populate App Details UI
+                document.getElementById('appIcon').src = app.icon_url || 'https://via.placeholder.com/150';
+                document.getElementById('appName').textContent = app.name || 'App Name';
+                document.getElementById('appDeveloper').textContent = app.developer || 'Unknown';
+                document.getElementById('appVersion').textContent = app.version || '1.0';
+                document.getElementById('appSize').textContent = app.apk_size || 'Varies';
 
-  btnDownload.addEventListener('click', startDownload);
-  btnDownloadAgain.addEventListener('click', function(){
-    hide(stateSuccess);
-    show(stateLoggedIn);
-  });
+                pageLoader.classList.add('hidden');
 
-</script>
+                // Listen to Firebase Auth state changes
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        // User is logged in
+                        renderUserProfile(user);
+                        authCard.classList.add('hidden');
+                        authHeaderLoggedOut.classList.add('hidden');
+                        authHeaderLoggedIn.classList.remove('hidden');
+                        authHeaderLoggedIn.classList.add('flex');
+                        downloadCard.classList.remove('hidden');
+
+                        // Start download countdown process
+                        startDownloadProcess(app);
+                    } else {
+                        // User is not logged in
+                        authHeaderLoggedIn.classList.add('hidden');
+                        authHeaderLoggedIn.classList.remove('flex');
+                        authHeaderLoggedOut.classList.remove('hidden');
+                        downloadCard.classList.add('hidden');
+                        authCard.classList.remove('hidden');
+                    }
+                });
+
+            } catch (err) {
+                console.error('Initialization error:', err);
+            }
+        }
+
+        // Render User Avatar and Details in Header
+        function renderUserProfile(user) {
+            const email = user.email || 'user@example.com';
+            const displayName = user.displayName || email.split('@')[0];
+            const photoURL = user.photoURL;
+
+            headerUserName.textContent = displayName;
+            headerUserEmail.textContent = email;
+
+            if (photoURL) {
+                avatarContainer.innerHTML = `<img src="${photoURL}" alt="Avatar" class="w-full h-full object-cover">`;
+            } else {
+                // Generate initials from email username (e.g. shanpalia786@gmail.com -> SP)
+                const usernamePart = email.split('@')[0];
+                let initials = 'U';
+                const letters = usernamePart.replace(/[^a-zA-Z]/g, '');
+                if (letters.length >= 2) {
+                    initials = letters.substring(0, 2).toUpperCase();
+                } else if (usernamePart.length >= 2) {
+                    initials = usernamePart.substring(0, 2).toUpperCase();
+                } else if (usernamePart.length === 1) {
+                    initials = usernamePart.toUpperCase();
+                }
+                avatarContainer.innerHTML = `<span class="text-xs font-bold text-mint-700">${initials}</span>`;
+            }
+        }
+
+        // Handle Download Countdown & Counter Update
+        let countdownStarted = false;
+        function startDownloadProcess(app) {
+            if (countdownStarted) return;
+            countdownStarted = true;
+
+            let timeLeft = 5;
+            countdownTimer.textContent = timeLeft;
+            countdownBox.classList.remove('hidden');
+            readyBox.classList.add('hidden');
+
+            const timerInterval = setInterval(async () => {
+                timeLeft--;
+                countdownTimer.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    countdownBox.classList.add('hidden');
+                    readyBox.classList.remove('hidden');
+
+                    // Increment downloads count in Supabase safely
+                    try {
+                        const newDownloads = (app.downloads || 0) + 1;
+                        await _supabase
+                            .from('apps')
+                            .update({ downloads: newDownloads })
+                            .eq('id', app.id);
+                    } catch (e) {
+                        console.error('Failed to update download count:', e);
+                    }
+
+                    // Setup clean custom download filename <App Name>.apk
+                    const safeName = (app.name || 'App').replace(/[^a-zA-Z0-9 _-]/g, '').trim();
+                    const filename = `${safeName}.apk`;
+
+                    finalDownloadBtn.onclick = (e) => {
+                        e.preventDefault();
+                        if (app.apk_url) {
+                            // Trigger file download via temporary anchor or direct assignment
+                            const a = document.createElement('a');
+                            a.href = app.apk_url;
+                            a.download = filename;
+                            // For cross-origin URLs where download attribute may fail, open or redirect fallback
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                        } else {
+                            alert('APK download URL is invalid.');
+                        }
+                    };
+                }
+            }, 1000);
+        }
+
+        // Firebase Google Login
+        googleLoginBtn.addEventListener('click', async () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                authErrorMsg.classList.add('hidden');
+                await auth.signInWithPopup(provider);
+            } catch (error) {
+                authErrorMsg.textContent = error.message;
+                authErrorMsg.classList.remove('hidden');
+            }
+        });
+
+        // Email Login / Signup Handlers
+        loginSubmitBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = authEmailInput.value.trim();
+            const password = authPasswordInput.value.trim();
+            if (!email || !password) {
+                authErrorMsg.textContent = 'Please enter both email and password.';
+                authErrorMsg.classList.remove('hidden');
+                return;
+            }
+            try {
+                authErrorMsg.classList.add('hidden');
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                authErrorMsg.textContent = error.message;
+                authErrorMsg.classList.remove('hidden');
+            }
+        });
+
+        signupSubmitBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = authEmailInput.value.trim();
+            const password = authPasswordInput.value.trim();
+            if (!email || !password) {
+                authErrorMsg.textContent = 'Please enter both email and password.';
+                authErrorMsg.classList.remove('hidden');
+                return;
+            }
+            try {
+                authErrorMsg.classList.add('hidden');
+                await auth.createUserWithEmailAndPassword(email, password);
+            } catch (error) {
+                authErrorMsg.textContent = error.message;
+                authErrorMsg.classList.remove('hidden');
+            }
+        });
+
+        // Header Login Button Click action to focus auth card
+        document.getElementById('headerLoginBtn')?.addEventListener('click', () => {
+            authCard.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Logout Action
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await auth.signOut();
+                countdownStarted = false;
+                window.location.reload();
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        });
+
+        // Run initialization on load
+        init();
+    </script>
 </body>
 </html>
