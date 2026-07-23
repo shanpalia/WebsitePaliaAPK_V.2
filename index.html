@@ -185,7 +185,7 @@
                     <span class="text-white font-black text-xl">P</span>
                 </div>
                 <div>
-                    <h1 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
+                   <h1 id="adminTrigger" class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
                         PaliaAPK <span class="text-mint-600">HUB</span>
                     </h1>
                     <p class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Android Store</p>
@@ -633,7 +633,41 @@
                 if (loginBtn) loginBtn.onclick = () => window.location.href = 'user.html';
             }
         });
+// ===== Hidden Admin Trigger =====
 
+let adminClickCount = 0;
+let adminClickTimer = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const adminTrigger = document.getElementById("adminTrigger");
+
+    if (!adminTrigger) return;
+
+    let adminClickCount = 0;
+    let adminClickTimer;
+
+    adminTrigger.addEventListener("click", () => {
+
+        adminClickCount++;
+
+        clearTimeout(adminClickTimer);
+
+        adminClickTimer = setTimeout(() => {
+
+            adminClickCount = 0;
+
+        }, 2000);
+
+        if (adminClickCount === 5) {
+
+            window.location.href = "admin.html";
+
+        }
+
+    });
+
+});
         document.addEventListener('DOMContentLoaded', initData);
     </script>
 </body>
