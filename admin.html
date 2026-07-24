@@ -28,9 +28,18 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             try {
-                await signInWithEmailAndPassword(auth, email, password);
-                alert("Welcome Admin!");
-                window.location.href = "dashboard.html"; // Yahan se aap main admin panel par jayenge
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+alert("Welcome Admin!");
+
+// Admin session save
+sessionStorage.setItem("adminLoggedIn", "true");
+
+// Firebase user ko logout karo taaki homepage par admin avatar na dikhe
+await auth.signOut();
+
+// Dashboard open karo
+window.location.href = "dashboard.html"; // Yahan se aap main admin panel par jayenge
             } catch (error) {
                 alert("Invalid Credentials: " + error.message);
             }
