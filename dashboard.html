@@ -173,7 +173,10 @@ td{
 <a href="add-app.html"><i class="fa-solid fa-plus"></i> Add New App</a>
 <a href="manage-app.html"><i class="fa-solid fa-mobile-screen-button"></i> Manage Apps</a>
 <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
-<a href="#"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+<a href="#" id="logoutBtn">
+    <i class="fa-solid fa-right-from-bracket"></i>
+    Logout
+</a>
 </div>
 </div>
 
@@ -223,6 +226,14 @@ td{
 </main>
 
 <script>
+ // ===== Admin Session Check =====
+if (sessionStorage.getItem("adminLoggedIn") !== "true") {
+
+    alert("Access Denied!");
+
+    window.location.href = "admin.html";
+
+}
 // --- SUPABASE CONFIGURATION ---
 const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co'; // यहाँ अपनी Supabase URL डालें
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE'; // यहाँ अपनी Supabase Anon/Public Key डालें
@@ -327,6 +338,19 @@ async function deleteApp(id) {
 
 // पेज लोड होने पर डेटा फेच करें
 window.addEventListener("DOMContentLoaded", fetchDashboardData);
+ // ===== Logout =====
+
+document.getElementById("logoutBtn").addEventListener("click", async (e) => {
+
+    e.preventDefault();
+
+    sessionStorage.removeItem("adminLoggedIn");
+
+    alert("Logged out successfully.");
+
+    window.location.replace("admin.html");
+
+});
 </script>
 
 </body>
