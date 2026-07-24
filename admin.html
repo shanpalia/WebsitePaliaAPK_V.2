@@ -28,18 +28,14 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
-alert("Welcome Admin!");
+sessionStorage.setItem("adminLoggedIn","true");
 
-// Admin session save
-sessionStorage.setItem("adminLoggedIn", "true");
-
-// Firebase user ko logout karo taaki homepage par admin avatar na dikhe
+// Firebase admin user ko turant logout kar do
 await auth.signOut();
 
-// Dashboard open karo
-window.location.href = "dashboard.html"; // Yahan se aap main admin panel par jayenge
+window.location.replace("dashboard.html"); // Yahan se aap main admin panel par jayenge
             } catch (error) {
                 alert("Invalid Credentials: " + error.message);
             }
