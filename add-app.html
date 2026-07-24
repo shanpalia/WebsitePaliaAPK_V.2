@@ -769,7 +769,7 @@ img{ max-width: 100%; display: block; }
 .pv-shot svg{ width: 18px; height: 18px; }
 
 /* ==========================================================================
-   11. SUBMISSION STATE, TOASTS & ALERTS
+   11. SUBMISSION STATE, TOASTS & ALERTS & PUBLISH PROGRESS DIALOG
    ========================================================================== */
 .form-panel.is-submitting{ position: relative; }
 .form-panel.is-submitting::after{
@@ -849,6 +849,125 @@ img{ max-width: 100%; display: block; }
 }
 .toast__close svg{ width: 12px; height: 12px; }
 
+/* Publish Progress Dialog Styles */
+.publish-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 33, 29, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+}
+.publish-dialog-overlay.is-open {
+  display: flex;
+  opacity: 1;
+}
+.publish-dialog {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transform: scale(0.95);
+  transition: transform 0.25s var(--ease);
+}
+.publish-dialog-overlay.is-open .publish-dialog {
+  transform: scale(1);
+}
+.publish-dialog__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.publish-dialog__icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: var(--mint-100);
+  color: var(--mint-700);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.publish-dialog__icon svg { width: 20px; height: 20px; }
+.publish-dialog__header h3 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+.publish-dialog__header p {
+  font-size: 12px;
+  color: var(--ink-300);
+  margin-top: 2px;
+}
+.publish-progress-bar-track {
+  height: 8px;
+  background: var(--mint-100);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  position: relative;
+}
+.publish-progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--mint-400), var(--mint-600));
+  border-radius: var(--radius-pill);
+  transition: width 0.3s var(--ease);
+}
+.publish-status-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-700);
+  text-align: center;
+  min-height: 20px;
+}
+.publish-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  display: none;
+}
+.publish-dialog.has-error .publish-dialog__footer {
+  display: flex;
+}
+.publish-success-anim {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+.publish-dialog.is-success .publish-success-anim {
+  display: flex;
+}
+.publish-dialog.is-success .publish-progress-bar-track,
+.publish-dialog.is-success .publish-status-text {
+  display: none;
+}
+.success-checkmark {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: var(--ok-bg);
+  color: var(--ok);
+  display: flex; align-items: center; justify-content: center;
+  animation: bounce-in 0.4s var(--ease);
+}
+.success-checkmark svg { width: 28px; height: 28px; }
+@keyframes bounce-in {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
 @media (max-width: 1180px){
   .page-grid{ grid-template-columns: 1fr; }
   .preview-panel{ position: static; }
@@ -867,6 +986,7 @@ img{ max-width: 100%; display: block; }
   .phone-screen{ height: 560px; border-radius: 24px; }
 }
 </style>
+
 </head>
 <body>
 <div style="padding: 15px; background: #f8f9fa; margin-bottom: 20px;">
@@ -900,276 +1020,308 @@ img{ max-width: 100%; display: block; }
   <!-- ============================================================
        PAGE BODY
        ============================================================ -->
+
   <main class="page-body">
 
-    <div class="page-heading">
-      <h2>Add New App</h2>
-      <p>Fill in the details, upload the assets, and publish straight to the PaliaAPK HUB catalog.</p>
-    </div>
+<div class="page-heading">
+  <h2>Add New App</h2>
+  <p>Fill in the details, upload the assets, and publish straight to the PaliaAPK HUB catalog.</p>
+</div>
 
-    <div class="page-grid">
+<div class="page-grid">
 
-      <!-- FORM PANEL -->
-      <section class="form-panel" id="formPanel">
-        <form id="appForm" novalidate>
+  <!-- FORM PANEL -->
+  <section class="form-panel" id="formPanel">
+    <form id="appForm" novalidate>
 
-          <!-- App details -->
-          <div class="panel-card">
-            <div class="panel-card__header">
-              <div class="panel-card__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 8h8v8H8z"/></svg>
-              </div>
-              <div>
-                <h3>App Details</h3>
-                <p>Core information shown on the app's catalog page</p>
-              </div>
-            </div>
-            <div class="panel-card__body">
-              <div class="field-grid">
-                <div class="field field--full">
-                  <label for="fName">App Name <span class="req">*</span></label>
-                  <input class="field-input" type="text" id="fName" name="name" placeholder="e.g. Palia Companion" autocomplete="off">
-                  <span class="field-error">⚠ App name is required.</span>
-                </div>
-
-                <div class="field">
-                  <label for="fVersion">Version <span class="req">*</span></label>
-                  <input class="field-input" type="text" id="fVersion" name="version" placeholder="e.g. 2.4.1" autocomplete="off">
-                  <span class="field-error">⚠ Version is required.</span>
-                </div>
-
-                <div class="field">
-                  <label for="fDeveloper">Developer</label>
-                  <input class="field-input" type="text" id="fDeveloper" name="developer" placeholder="e.g. Singularity 6" autocomplete="off">
-                </div>
-
-                <div class="field">
-                  <label for="fPackage">Package Name</label>
-                  <input class="field-input" type="text" id="fPackage" name="packageName" placeholder="com.example.app" autocomplete="off" style="font-family: var(--font-mono); font-size: 12.5px;">
-                </div>
-
-                <div class="field">
-                  <label for="fCategory">Category <span class="req">*</span></label>
-                  <select class="field-input" id="fCategory" name="category">
-                    <option value="" selected disabled>Select category</option>
-                    <option>Games</option>
-                    <option>Tools</option>
-                    <option>Productivity</option>
-                    <option>Social</option>
-                    <option>Entertainment</option>
-                    <option>Education</option>
-                    <option>Photography</option>
-                    <option>Communication</option>
-                    <option>Finance</option>
-                    <option>Health &amp; Fitness</option>
-                    <option>Music &amp; Audio</option>
-                    <option>Video Players</option>
-                    <option>Other</option>
-                  </select>
-                  <span class="field-error">⚠ Please choose a category.</span>
-                </div>
-
-                <div class="field">
-                  <label for="fAndroid">Android Version</label>
-                  <select class="field-input" id="fAndroid" name="androidVersion">
-                    <option value="" selected disabled>Select minimum version</option>
-                    <option>Android 5.0+</option>
-                    <option>Android 6.0+</option>
-                    <option>Android 7.0+</option>
-                    <option>Android 8.0+</option>
-                    <option>Android 9.0+</option>
-                    <option>Android 10+</option>
-                    <option>Android 11+</option>
-                    <option>Android 12+</option>
-                    <option>Android 13+</option>
-                    <option>Android 14+</option>
-                  </select>
-                </div>
-
-                <!-- APK Size field yahan se hata diya gaya hai -->
-
-                <div class="field field--full">
-                  <label for="fTagInput">Tags <span class="opt">optional</span></label>
-                  <div class="tag-input-wrap" id="tagWrap">
-                    <input type="text" id="fTagInput" placeholder="Type a tag and press Enter">
-                  </div>
-                  <span class="field-hint">Press Enter or comma to add a tag.</span>
-                </div>
-              </div>
-            </div>
+      <!-- App details -->
+      <div class="panel-card">
+        <div class="panel-card__header">
+          <div class="panel-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 8h8v8H8z"/></svg>
           </div>
-
-          <!-- Description -->
-          <div class="panel-card">
-            <div class="panel-card__header">
-              <div class="panel-card__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-              </div>
-              <div>
-                <h3>Description</h3>
-                <p>Tell users what this app does</p>
-              </div>
-            </div>
-            <div class="panel-card__body">
-              <div class="desc-toggle">
-                <button type="button" class="desc-toggle-btn is-active" id="btnDescManual" aria-pressed="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                  Manual Description
-                </button>
-                <button type="button" class="desc-toggle-btn" id="btnDescAI" aria-pressed="false">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/></svg>
-                  ✨ Generate AI Description
-                </button>
-              </div>
-
-              <div class="desc-ai-panel" id="descAIPanel">
-                <p>Generates a description from the App Name, Category, Developer, Version and Tags you've entered above. You can edit the result afterwards.</p>
-                <button type="button" class="btn-ai-generate" id="btnGenerateNow">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/></svg>
-                  <span>Generate Description</span>
-                </button>
-              </div>
-
-              <div class="field">
-                <label for="fDescription">App Description <span class="req">*</span></label>
-                <textarea class="field-input" id="fDescription" name="description" rows="7" placeholder="Describe what the app does, its key features, and why users should install it..."></textarea>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span class="field-error">⚠ Description is required.</span>
-                  <span class="charcount" id="descCharCount">0 characters</span>
-                </div>
-              </div>
-            </div>
+          <div>
+            <h3>App Details</h3>
+            <p>Core information shown on the app's catalog page</p>
           </div>
-
-          <!-- Media & files -->
-          <div class="panel-card">
-            <div class="panel-card__header">
-              <div class="panel-card__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15V6a2 2 0 00-2-2H5a2 2 0 00-2 2v9m18 0H3m18 0l-2.5-3.5-4 5-3-3.5L4 15"/></svg>
-              </div>
-              <div>
-                <h3>Icon, APK &amp; Banner</h3>
-                <p>Drag &amp; drop or click to browse</p>
-              </div>
-            </div>
-            <div class="panel-card__body">
-              <div class="uploader-grid" id="uploaderGridTop"></div>
-              <div id="uploaderApkWrap"></div>
-            </div>
-          </div>
-
-          <div class="panel-card">
-            <div class="panel-card__header">
-              <div class="panel-card__icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 16l-5-5-5 5-3-3-5 5"/></svg>
-              </div>
-              <div>
-                <h3>Screenshots</h3>
-                <p>Up to 5 screenshots — shown in the preview carousel</p>
-              </div>
-            </div>
-            <div class="panel-card__body">
-              <div class="uploader-grid uploader-grid--screens" id="uploaderGridScreens"></div>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="panel-card">
-            <div class="panel-card__body">
-              <div class="submit-alert submit-alert--error" id="submitAlert">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <div><strong id="submitAlertTitle">Something went wrong</strong><span id="submitAlertBody"></span></div>
-              </div>
-              <div class="form-actions">
-                <button type="button" class="btn btn-ghost" id="btnReset">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
-                  Reset Form
-                </button>
-                <button type="button" class="btn btn-secondary" id="btnSaveDraft">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                  <span class="btn-spinner"></span>
-                  <span class="btn-label">Save Draft</span>
-                </button>
-                <button type="button" class="btn btn-primary" id="btnPublish">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l6 6L20 6"/></svg>
-                  <span class="btn-spinner"></span>
-                  <span class="btn-label">Publish App</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </form>
-      </section>
-
-      <!-- PREVIEW PANEL -->
-      <aside class="preview-panel">
-        <div class="preview-heading">
-          <h3>Live Preview</h3>
-          <span class="live-pill"><i></i>LIVE</span>
         </div>
-        <div class="phone-frame">
-          <div class="phone-screen">
-            <div class="phone-statusbar">
-              <span>9:41</span>
-              <div class="phone-statusbar__icons">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z"/><path d="M5 13l2 2a7.07 7.07 0 0 1 10 0l2-2a10 10 0 0 0-14 0z"/><path d="M9 17l3 3 3-3a4.24 4.24 0 0 0-6 0z"/></svg>
-                <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="21" y="10" width="1.6" height="4" rx="0.8"/><rect x="4" y="8" width="12" height="8" rx="1"/></svg>
-              </div>
+        <div class="panel-card__body">
+          <div class="field-grid">
+            <div class="field field--full">
+              <label for="fName">App Name <span class="req">*</span></label>
+              <input class="field-input" type="text" id="fName" name="name" placeholder="e.g. Palia Companion" autocomplete="off">
+              <span class="field-error">⚠ App name is required.</span>
             </div>
-            <div class="phone-content" id="phoneContent">
-              <div class="pv-banner" id="pvBanner">
-                <div class="pv-banner__empty" id="pvBannerEmpty">Banner preview</div>
+
+            <div class="field">
+              <label for="fVersion">Version <span class="req">*</span></label>
+              <input class="field-input" type="text" id="fVersion" name="version" placeholder="e.g. 2.4.1" autocomplete="off">
+              <span class="field-error">⚠ Version is required.</span>
+            </div>
+
+            <div class="field">
+              <label for="fDeveloper">Developer</label>
+              <input class="field-input" type="text" id="fDeveloper" name="developer" placeholder="e.g. Singularity 6" autocomplete="off">
+            </div>
+
+            <div class="field">
+              <label for="fPackage">Package Name</label>
+              <input class="field-input" type="text" id="fPackage" name="packageName" placeholder="com.example.app" autocomplete="off" style="font-family: var(--font-mono); font-size: 12.5px;">
+            </div>
+
+            <div class="field">
+              <label for="fCategory">Category <span class="req">*</span></label>
+              <select class="field-input" id="fCategory" name="category">
+                <option value="" selected disabled>Select category</option>
+                <option>Games</option>
+                <option>Tools</option>
+                <option>Productivity</option>
+                <option>Social</option>
+                <option>Entertainment</option>
+                <option>Education</option>
+                <option>Photography</option>
+                <option>Communication</option>
+                <option>Finance</option>
+                <option>Health &amp; Fitness</option>
+                <option>Music &amp; Audio</option>
+                <option>Video Players</option>
+                <option>Other</option>
+              </select>
+              <span class="field-error">⚠ Please choose a category.</span>
+            </div>
+
+            <div class="field">
+              <label for="fAndroid">Android Version</label>
+              <select class="field-input" id="fAndroid" name="androidVersion">
+                <option value="" selected disabled>Select minimum version</option>
+                <option>Android 5.0+</option>
+                <option>Android 6.0+</option>
+                <option>Android 7.0+</option>
+                <option>Android 8.0+</option>
+                <option>Android 9.0+</option>
+                <option>Android 10+</option>
+                <option>Android 11+</option>
+                <option>Android 12+</option>
+                <option>Android 13+</option>
+                <option>Android 14+</option>
+              </select>
+            </div>
+
+            <!-- APK Size field yahan se hata diya gaya hai -->
+
+            <div class="field field--full">
+              <label for="fTagInput">Tags <span class="opt">optional</span></label>
+              <div class="tag-input-wrap" id="tagWrap">
+                <input type="text" id="fTagInput" placeholder="Type a tag and press Enter">
               </div>
-              <div class="pv-header">
-                <div class="pv-icon" id="pvIcon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8 12h8M12 8v8"/></svg>
-                </div>
-                <div class="pv-titleblock">
-                  <h4 id="pvName">New App Name</h4>
-                  <p id="pvDeveloper">Developer name</p>
-                </div>
-              </div>
-              <div class="pv-body">
-                <div class="pv-meta-row">
-                  <span class="pv-meta-pill" id="pvVersion">v—</span>
-                  <span class="pv-meta-pill" id="pvCategory">Category</span>
-                  <span class="pv-meta-pill" id="pvSize">Size —</span>
-                  <span class="pv-meta-pill" id="pvDownloads">0 downloads</span>
-                </div>
-
-                <button type="button" class="pv-install" id="pvInstall">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg>
-                  Install
-                </button>
-
-                <div>
-                  <div class="pv-section-title" style="margin-bottom:8px;">Screenshots</div>
-                  <div class="pv-shots" id="pvShots">
-                    <div class="pv-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 16l-5-5-5 5-3-3-5 5"/></svg></div>
-                    <div class="pv-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 16l-5-5-5 5-3-3-5 5"/></svg></div>
-                    <div class="pv-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 16l-5-5-5 5-3-3-5 5"/></svg></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div class="pv-section-title" style="margin-bottom:8px;">About this app</div>
-                  <p class="pv-desc is-empty" id="pvDescription">No description yet — start typing on the left.</p>
-                </div>
-
-                <div class="pv-tags" id="pvTags"></div>
-              </div>
+              <span class="field-hint">Press Enter or comma to add a tag.</span>
             </div>
           </div>
         </div>
-      </aside>
+      </div>
 
+      <!-- Description -->
+      <div class="panel-card">
+        <div class="panel-card__header">
+          <div class="panel-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+          </div>
+          <div>
+            <h3>Description</h3>
+            <p>Tell users what this app does</p>
+          </div>
+        </div>
+        <div class="panel-card__body">
+          <div class="desc-toggle">
+            <button type="button" class="desc-toggle-btn is-active" id="btnDescManual" aria-pressed="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Manual Description
+            </button>
+            <button type="button" class="desc-toggle-btn" id="btnDescAI" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/></svg>
+              ✨ Generate AI Description
+            </button>
+          </div>
+
+          <div class="desc-ai-panel" id="descAIPanel">
+            <p>Generates a description from the App Name, Category, Developer, Version and Tags you've entered above. You can edit the result afterwards.</p>
+            <button type="button" class="btn-ai-generate" id="btnGenerateNow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/></svg>
+              <span>Generate Description</span>
+            </button>
+          </div>
+
+          <div class="field">
+            <label for="fDescription">App Description <span class="req">*</span></label>
+            <textarea class="field-input" id="fDescription" name="description" rows="7" placeholder="Describe what the app does, its key features, and why users should install it..."></textarea>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="field-error">⚠ Description is required.</span>
+              <span class="charcount" id="descCharCount">0 characters</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Media & files -->
+      <div class="panel-card">
+        <div class="panel-card__header">
+          <div class="panel-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15V6a2 2 0 00-2-2H5a2 2 0 00-2 2v9m18 0H3m18 0l-2.5-3.5-4 5-3-3.5L4 15"/></svg>
+          </div>
+          <div>
+            <h3>Icon, APK &amp; Banner</h3>
+            <p>Drag &amp; drop or click to browse</p>
+          </div>
+        </div>
+        <div class="panel-card__body">
+          <div class="uploader-grid" id="uploaderGridTop"></div>
+          <div id="uploaderApkWrap"></div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-card__header">
+          <div class="panel-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 16l-5-5-5 5-3-3-5 5"/></svg>
+          </div>
+          <div>
+            <h3>Screenshots</h3>
+            <p>Up to 5 screenshots — shown in the preview carousel</p>
+          </div>
+        </div>
+        <div class="panel-card__body">
+          <div class="uploader-grid uploader-grid--screens" id="uploaderGridScreens"></div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="panel-card">
+        <div class="panel-card__body">
+          <div class="submit-alert submit-alert--error" id="submitAlert">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div><strong id="submitAlertTitle">Something went wrong</strong><span id="submitAlertBody"></span></div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" id="btnReset">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+              Reset Form
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnSaveDraft">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <span class="btn-spinner"></span>
+              <span class="btn-label">Save Draft</span>
+            </button>
+            <button type="button" class="btn btn-primary" id="btnPublish">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l6 6L20 6"/></svg>
+              <span class="btn-spinner"></span>
+              <span class="btn-label">Publish App</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </section>
+
+  <!-- PREVIEW PANEL -->
+  <aside class="preview-panel">
+    <div class="preview-heading">
+      <h3>Live Preview</h3>
+      <span class="live-pill"><i></i>LIVE</span>
     </div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="phone-statusbar">
+          <span>9:41</span>
+          <div class="phone-statusbar__icons">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9z"/><path d="M5 13l2 2a7.07 7.07 0 0 1 10 0l2-2a10 10 0 0 0-14 0z"/><path d="M9 17l3 3 3-3a4.24 4.24 0 0 0-6 0z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="6" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="21" y="10" width="1.6" height="4" rx="0.8"/><rect x="4" y="8" width="12" height="8" rx="1"/></svg>
+          </div>
+        </div>
+        <div class="phone-content" id="phoneContent">
+          <div class="pv-banner" id="pvBanner">
+            <div class="pv-banner__empty" id="pvBannerEmpty">Banner preview</div>
+          </div>
+          <div class="pv-header">
+            <div class="pv-icon" id="pvIcon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8 12h8M12 8v8"/></svg>
+            </div>
+            <div class="pv-titleblock">
+              <h4 id="pvName">New App Name</h4>
+              <p id="pvDeveloper">Developer name</p>
+            </div>
+          </div>
+          <div class="pv-body">
+            <div class="pv-meta-row">
+              <span class="pv-meta-pill" id="pvVersion">v—</span>
+              <span class="pv-meta-pill" id="pvCategory">Category</span>
+              <span class="pv-meta-pill" id="pvSize">Size —</span>
+              <span class="pv-meta-pill" id="pvDownloads">0 downloads</span>
+            </div>
+
+            <button type="button" class="pv-install" id="pvInstall">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg>
+              Install
+            </button>
+
+            <div>
+              <div class="pv-section-title" style="margin-bottom:8px;">Screenshots</div>
+              <div class="pv-shots" id="pvShots">
+                <div class="pv-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 16l-5-5-5 5-3-3-5 5"/></svg></div>
+                <div class="pv-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 16l-5-5-5 5-3-3-5 5"/></svg></div>
+                <div class="pv-shot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 16l-5-5-5 5-3-3-5 5"/></svg></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="pv-section-title" style="margin-bottom:8px;">About this app</div>
+              <p class="pv-desc is-empty" id="pvDescription">No description yet — start typing on the left.</p>
+            </div>
+
+            <div class="pv-tags" id="pvTags"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
   </main>
 
   <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
+  <!-- Publish Progress Dialog -->
+  <div class="publish-dialog-overlay" id="publishDialogOverlay">
+    <div class="publish-dialog" id="publishDialog">
+      <div class="publish-dialog__header">
+        <div class="publish-dialog__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l6 6L20 6"/></svg>
+        </div>
+        <div>
+          <h3 id="publishDialogTitle">Publishing App</h3>
+          <p id="publishDialogSub">Please wait while your app is being uploaded</p>
+        </div>
+      </div>
+      <div class="publish-success-anim" id="publishSuccessAnim">
+        <div class="success-checkmark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <strong style="font-size: 15px; color: var(--ink-900);">Successfully Published!</strong>
+        <span style="font-size: 12px; color: var(--ink-300);">Redirecting to dashboard...</span>
+      </div>
+      <div class="publish-progress-bar-track">
+        <div class="publish-progress-bar-fill" id="publishProgressBarFill"></div>
+      </div>
+      <div class="publish-status-text" id="publishStatusText">Preparing Files (5%)</div>
+      <div class="publish-dialog__footer">
+        <button type="button" class="btn btn-secondary" id="publishRetryBtn" style="width: 100%;">Retry</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
 <script>
 (function(){
   "use strict";
@@ -1652,37 +1804,34 @@ img{ max-width: 100%; display: block; }
   function setSubmitting(isSubmitting, activeBtnId, loadingLabel){
     ['btnSaveDraft', 'btnPublish', 'btnReset'].forEach(function(id){
       var btn = document.getElementById(id);
-      btn.disabled = isSubmitting;
+      if(btn) btn.disabled = isSubmitting;
     });
     var activeBtn = document.getElementById(activeBtnId);
     if(!activeBtn) return;
     activeBtn.classList.toggle('is-loading', isSubmitting);
     var labelEl = activeBtn.querySelector('.btn-label');
     if(labelEl) labelEl.textContent = isSubmitting ? loadingLabel : submitBtnLabels[activeBtnId];
-    document.getElementById('formPanel').classList.toggle('is-submitting', isSubmitting);
+    var formPanelEl = document.getElementById('formPanel');
+    if(formPanelEl) formPanelEl.classList.toggle('is-submitting', isSubmitting);
   }
 
   function collectPayload(status, urls, slug){
-    // Automatically calculate size from uploaded APK file for database submission
     var calculatedSize = (uploads.apk && uploads.apk.file) ? (uploads.apk.file.size / (1024 * 1024)).toFixed(1) + ' MB' : null;
 
     return {
       name: currentFieldValue('fName'),
-      
       version: currentFieldValue('fVersion'),
       developer: currentFieldValue('fDeveloper') || null,
       package_name: currentFieldValue('fPackage') || null,
       category: currentFieldValue('fCategory') || null,
       android_version: currentFieldValue('fAndroid') || null,
       apk_size: calculatedSize,
-     
       description: fDescription.value.trim(),
       icon_url: urls.icon || null,
       banner_url: urls.banner || null,
       apk_url: urls.apk || null,
       screenshots: urls.screenshots,
       downloads: 0,
-      
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -1699,6 +1848,53 @@ img{ max-width: 100%; display: block; }
         throw res.error;
       }
       return res.data;
+    });
+  }
+
+  // Publish Progress Dialog Logic Implementation
+  var publishDialogOverlay = document.getElementById('publishDialogOverlay');
+  var publishDialog = document.getElementById('publishDialog');
+  var publishProgressBarFill = document.getElementById('publishProgressBarFill');
+  var publishStatusText = document.getElementById('publishStatusText');
+  var publishRetryBtn = document.getElementById('publishRetryBtn');
+
+  function showPublishProgressDialog(){
+    if(publishDialogOverlay){
+      publishDialogOverlay.classList.add('is-open');
+      publishDialog.classList.remove('has-error', 'is-success');
+      if(publishProgressBarFill) publishProgressBarFill.style.width = '0%';
+      if(publishStatusText) publishStatusText.textContent = 'Preparing Files (5%)';
+    }
+  }
+
+  function updatePublishProgress(percent, message){
+    if(publishProgressBarFill) publishProgressBarFill.style.width = percent + '%';
+    if(publishStatusText) publishStatusText.textContent = message;
+  }
+
+  function handlePublishSuccess(){
+    if(publishDialog){
+      publishDialog.classList.add('is-success');
+    }
+    showToast('success', 'App published', currentFieldValue('fName') + ' was successfully published to the catalog.');
+    window.setTimeout(function(){
+      window.location.href = 'dashboard.html';
+    }, 2000);
+  }
+
+  function handlePublishError(message){
+    if(publishDialog){
+      publishDialog.classList.add('has-error');
+    }
+    if(publishStatusText) publishStatusText.textContent = 'Publish failed: ' + message;
+    showSubmitAlert('Could not save this app', message);
+    showToast('error', 'Save failed', message);
+  }
+
+  if(publishRetryBtn){
+    publishRetryBtn.addEventListener('click', function(){
+      if(publishDialogOverlay) publishDialogOverlay.classList.remove('is-open');
+      submitApp('published', 'btnPublish', 'Publishing…');
     });
   }
 
@@ -1722,7 +1918,13 @@ img{ max-width: 100%; display: block; }
     }
 
     hideSubmitAlert();
-    setSubmitting(true, btnId, loadingLabel);
+
+    if(status === 'published'){
+      showPublishProgressDialog();
+      updatePublishProgress(5, 'Preparing Files (5%)');
+    } else {
+      setSubmitting(true, btnId, loadingLabel);
+    }
 
     var slug = slugify(currentFieldValue('fName')) + '-' + randomSuffix();
     var urls = { icon: null, banner: null, apk: null, screenshots: [] };
@@ -1731,22 +1933,28 @@ img{ max-width: 100%; display: block; }
 
     if(uploads.icon && uploads.icon.file){
       uploadChain = uploadChain.then(function(){
+        if(status === 'published') updatePublishProgress(15, 'Uploading Icon (15%)');
         return uploadAsset(BUCKETS.icon, 'icons', uploads.icon.file).then(function(url){ urls.icon = url; });
       });
     }
     if(uploads.banner && uploads.banner.file){
       uploadChain = uploadChain.then(function(){
+        if(status === 'published') updatePublishProgress(30, 'Uploading Banner (30%)');
         return uploadAsset(BUCKETS.banner, 'banners', uploads.banner.file).then(function(url){ urls.banner = url; });
       });
     }
     if(uploads.apk && uploads.apk.file){
       uploadChain = uploadChain.then(function(){
+        if(status === 'published') updatePublishProgress(85, 'Uploading APK (85%)');
         return uploadAsset(BUCKETS.apk, 'apk', uploads.apk.file).then(function(url){ urls.apk = url; });
       });
     }
-    ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'].forEach(function(id){
+    var shotIds = ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'];
+    
+    shotIds.forEach(function(id){
       if(uploads[id] && uploads[id].file){
         uploadChain = uploadChain.then(function(){
+          if(status === 'published') updatePublishProgress(55, 'Uploading Screenshots (55%)');
           return uploadAsset(BUCKETS.screenshot, 'screenshots', uploads[id].file).then(function(url){ urls.screenshots.push(url); });
         });
       }
@@ -1754,59 +1962,75 @@ img{ max-width: 100%; display: block; }
 
     uploadChain
       .then(function(){
+        if(status === 'published') updatePublishProgress(95, 'Saving App Details (95%)');
         var payload = collectPayload(status, urls, slug);
         return insertWithUniqueSlug(payload, 3);
       })
       .then(function(){
-        setSubmitting(false, btnId, loadingLabel);
-        markSaved(status === 'published' ? 'Published' : 'Draft saved');
-        showToast(
-          'success',
-          status === 'published' ? 'App published' : 'Draft saved',
-          currentFieldValue('fName') + ' was ' + (status === 'published' ? 'published to the catalog.' : 'saved as a draft.')
-        );
+        if(status === 'published'){
+          updatePublishProgress(100, 'Publishing App (100%)');
+          handlePublishSuccess();
+        } else {
+          setSubmitting(false, btnId, loadingLabel);
+          markSaved('Draft saved');
+          showToast('success', 'Draft saved', currentFieldValue('fName') + ' was saved as a draft.');
+        }
       })
       .catch(function(err){
-        setSubmitting(false, btnId, loadingLabel);
-        markDirty();
         var message = (err && err.message) ? err.message : 'Please check your connection and try again.';
-        showSubmitAlert('Could not save this app', message);
-        showToast('error', 'Save failed', message);
+        if(status === 'published'){
+          handlePublishError(message);
+        } else {
+          setSubmitting(false, btnId, loadingLabel);
+          markDirty();
+          showSubmitAlert('Could not save this app', message);
+          showToast('error', 'Save failed', message);
+        }
       });
   }
 
-  document.getElementById('btnReset').addEventListener('click', function(){
-    if(!window.confirm('Reset the form? All fields and uploaded files will be cleared.')) return;
+  var btnReset = document.getElementById('btnReset');
+  if(btnReset){
+    btnReset.addEventListener('click', function(){
+      if(!window.confirm('Reset the form? All fields and uploaded files will be cleared.')) return;
 
-    appForm.reset();
-    tags = [];
-    renderTags();
+      appForm.reset();
+      tags = [];
+      renderTags();
 
-    UPLOADER_CONFIGS.forEach(function(cfg){
-      uploads[cfg.id] = null;
-      var root = appForm.querySelector('[data-uploader-id="' + cfg.id + '"]');
-      if(root) root.classList.remove('has-file', 'is-loading', 'is-dragover');
+      UPLOADER_CONFIGS.forEach(function(cfg){
+        uploads[cfg.id] = null;
+        var root = appForm.querySelector('[data-uploader-id="' + cfg.id + '"]');
+        if(root) root.classList.remove('has-file', 'is-loading', 'is-dragover');
+      });
+
+      document.querySelectorAll('.field.has-error').forEach(function(f){ f.classList.remove('has-error'); });
+      setDescMode('manual');
+      hideSubmitAlert();
+      markClean();
+      renderPreview();
     });
+  }
 
-    document.querySelectorAll('.field.has-error').forEach(function(f){ f.classList.remove('has-error'); });
-    setDescMode('manual');
-    hideSubmitAlert();
-    markClean();
-    renderPreview();
-  });
+  var btnSaveDraft = document.getElementById('btnSaveDraft');
+  if(btnSaveDraft){
+    btnSaveDraft.addEventListener('click', function(){
+      submitApp('draft', 'btnSaveDraft', 'Saving…');
+    });
+  }
 
-  document.getElementById('btnSaveDraft').addEventListener('click', function(){
-    submitApp('draft', 'btnSaveDraft', 'Saving…');
-  });
-
-  document.getElementById('btnPublish').addEventListener('click', function(){
-    submitApp('published', 'btnPublish', 'Publishing…');
-  });
+  var btnPublish = document.getElementById('btnPublish');
+  if(btnPublish){
+    btnPublish.addEventListener('click', function(){
+      submitApp('published', 'btnPublish', 'Publishing…');
+    });
+  }
 
   renderTags();
   renderPreview();
 
 })();
 </script>
+
 </body>
 </html>
