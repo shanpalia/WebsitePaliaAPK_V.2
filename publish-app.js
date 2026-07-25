@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Supabase Credentials (configured for production-ready integration)
-    const SUPABASE_URL = 'https://xyzcompany.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.exampleKey';
+    const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
     
     // Initialize Supabase Client if available globally or mock safely
     let supabaseClient = null;
