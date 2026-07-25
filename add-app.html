@@ -1194,6 +1194,35 @@ img{ max-width: 100%; display: block; }
         </div>
       </div>
 
+      <!-- Storage Provider Card Added Above Publish App Button -->
+      <div class="panel-card">
+        <div class="panel-card__header">
+          <div class="panel-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          </div>
+          <div>
+            <h3>Storage Provider</h3>
+            <p>Choose where your app files are stored</p>
+          </div>
+        </div>
+        <div class="panel-card__body">
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 500; color: var(--ink-900); cursor: pointer;">
+              <input type="radio" name="storageProvider" value="Supabase Storage" style="accent-color: var(--mint-500); width: 16px; height: 16px;">
+              Supabase Storage
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 500; color: var(--ink-900); cursor: pointer;">
+              <input type="radio" name="storageProvider" value="GitHub Releases" style="accent-color: var(--mint-500); width: 16px; height: 16px;">
+              GitHub Releases
+            </label>
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 500; color: var(--ink-900); cursor: pointer;">
+              <input type="radio" name="storageProvider" value="Hybrid (Recommended)" checked style="accent-color: var(--mint-500); width: 16px; height: 16px;">
+              Hybrid (Recommended)
+            </label>
+          </div>
+        </div>
+      </div>
+
       <!-- Actions -->
       <div class="panel-card">
         <div class="panel-card__body">
@@ -2022,7 +2051,16 @@ img{ max-width: 100%; display: block; }
   var btnPublish = document.getElementById('btnPublish');
   if(btnPublish){
     btnPublish.addEventListener('click', function(){
-      submitApp('published', 'btnPublish', 'Publishing…');
+      // Save form data and storageProvider to sessionStorage before opening publish-app.html
+      var formData = new FormData(appForm);
+      for (var pair of formData.entries()) {
+        sessionStorage.setItem(pair[0], pair[1]);
+      }
+      var checkedProvider = document.querySelector('input[name="storageProvider"]:checked');
+      if (checkedProvider) {
+        sessionStorage.setItem('storageProvider', checkedProvider.value);
+      }
+      window.location.href = 'publish-app.html';
     });
   }
 
@@ -2034,3 +2072,4 @@ img{ max-width: 100%; display: block; }
 
 </body>
 </html>
+```[cite: 3]
