@@ -432,7 +432,21 @@ if (fileSizeGB > 2) {
                 body: file
            }, 1800000);
 
-            if (!assetRes.ok) {
+           if (!assetRes.ok) {
+
+    const errorText = await assetRes.text();
+
+    console.error("GitHub Upload Error");
+
+    console.error("Status:", assetRes.status);
+
+    console.error("Response:", errorText);
+
+    throw new Error(
+        `GitHub Upload Failed (${assetRes.status})\n${errorText}`
+    );
+
+}
                 const errText = await assetRes.text();
                 throw new Error(`GitHub Asset upload failed (${assetRes.status}): ${errText}`);
             }
