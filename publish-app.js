@@ -181,27 +181,32 @@ async function loadFilesFromIndexedDB() {
 
             let files = {};
             let keys = [];
+            let keysCompleted = false;
+            let valuesCompleted = false;
 
             getAllKeysRequest.onsuccess = (e) => {
-                keys = e.target.result;
+                keys = e.target.result || [];
+                keysCompleted = true;
                 checkDone();
             };
 
             getAllRequest.onsuccess = (e) => {
-                const values = e.target.result;
+                const values = e.target.result || [];
                 values.forEach((val, idx) => {
                     if (keys[idx]) {
                         files[keys[idx]] = val;
                     }
                 });
+                valuesCompleted = true;
                 checkDone();
             };
 
             function checkDone() {
-                if (keys !== undefined && Object.keys(files).length >= 0) {
+                if (keysCompleted && valuesCompleted) {
                     resolve(files);
                 }
             }
+
             transaction.onerror = () => resolve({});
         };
         request.onupgradeneeded = (event) => {
@@ -240,7 +245,6 @@ function displayLoadedAssetPreviews(filePayload) {
 }
 
 async function handlePublishWorkflow(filePayload, appData) {
-    const summaryAppName = document.getElementById('summaryAppName');
     const appVersionInput = document.getElementById('appVersion');
     const releaseVersionInput = document.getElementById('releaseVersion');
     const releaseTitleInput = document.getElementById('releaseTitle');
@@ -254,6 +258,7 @@ async function handlePublishWorkflow(filePayload, appData) {
     const patTokenInput = document.getElementById('patToken');
     const repoOwnerInput = document.getElementById('repoOwner');
     const repoNameInput = document.getElementById('repoName');
+    const summaryAppName = document.getElementById('summaryAppName');
 
     const apkFile = filePayload.apk || null;
     const iconFile = filePayload.icon || null;
@@ -612,7 +617,9 @@ function showProgressDialog() {
     if (stateFailed) stateFailed.style.display = 'none';
 }
 
-function hideProgressDialog() {}
+function hideProgressDialog() {
+    // Optional: can be implemented if modal needs explicit hiding during states
+}
 
 function updateProgressState(statusText, percentage, stepId) {
     const progressStatusText = document.getElementById('progressStatusText');
