@@ -2048,22 +2048,27 @@ img{ max-width: 100%; display: block; }
     });
   }
 
-  var btnPublish = document.getElementById('btnPublish');
+ var btnPublish = document.getElementById('btnPublish');
   if(btnPublish){
     btnPublish.addEventListener('click', function(){
-      // Save form data and storageProvider to sessionStorage before opening publish-app.html
-      var formData = new FormData(appForm);
-      for (var pair of formData.entries()) {
-        sessionStorage.setItem(pair[0], pair[1]);
-      }
       var checkedProvider = document.querySelector('input[name="storageProvider"]:checked');
-      if (checkedProvider) {
-        sessionStorage.setItem('storageProvider', checkedProvider.value);
+      var providerValue = checkedProvider ? checkedProvider.value : '';
+
+      // Agar GitHub Releases select hai, toh publish-app.html par redirect karein
+      if (providerValue === 'GitHub Releases') {
+        var formData = new FormData(appForm);
+        for (var pair of formData.entries()) {
+          sessionStorage.setItem(pair[0], pair[1]);
+        }
+        sessionStorage.setItem('storageProvider', providerValue);
+        window.location.href = 'publish-app.html';
+        return;
       }
-      window.location.href = 'publish-app.html';
+
+      // Warna Supabase ya Hybrid ke liye yahi se publish process shuru hoga
+      submitApp('published', 'btnPublish', 'Publishing…');
     });
   }
-
   renderTags();
   renderPreview();
 
