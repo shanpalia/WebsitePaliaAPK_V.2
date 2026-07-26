@@ -339,9 +339,24 @@ async function uploadWithRetryAndTimeout(file, bucketName, maxRetries = 3) {
     throw new Error(`Upload to ${bucketName} failed after ${maxRetries} attempts: ${lastError.message}`);
 }
 
-async function uploadToGitHubReleasesSmart({ token, owner, repo, tag, title, notes, file }) {
+async function uploadToGitHubReleasesSmart({
+    token,
+    owner,
+    repo,
+    tag,
+    title,
+    notes,
+    file,
+    onProgress = null
+}) {
     if (!file) throw new Error('APK file is required for GitHub release upload.');
+const fileSizeGB = file.size / 1024 / 1024 / 1024;
 
+if (fileSizeGB > 2) {
+    throw new Error(
+        `APK Size ${fileSizeGB.toFixed(2)} GB exceeds GitHub Releases limit (2 GB per asset).`
+    );
+}
     const headers = {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json',
@@ -388,14 +403,24 @@ async function uploadToGitHubReleasesSmart({ token, owner, repo, tag, title, not
                 'Accept': 'application/vnd.github.v3+json'
             }
         }, 15000).catch(() => {});
+        await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
     const uploadUrlTemplate = releaseData.upload_url;
     const uploadUrl = uploadUrlTemplate.split('{')[0] + `?name=${encodeURIComponent(file.name)}`;
 
     let lastError = null;
-    const maxRetries = 3;
+    const maxRetries = 5;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        if (typeof onProgress === "function") {
+
+    onProgress({
+        percent: 0,
+        uploaded: 0,
+        total: file.size
+    });
+
+}
         try {
             const assetRes = await fetchWithTimeout(uploadUrl, {
                 method: 'POST',
@@ -405,7 +430,7 @@ async function uploadToGitHubReleasesSmart({ token, owner, repo, tag, title, not
                     'Accept': 'application/vnd.github.v3+json'
                 },
                 body: file
-            }, 300000);
+           }, 1800000);
 
             if (!assetRes.ok) {
                 const errText = await assetRes.text();
@@ -417,7 +442,7 @@ async function uploadToGitHubReleasesSmart({ token, owner, repo, tag, title, not
         } catch (error) {
             lastError = error;
             if (attempt < maxRetries) {
-                await new Promise(resolve => setTimeout(resolve, 3000 * attempt));
+                await new Promise(resolve => setTimeout(resolve, 5000 * attempt));
             }
         }
     }
