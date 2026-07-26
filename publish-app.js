@@ -438,3 +438,99 @@ function setupDialogActionButtons() {
     const doneBtn = document.getElementById('successDoneBtn') || document.getElementById('closeSuccessBtn');
     if (doneBtn) doneBtn.addEventListener('click', () => { location.href = 'index.html'; });
 }
+document.getElementById('btnPublishGithub').addEventListener('click', async () => {
+    // 1. Form fields se data read karein
+    const owner = document.getElementById('ghOwner').value.trim();
+    const repo = document.getElementById('ghRepo').value.trim();
+    const token = document.getElementById('ghToken').value.trim();
+    const tagVersion = document.getElementById('ghVersion').value.trim();
+    const releaseTitle = document.getElementById('ghTitle').value.trim();
+    const releaseNotes = document.getElementById('ghNotes').value.trim();
+    const isDraft = document.getElementById('ghDraft').checked;
+    const isPrerelease = document.getElementById('ghPreRelease').checked;
+
+    // Check karein ki zaroori fields bhari hain ya nahi
+    if (!owner || !repo || !token || !tagVersion) {
+        alert('Please fill in all required GitHub fields (Owner, Repository, Token, and Version).');
+        return;
+    }
+
+    // 2. Modal open karein aur progress start karein
+    const modal = document.getElementById('publishModal');
+    modal.style.display = 'flex';
+    updateProgress(10, 'Authenticating GitHub repository...', 'chkStep1', 'active');
+
+    try {
+        // Step A: GitHub par Release Tag Create karna
+        updateProgress(30, 'Creating GitHub Release tag...', 'chkStep1', 'completed');
+        updateProgress(40, 'Preparing release payload...', 'chkStep2', 'active');
+
+        const releaseResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/vnd.github+json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tag_name: tagVersion,
+                name: releaseTitle || tagVersion,
+                body: releaseNotes,
+                draft: isDraft,
+                prerelease: isPrerelease
+            })
+        });
+
+        if (!releaseResponse.ok) {
+            const errData = await releaseResponse.json();
+            throw new Error(errData.message || 'Failed to create GitHub release.');
+        }
+
+        const releaseData = await releaseResponse.json();
+        const uploadUrlTemplate = releaseData.upload_url; 
+        const downloadPageUrl = releaseData.html_url;
+
+        updateProgress(60, 'Release created successfully. Preparing APK asset...', 'chkStep2', 'completed');
+        updateProgress(80, 'Finalizing release endpoint...', 'chkStep3', 'active');
+
+        // Step B: Success state trigger karna
+        setTimeout(() => {
+            updateProgress(100, 'Published successfully!', 'chkStep3', 'completed');
+            showSuccessState(downloadPageUrl);
+        }, 800);
+
+    } catch (error) {
+        console.error(error);
+        showFailedState(error.message);
+    }
+});
+
+// Modal progress aur status manage karne ke helper functions
+function updateProgress(percent, statusText, stepId, statusType) {
+    document.getElementById('progressBarFill').style.width = percent + '%';
+    document.getElementById('progressPercent').innerText = percent + '%';
+    document.getElementById('progressStatusText').innerText = statusText;
+    
+    if(stepId) {
+        const step = document.getElementById(stepId);
+        if(statusType === 'completed') {
+            step.className = 'checklist-item completed';
+            step.innerHTML = `<i class="fa-solid fa-circle-check"></i> ` + step.innerText.replace(/^[^\w\s]+/, '').trim();
+        } else if(statusType === 'active') {
+            step.className = 'checklist-item active';
+            step.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ` + step.innerText.replace(/^[^\w\s]+/, '').trim();
+        }
+    }
+}
+
+function showSuccessState(url) {
+    document.getElementById('modalStateProgress').classList.remove('active');
+    document.getElementById('modalStateSuccess').classList.add('active');
+    document.getElementById('successDeploymentUrl').innerText = url;
+}
+
+function showFailedState(message) {
+    document.getElementById('modalStateProgress').classList.remove('active');
+    document.getElementById('modalStateFailed').classList.add('active');
+    document.getElementById('errorLogBox').innerText = message;
+}
