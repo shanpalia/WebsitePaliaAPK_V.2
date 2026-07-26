@@ -335,7 +335,8 @@ async function uploadToGitHubReleasesReusable({ token, owner, repo, tag, title, 
 
     const uploadUrlTemplate = releaseData.upload_url; 
     const uploadUrl = uploadUrlTemplate.split('{')[0] + `?name=${encodeURIComponent(file.name)}`;
-
+    console.log("Upload URL:", uploadUrl);
+    console.log("Release Data:", releaseData);
     const assetRes = await fetch(uploadUrl, {
         method: 'POST',
         headers: {
