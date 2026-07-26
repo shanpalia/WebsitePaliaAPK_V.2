@@ -346,13 +346,30 @@ async function uploadToGitHubReleasesReusable({ token, owner, repo, tag, title, 
         body: file
     });
 
-    if (!assetRes.ok) {
-        throw new Error(`GitHub Asset upload failed with status ${assetRes.status}`);
-    }
+   const responseText = await assetRes.text();
 
-    const assetData = await assetRes.json();
-    return assetData.browser_download_url;
+console.log("GitHub Upload Status:", assetRes.status);
+console.log("GitHub Upload Response:", responseText);
+
+if (!assetRes.ok) {
+    throw new Error(
+        `GitHub Upload Failed (${assetRes.status})\n${responseText}`
+    );
 }
+
+let assetData;
+
+try {
+    assetData = JSON.parse(responseText);
+} catch {
+    throw new Error("GitHub returned invalid JSON.");
+}
+
+if (!assetData.browser_download_url) {
+    throw new Error(assetData.message || "browser_download_url missing.");
+}
+
+return assetData.browser_download_url;
 
 async function saveAppToDatabaseComplete(payload) {
     const supabaseUrl = window.SUPABASE_URL || '';
