@@ -46,10 +46,16 @@ async function initPublishAppModule() {
         releaseNotesInput.value = appData.whats_new || `New Release\n\nApp Name: ${appName}\nVersion: ${appVersion}\nDeveloper: ${appData.developer || 'shanpalia'}\nCurrent Date: ${currentDate}`;
     }
     if (packageNameInput && !packageNameInput.value) packageNameInput.value = appData.package_name || '';
-    if (developerInput && !developerInput.value) developerInput.value = appData.developer || '';
+    if (developerInput && !developerInput.value) developerInput.value = appData.developer || 'shanpalia';
     if (categoryInput && !categoryInput.value) categoryInput.value = appData.category || '';
     if (androidVersionInput && !androidVersionInput.value) androidVersionInput.value = appData.android_version || '';
     if (descriptionInput && !descriptionInput.value) descriptionInput.value = appData.description || '';
+
+    // Auto-fill GitHub Owner and Repo default values if empty
+    const repoOwnerInput = document.getElementById('repoOwner');
+    const repoNameInput = document.getElementById('repoName');
+    if (repoOwnerInput && !repoOwnerInput.value) repoOwnerInput.value = 'shanpalia';
+    if (repoNameInput && !repoNameInput.value) repoNameInput.value = 'WebsitePaliaAPK_V.2';
 
     displayLoadedAssetPreviews(filePayload);
 
@@ -60,8 +66,6 @@ async function initPublishAppModule() {
     const storageProviderSelect = document.getElementById('storageProvider');
     const supabasePanel = document.getElementById('supabasePanel');
     const githubPanel = document.getElementById('githubPanel');
-    const repoOwnerInput = document.getElementById('repoOwner');
-    const repoNameInput = document.getElementById('repoName');
 
     const STORAGE_KEY = 'github_pat_token';
 
@@ -95,6 +99,7 @@ async function initPublishAppModule() {
         storageProviderSelect.dispatchEvent(new Event('change'));
     }
 
+    // Load saved token automatically and check remember box by default if token exists
     const savedToken = localStorage.getItem(STORAGE_KEY);
     if (savedToken && patTokenInput) {
         patTokenInput.value = savedToken;
@@ -144,6 +149,12 @@ async function initPublishAppModule() {
     if (publishBtn) {
         publishBtn.addEventListener('click', async (e) => {
             e.preventDefault();
+            // Automatically save token to storage on publish if remember is checked or token is present
+            const tokenValue = patTokenInput?.value?.trim();
+            if (tokenValue && rememberTokenCheckbox) {
+                rememberTokenCheckbox.checked = true;
+                localStorage.setItem(STORAGE_KEY, tokenValue);
+            }
             await handlePublishWorkflow(filePayload, appData);
         });
     }
@@ -617,9 +628,7 @@ function showProgressDialog() {
     if (stateFailed) stateFailed.style.display = 'none';
 }
 
-function hideProgressDialog() {
-    // Optional: can be implemented if modal needs explicit hiding during states
-}
+function hideProgressDialog() {}
 
 function updateProgressState(statusText, percentage, stepId) {
     const progressStatusText = document.getElementById('progressStatusText');
