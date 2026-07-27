@@ -4,523 +4,196 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    initPublishAppModule();
-});
 
-async function initPublishAppModule() {
-    let appData = {};
-    try {
-        const rawPending = sessionStorage.getItem('paliaapk_pending_app') || sessionStorage.getItem('currentApp') || '{}';
-        appData = JSON.parse(rawPending);
-    } catch (e) {
-        appData = {};
-    }
+    // 1. Storage Provider Card Switching Logic (Supabase <-> GitHub)
+    const providerOptions = document.querySelectorAll('.provider-option');
 
-    let filePayload = {};
-    try {
-        filePayload = await loadFilesFromIndexedDB();
-    } catch (e) {
-        console.error('Failed to load files from IndexedDB:', e);
-    }
+    providerOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            if (option.classList.contains('disabled')) return;
 
-    const summaryAppName = document.getElementById('summaryAppName');
-    const appVersionInput = document.getElementById('appVersion');
-    const releaseVersionInput = document.getElementById('releaseVersion');
-    const releaseTitleInput = document.getElementById('releaseTitle');
-    const releaseNotesInput = document.getElementById('releaseNotes');
-    const packageNameInput = document.getElementById('packageName');
-    const developerInput = document.getElementById('developer');
-    const categoryInput = document.getElementById('category');
-    const androidVersionInput = document.getElementById('androidVersion');
-    const descriptionInput = document.getElementById('description');
-
-    const appVersion = appData.version || appVersionInput?.value || '1.2.5';
-    const appName = appData.name || summaryAppName?.textContent || 'PaliaAPK HUB';
-
-    if (summaryAppName && !summaryAppName.textContent) summaryAppName.textContent = appName;
-    if (appVersionInput && !appVersionInput.value) appVersionInput.value = appVersion;
-    if (releaseVersionInput && !releaseVersionInput.value) releaseVersionInput.value = `v${appVersion}`;
-    if (releaseTitleInput && !releaseTitleInput.value) releaseTitleInput.value = `${appName} v${appVersion}`;
-    if (releaseNotesInput && !releaseNotesInput.value) {
-        const currentDate = new Date().toISOString().split('T')[0];
-        releaseNotesInput.value = appData.whats_new || `New Release\n\nApp Name: ${appName}\nVersion: ${appVersion}\nDeveloper: ${appData.developer || 'shanpalia'}\nCurrent Date: ${currentDate}`;
-    }
-    if (packageNameInput && !packageNameInput.value) packageNameInput.value = appData.package_name || '';
-    if (developerInput && !developerInput.value) developerInput.value = appData.developer || 'shanpalia';
-    if (categoryInput && !categoryInput.value) categoryInput.value = appData.category || '';
-    if (androidVersionInput && !androidVersionInput.value) androidVersionInput.value = appData.android_version || '';
-    if (descriptionInput && !descriptionInput.value) descriptionInput.value = appData.description || '';
-
-    // Auto-fill GitHub Owner and Repo default values if empty
-    const repoOwnerInput = document.getElementById('repoOwner');
-    const repoNameInput = document.getElementById('repoName');
-    if (repoOwnerInput && !repoOwnerInput.value) repoOwnerInput.value = 'shanpalia';
-    if (repoNameInput && !repoNameInput.value) repoNameInput.value = 'WebsitePaliaAPK_V.2';
-
-    displayLoadedAssetPreviews(filePayload);
-
-    const patTokenInput = document.getElementById('patToken');
-    const saveTokenBtn = document.getElementById('saveTokenBtn');
-    const rememberTokenCheckbox = document.getElementById('rememberToken');
-    const connectionStatus = document.getElementById('connectionStatus');
-    const supabasePanel = document.getElementById('supabasePanel');
-    const githubPanel = document.getElementById('githubPanel');
-
-    const STORAGE_KEY = 'github_pat_token';
-    let selectedProvider = 'supabase'; // Default
-
-    // Handle Storage Provider Cards Click Logic
-    const providerCards = document.querySelectorAll('.storage-card, [data-provider], .card-provider'); 
-    // Agar classes alag hon toh direct selectors handle karne ke liye:
-    setupStorageCardsSelection();
-
-    function setupStorageCardsSelection() {
-        // Look for cards containing text or general clickables inside the storage section
-        const cards = document.querySelectorAll('.grid > div, .storage-provider-card, [id*="card"], [id*="Provider"], div');
-        
-        // Let's bind selection based on data attributes or common card structures
-        document.querySelectorAll('div').forEach(el => {
-            const text = el.textContent || '';
-            if (text.includes('Supabase Storage') && el.classList.length > 0 && !el.dataset.bound) {
-                el.dataset.bound = 'true';
-                el.style.cursor = 'pointer';
-                el.addEventListener('click', () => selectProvider('supabase'));
-            }
-            if (text.includes('GitHub Releases') && el.classList.length > 0 && !el.dataset.bound) {
-                el.dataset.bound = 'true';
-                el.style.cursor = 'pointer';
-                el.addEventListener('click', () => selectProvider('github'));
-            }
-        });
-    }
-
-    // Fallback global handler if elements use specific IDs or classes
-    window.selectProvider = async function(provider) {
-        selectedProvider = provider;
-        if (supabasePanel) supabasePanel.style.display = (provider === 'supabase' || provider === 'hybrid') ? 'block' : 'none';
-        if (githubPanel) githubPanel.style.display = (provider === 'github' || provider === 'hybrid') ? 'block' : 'none';
-
-        if (provider === 'github' || provider === 'hybrid') {
-            const token = patTokenInput ? patTokenInput.value.trim() : '';
-            const owner = repoOwnerInput?.value?.trim() || 'shanpalia';
-            const repo = repoNameInput?.value?.trim() || 'WebsitePaliaAPK_V.2';
-            if (token && connectionStatus) {
-                await testGitHubConnectionWithRepo(token, owner, repo, connectionStatus);
-            }
-        }
-    };
-
-    // Auto-select Supabase initially or check if GitHub panel exists
-    if (supabasePanel) supabasePanel.style.display = 'block';
-    if (githubPanel) githubPanel.style.display = 'none'; // Will show when user clicks GitHub card
-
-    // Load saved token automatically
-    const savedToken = localStorage.getItem(STORAGE_KEY);
-    if (savedToken && patTokenInput) {
-        patTokenInput.value = savedToken;
-        if (rememberTokenCheckbox) rememberTokenCheckbox.checked = true;
-    }
-
-    if (saveTokenBtn) {
-        saveTokenBtn.addEventListener('click', async () => {
-            const tokenValue = patTokenInput.value.trim();
-            const owner = repoOwnerInput?.value?.trim() || 'shanpalia';
-            const repo = repoNameInput?.value?.trim() || 'WebsitePaliaAPK_V.2';
-            if (rememberTokenCheckbox && rememberTokenCheckbox.checked) {
-                if (tokenValue) {
-                    localStorage.setItem(STORAGE_KEY, tokenValue);
-                    await testGitHubConnectionWithRepo(tokenValue, owner, repo, connectionStatus);
+            // Remove active state from all cards and reset radio icons
+            providerOptions.forEach(opt => {
+                opt.classList.remove('active');
+                const radioIcon = opt.querySelector('.provider-radio i');
+                if (radioIcon) {
+                    radioIcon.className = 'fa-solid fa-circle';
                 }
+            });
+
+            // Set clicked card as active
+            option.classList.add('active');
+            const activeRadioIcon = option.querySelector('.provider-radio i');
+            if (activeRadioIcon) {
+                activeRadioIcon.className = 'fa-solid fa-circle-check';
+            }
+
+            // Hide all configuration panels
+            document.querySelectorAll('.config-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            // Show target provider panel
+            const providerName = option.getAttribute('data-provider'); // 'supabase' or 'github'
+            const targetPanel = document.getElementById(`panel-${providerName}`);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+        });
+    });
+
+    // 2. Token Show/Hide Toggle Logic for GitHub
+    const btnToggleToken = document.getElementById('btnToggleToken');
+    const ghTokenInput = document.getElementById('ghToken');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    if (btnToggleToken && ghTokenInput && eyeIcon) {
+        btnToggleToken.addEventListener('click', () => {
+            if (ghTokenInput.type === 'password') {
+                ghTokenInput.type = 'text';
+                eyeIcon.className = 'fa-solid fa-eye-slash';
             } else {
-                localStorage.removeItem(STORAGE_KEY);
-                if (connectionStatus) connectionStatus.textContent = '';
+                ghTokenInput.type = 'password';
+                eyeIcon.className = 'fa-solid fa-eye';
             }
         });
     }
 
-    const publishBtn = document.getElementById('publishBtn');
-    if (publishBtn) {
-        publishBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const tokenValue = patTokenInput?.value?.trim();
-            if (tokenValue && rememberTokenCheckbox && rememberTokenCheckbox.checked) {
-                localStorage.setItem(STORAGE_KEY, tokenValue);
-            }
-            await handlePublishWorkflow(filePayload, appData, selectedProvider);
-        });
-    }
+    // 3. GitHub Publish Button Logic & API Integration
+    const btnPublishGithub = document.getElementById('btnPublishGithub');
+    if (btnPublishGithub) {
+        btnPublishGithub.addEventListener('click', async () => {
+            const owner = document.getElementById('ghOwner').value.trim();
+            const repo = document.getElementById('ghRepo').value.trim();
+            const token = document.getElementById('ghToken').value.trim();
+            const tagVersion = document.getElementById('ghVersion').value.trim();
+            const releaseTitle = document.getElementById('ghTitle').value.trim();
+            const releaseNotes = document.getElementById('ghNotes').value.trim();
+            const isDraft = document.getElementById('ghDraft').checked;
+            const isPrerelease = document.getElementById('ghPreRelease').checked;
 
-    setupDialogActionButtons();
-}
-
-async function loadFilesFromIndexedDB() {
-    return new Promise((resolve) => {
-        const request = indexedDB.open('PaliaAPKPendingUpload', 1);
-        request.onerror = () => resolve({});
-        request.onsuccess = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains('files')) {
-                resolve({});
+            if (!owner || !repo || !token || !tagVersion) {
+                alert('Please fill in all required GitHub fields (Owner, Repository, Token, and Version).');
                 return;
             }
-            const transaction = db.transaction('files', 'readonly');
-            const store = transaction.objectStore('files');
-            const getAllRequest = store.getAll();
-            const getAllKeysRequest = store.getAllKeys();
 
-            let files = {};
-            let keys = [];
-            let keysCompleted = false;
-            let valuesCompleted = false;
+            // Open Modal & Reset Steps
+            const modal = document.getElementById('publishModal');
+            modal.style.display = 'flex';
+            resetModalStates();
+            
+            updateProgress(15, 'Authenticating GitHub repository...', 'chkStep1', 'active');
 
-            getAllKeysRequest.onsuccess = (e) => {
-                keys = e.target.result || [];
-                keysCompleted = true;
-                checkDone();
-            };
+            try {
+                await wait(600);
+                updateProgress(40, 'Validating APK Binary Payload...', 'chkStep1', 'completed');
+                updateProgress(50, 'Creating GitHub Release tag...', 'chkStep2', 'active');
 
-            getAllRequest.onsuccess = (e) => {
-                const values = e.target.result || [];
-                values.forEach((val, idx) => {
-                    if (keys[idx]) {
-                        files[keys[idx]] = val;
-                    }
+                const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tag_name: tagVersion,
+                        name: releaseTitle || tagVersion,
+                        body: releaseNotes,
+                        draft: isDraft,
+                        prerelease: isPrerelease
+                    })
                 });
-                valuesCompleted = true;
-                checkDone();
-            };
 
-            function checkDone() {
-                if (keysCompleted && valuesCompleted) {
-                    resolve(files);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to create GitHub release.');
                 }
+
+                const releaseData = await response.json();
+                const releaseUrl = releaseData.html_url;
+
+                updateProgress(75, 'Uploading Application Package...', 'chkStep2', 'completed');
+                updateProgress(90, 'Finalizing Endpoint & Generating URL...', 'chkStep3', 'active');
+                await wait(500);
+
+                updateProgress(100, 'Published Successfully!', 'chkStep4', 'completed');
+                await wait(400);
+
+                showSuccessState(releaseUrl);
+
+            } catch (error) {
+                console.error(error);
+                showFailedState(error.message);
             }
-            transaction.onerror = () => resolve({});
-        };
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains('files')) {
-                db.createObjectStore('files');
-            }
-        };
-    });
-}
-
-function displayLoadedAssetPreviews(filePayload) {
-    if (!filePayload) return;
-    const apkFile = filePayload.apk;
-    if (apkFile) {
-        const apkIndicator = document.getElementById('apkFileInfo') || document.getElementById('apkNameDisplay');
-        if (apkIndicator) apkIndicator.textContent = `${apkFile.name} (${(apkFile.size / (1024 * 1024)).toFixed(2)} MB)`;
-    }
-}
-
-async function handlePublishWorkflow(filePayload, appData, provider) {
-    const appVersionInput = document.getElementById('appVersion');
-    const releaseVersionInput = document.getElementById('releaseVersion');
-    const releaseTitleInput = document.getElementById('releaseTitle');
-    const releaseNotesInput = document.getElementById('releaseNotes');
-    const packageNameInput = document.getElementById('packageName');
-    const developerInput = document.getElementById('developer');
-    const categoryInput = document.getElementById('category');
-    const androidVersionInput = document.getElementById('androidVersion');
-    const descriptionInput = document.getElementById('description');
-    const patTokenInput = document.getElementById('patToken');
-    const repoOwnerInput = document.getElementById('repoOwner');
-    const repoNameInput = document.getElementById('repoName');
-    const summaryAppName = document.getElementById('summaryAppName');
-
-    const apkFile = filePayload.apk || null;
-    const iconFile = filePayload.icon || null;
-    const bannerFile = filePayload.banner || null;
-    const screenshotFiles = [];
-    for (let i = 0; i < 5; i++) {
-        if (filePayload[`screenshot-${i}`]) {
-            screenshotFiles.push(filePayload[`screenshot-${i}`]);
-        }
-    }
-
-    const packageName = packageNameInput?.value?.trim() || appData.package_name || '';
-    const currentVersion = appVersionInput?.value?.trim() || appData.version || '1.2.5';
-
-    try {
-        if (!apkFile) throw new Error('Validation Error: APK file is required.');
-        if (!packageName) throw new Error('Validation Error: Package name is required.');
-
-        const fileSizeMB = apkFile.size / (1024 * 1024);
-        const token = patTokenInput ? patTokenInput.value.trim() : '';
-        const owner = repoOwnerInput?.value?.trim() || 'shanpalia';
-        const repo = repoNameInput?.value?.trim() || 'WebsitePaliaAPK_V.2';
-
-        if (provider === 'github' && !token) {
-            throw new Error('Validation Error: GitHub Personal Access Token is required.');
-        }
-
-        showProgressDialog();
-        updateProgressState('Authenticating', 10, 'chkStep1');
-
-        let iconUrl = '';
-        let bannerUrl = '';
-        let screenshotUrls = [];
-
-        updateProgressState('Uploading Assets', 40, 'chkStep2');
-        if (iconFile) iconUrl = await uploadToSupabaseWithRetry(iconFile, 'app-icons', 3);
-        if (bannerFile) bannerUrl = await uploadToSupabaseWithRetry(bannerFile, 'app-banners', 3);
-        for (const scFile of screenshotFiles) {
-            const scUrl = await uploadToSupabaseWithRetry(scFile, 'app-screenshots', 3);
-            if (scUrl) screenshotUrls.push(scUrl);
-        }
-
-        let apkDownloadUrl = '';
-        if (provider === 'github') {
-            const tag = releaseVersionInput ? releaseVersionInput.value.trim() : `v${currentVersion}`;
-            const title = releaseTitleInput ? releaseTitleInput.value.trim() : `Release ${currentVersion}`;
-            const notes = releaseNotesInput ? releaseNotesInput.value.trim() : '';
-            apkDownloadUrl = await uploadToGitHubReleasesSmart({ token, owner, repo, tag, title, notes, file: apkFile });
-        } else {
-            apkDownloadUrl = await uploadToSupabaseWithRetry(apkFile, 'app-apks', 3);
-        }
-
-        updateProgressState('Saving to Database', 75, 'chkStep2');
-        const finalPayload = {
-            name: summaryAppName?.textContent || appData.name || 'PaliaAPK HUB',
-            package_name: packageName,
-            version: currentVersion,
-            developer: developerInput?.value?.trim() || 'shanpalia',
-            category: categoryInput?.value?.trim() || 'Tools',
-            android_version: androidVersionInput?.value?.trim() || '5.0 and up',
-            description: descriptionInput?.value?.trim() || '',
-            whats_new: releaseNotesInput?.value?.trim() || '',
-            icon_url: iconUrl,
-            banner_url: bannerUrl,
-            apk_url: apkDownloadUrl,
-            screenshots: screenshotUrls,
-            downloads: 0,
-            views: 0,
-            rating: 5.0,
-            apk_size: `${fileSizeMB.toFixed(2)} MB`,
-            storage_provider: provider
-        };
-
-        await saveAppToDatabaseComplete(finalPayload);
-        updateProgressState('Completed', 100, 'chkStep2');
-        localStorage.setItem('palia_hub_refresh', Date.now().toString());
-        showSuccessDialog(apkDownloadUrl);
-
-    } catch (error) {
-        console.error('Publishing error:', error);
-        showFailedDialog(error.message);
-    }
-}
-
-async function testGitHubConnectionWithRepo(token, owner, repo, statusElement) {
-    if (!statusElement) return;
-    statusElement.textContent = 'Testing connection...';
-    try {
-        const res = await fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}`, {
-            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-        }, 15000);
-        if (res.ok) {
-            statusElement.textContent = 'Connected Successfully';
-            statusElement.style.color = 'green';
-        } else {
-            statusElement.textContent = 'Invalid Token or Repo';
-            statusElement.style.color = 'red';
-        }
-    } catch (e) {
-        statusElement.textContent = 'Connection Failed';
-        statusElement.style.color = 'red';
-    }
-}
-
-async function fetchWithTimeout(url, options = {}, timeoutMs = 20000) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-        const response = await fetch(url, { ...options, signal: controller.signal });
-        clearTimeout(timeoutId);
-        return response;
-    } catch (error) {
-        clearTimeout(timeoutId);
-        throw error;
-    }
-}
-
-async function uploadToSupabaseWithRetry(file, bucketName, maxRetries = 3) {
-    if (!file) return '';
-    const supabaseUrl = window.SUPABASE_URL || '';
-    const supabaseKey = window.SUPABASE_ANON_KEY || '';
-    const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
-    const endpoint = `${supabaseUrl}/storage/v1/object/${bucketName}/${fileName}`;
-
-    for (let i = 1; i <= maxRetries; i++) {
-        try {
-            const res = await fetchWithTimeout(endpoint, {
-                method: 'POST',
-                headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': file.type || 'application/octet-stream' },
-                body: file
-            }, 60000);
-            if (res.ok) return `${supabaseUrl}/storage/v1/object/public/${bucketName}/${fileName}`;
-        } catch (e) { if (i === maxRetries) throw e; }
-    }
-}
-
-async function uploadToGitHubReleasesSmart({ token, owner, repo, tag, title, notes, file }) {
-    const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' };
-    let releaseData = null;
-    const tagRes = await fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github.v3+json' } });
-    
-    if (tagRes.ok) {
-        releaseData = await tagRes.json();
-    } else {
-        const createRes = await fetchWithTimeout(`https://api.github.com/repos/${owner}/${repo}/releases`, {
-            method: 'POST', headers, body: JSON.stringify({ tag_name: tag, name: title, body: notes, draft: false, prerelease: false })
         });
-        if (!createRes.ok) throw new Error('GitHub Release creation failed.');
-        releaseData = await createRes.json();
     }
 
-    const uploadUrl = releaseData.upload_url.split('{')[0] + `?name=${encodeURIComponent(file.name)}`;
-    const assetRes = await fetchWithTimeout(uploadUrl, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/vnd.android.package-archive', 'Accept': 'application/vnd.github.v3+json' },
-        body: file
-    }, 1800000);
-
-    if (!assetRes.ok) throw new Error('GitHub Asset upload failed.');
-    const assetData = await assetRes.json();
-    return assetData.browser_download_url;
-}
-
-async function saveAppToDatabaseComplete(payload) {
-    const supabaseUrl = window.SUPABASE_URL || '';
-    const supabaseKey = window.SUPABASE_ANON_KEY || '';
-    await fetchWithTimeout(`${supabaseUrl}/rest/v1/apps`, {
-        method: 'POST',
-        headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body: JSON.stringify(payload)
-    });
-}
-
-function showProgressDialog() {
-    const modal = document.getElementById('publishModal');
-    if (modal) modal.style.display = 'flex';
-}
-function updateProgressState(text, percent, stepId) {
-    const statusText = document.getElementById('progressStatusText');
-    const bar = document.getElementById('progressBarFill');
-    if (statusText) statusText.textContent = text;
-    if (bar) bar.style.width = `${percent}%`;
-    if (stepId) { const s = document.getElementById(stepId); if (s) s.checked = true; }
-}
-function showSuccessDialog(url) {
-    const modal = document.getElementById('publishModal');
-    if (modal) modal.style.display = 'flex';
-    document.getElementById('modalStateProgress').style.display = 'none';
-    document.getElementById('modalStateSuccess').style.display = 'block';
-    const output = document.getElementById('successUrlDisplay') || document.getElementById('downloadUrlOutput');
-    if (output) output.value = url;
-}
-function showFailedDialog(err) {
-    const modal = document.getElementById('publishModal');
-    if (modal) modal.style.display = 'flex';
-    document.getElementById('modalStateProgress').style.display = 'none';
-    document.getElementById('modalStateFailed').style.display = 'block';
-    const errText = document.getElementById('errorMessageDisplay') || document.getElementById('failedErrorText');
-    if (errText) errText.textContent = err;
-}
-function setupDialogActionButtons() {
-    const copyBtn = document.getElementById('copyUrlBtn');
-    if (copyBtn) copyBtn.addEventListener('click', () => {
-        const out = document.getElementById('successUrlDisplay') || document.getElementById('downloadUrlOutput');
-        if (out) navigator.clipboard.writeText(out.value || out.textContent);
-    });
-    const doneBtn = document.getElementById('successDoneBtn') || document.getElementById('closeSuccessBtn');
-    if (doneBtn) doneBtn.addEventListener('click', () => { location.href = 'index.html'; });
-}
-document.getElementById('btnPublishGithub').addEventListener('click', async () => {
-    // 1. Form fields se data read karein
-    const owner = document.getElementById('ghOwner').value.trim();
-    const repo = document.getElementById('ghRepo').value.trim();
-    const token = document.getElementById('ghToken').value.trim();
-    const tagVersion = document.getElementById('ghVersion').value.trim();
-    const releaseTitle = document.getElementById('ghTitle').value.trim();
-    const releaseNotes = document.getElementById('ghNotes').value.trim();
-    const isDraft = document.getElementById('ghDraft').checked;
-    const isPrerelease = document.getElementById('ghPreRelease').checked;
-
-    // Check karein ki zaroori fields bhari hain ya nahi
-    if (!owner || !repo || !token || !tagVersion) {
-        alert('Please fill in all required GitHub fields (Owner, Repository, Token, and Version).');
-        return;
-    }
-
-    // 2. Modal open karein aur progress start karein
-    const modal = document.getElementById('publishModal');
-    modal.style.display = 'flex';
-    updateProgress(10, 'Authenticating GitHub repository...', 'chkStep1', 'active');
-
-    try {
-        // Step A: GitHub par Release Tag Create karna
-        updateProgress(30, 'Creating GitHub Release tag...', 'chkStep1', 'completed');
-        updateProgress(40, 'Preparing release payload...', 'chkStep2', 'active');
-
-        const releaseResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/vnd.github+json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                tag_name: tagVersion,
-                name: releaseTitle || tagVersion,
-                body: releaseNotes,
-                draft: isDraft,
-                prerelease: isPrerelease
-            })
+    // Modal Action Buttons Event Listeners
+    const btnCloseSuccess = document.getElementById('btnCloseSuccess');
+    if (btnCloseSuccess) {
+        btnCloseSuccess.addEventListener('click', () => {
+            document.getElementById('publishModal').style.display = 'none';
         });
+    }
 
-        if (!releaseResponse.ok) {
-            const errData = await releaseResponse.json();
-            throw new Error(errData.message || 'Failed to create GitHub release.');
-        }
+    const btnCancelPublish = document.getElementById('btnCancelPublish');
+    if (btnCancelPublish) {
+        btnCancelPublish.addEventListener('click', () => {
+            document.getElementById('publishModal').style.display = 'none';
+        });
+    }
 
-        const releaseData = await releaseResponse.json();
-        const uploadUrlTemplate = releaseData.upload_url; 
-        const downloadPageUrl = releaseData.html_url;
-
-        updateProgress(60, 'Release created successfully. Preparing APK asset...', 'chkStep2', 'completed');
-        updateProgress(80, 'Finalizing release endpoint...', 'chkStep3', 'active');
-
-        // Step B: Success state trigger karna
-        setTimeout(() => {
-            updateProgress(100, 'Published successfully!', 'chkStep3', 'completed');
-            showSuccessState(downloadPageUrl);
-        }, 800);
-
-    } catch (error) {
-        console.error(error);
-        showFailedState(error.message);
+    const btnCopyUrl = document.getElementById('btnCopyUrl');
+    if (btnCopyUrl) {
+        btnCopyUrl.addEventListener('click', () => {
+            const urlText = document.getElementById('successDeploymentUrl').innerText;
+            navigator.clipboard.writeText(urlText);
+            alert('URL copied to clipboard!');
+        });
     }
 });
 
-// Modal progress aur status manage karne ke helper functions
+// Helper Functions
 function updateProgress(percent, statusText, stepId, statusType) {
-    document.getElementById('progressBarFill').style.width = percent + '%';
-    document.getElementById('progressPercent').innerText = percent + '%';
-    document.getElementById('progressStatusText').innerText = statusText;
+    const fill = document.getElementById('progressBarFill');
+    const percentEl = document.getElementById('progressPercent');
+    const statusEl = document.getElementById('progressStatusText');
     
-    if(stepId) {
+    if (fill) fill.style.width = percent + '%';
+    if (percentEl) percentEl.innerText = percent + '%';
+    if (statusEl) statusEl.innerText = statusText;
+    
+    if (stepId) {
         const step = document.getElementById(stepId);
-        if(statusType === 'completed') {
-            step.className = 'checklist-item completed';
-            step.innerHTML = `<i class="fa-solid fa-circle-check"></i> ` + step.innerText.replace(/^[^\w\s]+/, '').trim();
-        } else if(statusType === 'active') {
-            step.className = 'checklist-item active';
-            step.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ` + step.innerText.replace(/^[^\w\s]+/, '').trim();
+        if (step) {
+            if (statusType === 'completed') {
+                step.className = 'checklist-item completed';
+                step.innerHTML = `<i class="fa-solid fa-circle-check"></i> ` + step.innerText.replace(/^[^\w\s]+/, '').trim();
+            } else if (statusType === 'active') {
+                step.className = 'checklist-item active';
+                step.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ` + step.innerText.replace(/^[^\w\s]+/, '').trim();
+            }
         }
     }
+}
+
+function resetModalStates() {
+    const modalStateProgress = document.getElementById('modalStateProgress');
+    const modalStateSuccess = document.getElementById('modalStateSuccess');
+    const modalStateFailed = document.getElementById('modalStateFailed');
+
+    if (modalStateProgress) modalStateProgress.classList.add('active');
+    if (modalStateSuccess) modalStateSuccess.classList.remove('active');
+    if (modalStateFailed) modalStateFailed.classList.remove('active');
+    
+    ['chkStep1', 'chkStep2', 'chkStep3', 'chkStep4'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.className = 'checklist-item pending';
+            el.innerHTML = `<i class="fa-regular fa-circle"></i> ` + el.innerText.replace(/^[^\w\s]+/, '').trim();
+        }
+    });
 }
 
 function showSuccessState(url) {
@@ -533,4 +206,8 @@ function showFailedState(message) {
     document.getElementById('modalStateProgress').classList.remove('active');
     document.getElementById('modalStateFailed').classList.add('active');
     document.getElementById('errorLogBox').innerText = message;
+}
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
