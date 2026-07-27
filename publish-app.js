@@ -59,21 +59,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. GitHub Publish Button Logic & API Integration
-   const btnPublishGithub = document.getElementById('btnPublishGithub');
+    // 3. GitHub Publish Button Logic & API Integration (With Auto-Increment Version)
+    const btnPublishGithub = document.getElementById('btnPublishGithub');
     if (btnPublishGithub) {
         btnPublishGithub.addEventListener('click', async () => {
             const owner = document.getElementById('ghOwner').value.trim();
             const repo = document.getElementById('ghRepo').value.trim();
             const token = document.getElementById('ghToken').value.trim();
-            const tagVersion = document.getElementById('ghVersion').value.trim();
-            const releaseTitle = document.getElementById('ghTitle').value.trim();
+            
+            // --- PERMANENT SOLUTION: Auto-generate unique version tag ---
+            const randomCode = Math.floor(Math.random() * 90000) + 10000;
+            const tagVersion = `v1.0.${randomCode}`;
+            // -------------------------------------------------------------
+
+            const releaseTitle = document.getElementById('ghTitle').value.trim() || `PaliaAPK HUB ${tagVersion}`;
             const releaseNotes = document.getElementById('ghNotes').value.trim();
             const isDraft = document.getElementById('ghDraft').checked;
             const isPrerelease = document.getElementById('ghPreRelease').checked;
 
-            if (!owner || !repo || !token || !tagVersion) {
-                alert('Please fill in all required GitHub fields (Owner, Repository, Token, and Version).');
+            if (!owner || !repo || !token) {
+                alert('Please fill in all required GitHub fields (Owner, Repository, and Token).');
                 return;
             }
 
@@ -88,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 await wait(800);
                 updateProgress(35, 'Validating APK Binary Payload...', 'chkStep1', 'completed');
-                updateProgress(50, 'Creating GitHub Release tag...', 'chkStep2', 'active');
+                updateProgress(50, `Creating release tag (${tagVersion})...`, 'chkStep2', 'active');
                 await wait(800);
 
                 const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`, {
@@ -100,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify({
                         tag_name: tagVersion,
-                        name: releaseTitle || tagVersion,
+                        name: releaseTitle,
                         body: releaseNotes,
                         draft: isDraft,
                         prerelease: isPrerelease
