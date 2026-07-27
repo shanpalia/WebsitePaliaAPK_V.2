@@ -2,6 +2,10 @@
  * PaliaAPK HUB - publish-app.js
  * Production-ready application publisher matching card-based UI (Supabase & GitHub Release Cards).
  */
+/**
+ * PaliaAPK HUB - publish-app.js
+ * Production-ready application publisher matching card-based UI (Supabase & GitHub Release Cards).
+ */
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -59,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 3. GitHub Publish Button Logic & API Integration (With Auto-Increment Version)
+    // 3. GitHub Publish Button Logic & API Integration
     const btnPublishGithub = document.getElementById('btnPublishGithub');
     if (btnPublishGithub) {
         btnPublishGithub.addEventListener('click', async () => {
@@ -67,10 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const repo = document.getElementById('ghRepo').value.trim();
             const token = document.getElementById('ghToken').value.trim();
             
-            // --- PERMANENT SOLUTION: Auto-generate unique version tag ---
+            // Auto-generate unique version tag
             const randomCode = Math.floor(Math.random() * 90000) + 10000;
             const tagVersion = `v1.0.${randomCode}`;
-            // -------------------------------------------------------------
 
             const releaseTitle = document.getElementById('ghTitle').value.trim() || `PaliaAPK HUB ${tagVersion}`;
             const releaseNotes = document.getElementById('ghNotes').value.trim();
@@ -84,17 +87,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Open Modal & Reset Steps
             const modal = document.getElementById('publishModal');
-            modal.style.display = 'flex';
+            if (modal) modal.style.display = 'flex';
             resetModalStates();
             
-            // Percentage Animation Start - Step 1
-            updateProgress(15, 'Authenticating GitHub repository...', 'chkStep1', 'active');
+            // Step 1: Authenticating Storage Provider
+            updateProgress(20, 'Authenticating Storage Provider...', 'chkStep1', 'active');
 
             try {
                 await wait(800);
-                updateProgress(35, 'Validating APK Binary Payload...', 'chkStep1', 'completed');
-                updateProgress(50, `Creating release tag (${tagVersion})...`, 'chkStep2', 'active');
+                updateProgress(25, 'Authentication successful.', 'chkStep1', 'completed');
+                
+                // Step 2: Validating APK Binary Payload
+                updateProgress(45, 'Validating APK Binary Payload...', 'chkStep2', 'active');
                 await wait(800);
+                updateProgress(50, 'Payload validated successfully.', 'chkStep2', 'completed');
+
+                // Step 3: Uploading Application Package & Calling GitHub API
+                updateProgress(70, 'Uploading Application Package to GitHub...', 'chkStep3', 'active');
 
                 const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`, {
                     method: 'POST',
@@ -120,8 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const releaseData = await response.json();
                 const releaseUrl = releaseData.html_url;
 
-                updateProgress(75, 'Uploading Application Package...', 'chkStep2', 'completed');
-                updateProgress(90, 'Finalizing Endpoint & Generating URL...', 'chkStep3', 'active');
+                updateProgress(85, 'Upload completed.', 'chkStep3', 'completed');
+
+                // Step 4: Finalizing Endpoint & Generating URL
+                updateProgress(95, 'Finalizing Endpoint & Generating URL...', 'chkStep4', 'active');
                 await wait(800);
 
                 updateProgress(100, 'Published Successfully!', 'chkStep4', 'completed');
@@ -151,6 +162,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const btnRetryPublish = document.getElementById('btnRetryPublish');
+    if (btnRetryPublish) {
+        btnRetryPublish.addEventListener('click', () => {
+            document.getElementById('publishModal').style.display = 'none';
+            if (btnPublishGithub) btnPublishGithub.click();
+        });
+    }
+
     const btnCopyUrl = document.getElementById('btnCopyUrl');
     if (btnCopyUrl) {
         btnCopyUrl.addEventListener('click', () => {
@@ -161,25 +180,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Helper Functions
+// Helper Functions for Progress & Modal UI
 function updateProgress(percent, statusText, stepId, statusType) {
     const fill = document.getElementById('progressBarFill');
     const percentEl = document.getElementById('progressPercent');
     const statusEl = document.getElementById('progressStatusText');
+    const progressDetail = document.getElementById('progressDetail');
     
     if (fill) fill.style.width = percent + '%';
     if (percentEl) percentEl.innerText = percent + '%';
     if (statusEl) statusEl.innerText = statusText;
+    if (progressDetail) progressDetail.innerText = `${Math.round(percent * 0.5)} MB / 50 MB`;
     
     if (stepId) {
         const step = document.getElementById(stepId);
         if (step) {
+            const textContent = step.innerText.replace(/^[^\w\s]+/, '').trim();
             if (statusType === 'completed') {
                 step.className = 'checklist-item completed';
-                step.innerHTML = `<i class="fa-solid fa-circle-check"></i> ` + step.innerText.replace(/^[^\w\s]+/, '').trim();
+                step.innerHTML = `<i class="fa-solid fa-circle-check"></i> ` + textContent;
             } else if (statusType === 'active') {
                 step.className = 'checklist-item active';
-                step.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ` + step.innerText.replace(/^[^\w\s]+/, '').trim();
+                step.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ` + textContent;
             }
         }
     }
@@ -194,25 +216,40 @@ function resetModalStates() {
     if (modalStateSuccess) modalStateSuccess.classList.remove('active');
     if (modalStateFailed) modalStateFailed.classList.remove('active');
     
-    ['chkStep1', 'chkStep2', 'chkStep3', 'chkStep4'].forEach(id => {
-        const el = document.getElementById(id);
+    const steps = [
+        { id: 'chkStep1', text: 'Authenticating Storage Provider' },
+        { id: 'chkStep2', text: 'Validating APK Binary Payload' },
+        { id: 'chkStep3', text: 'Uploading Application Package' },
+        { id: 'chkStep4', text: 'Finalizing Endpoint & Generating URL' }
+    ];
+
+    steps.forEach(s => {
+        const el = document.getElementById(s.id);
         if (el) {
             el.className = 'checklist-item pending';
-            el.innerHTML = `<i class="fa-regular fa-circle"></i> ` + el.innerText.replace(/^[^\w\s]+/, '').trim();
+            el.innerHTML = `<i class="fa-regular fa-circle"></i> ` + s.text;
         }
     });
 }
 
 function showSuccessState(url) {
-    document.getElementById('modalStateProgress').classList.remove('active');
-    document.getElementById('modalStateSuccess').classList.add('active');
-    document.getElementById('successDeploymentUrl').innerText = url;
+    const progressState = document.getElementById('modalStateProgress');
+    const successState = document.getElementById('modalStateSuccess');
+    if (progressState) progressState.classList.remove('active');
+    if (successState) successState.classList.add('active');
+    
+    const urlSpan = document.getElementById('successDeploymentUrl');
+    if (urlSpan) urlSpan.innerText = url;
 }
 
 function showFailedState(message) {
-    document.getElementById('modalStateProgress').classList.remove('active');
-    document.getElementById('modalStateFailed').classList.add('active');
-    document.getElementById('errorLogBox').innerText = message;
+    const progressState = document.getElementById('modalStateProgress');
+    const failedState = document.getElementById('modalStateFailed');
+    if (progressState) progressState.classList.remove('active');
+    if (failedState) failedState.classList.add('active');
+    
+    const errorLog = document.getElementById('errorLogBox');
+    if (errorLog) errorLog.innerText = message;
 }
 
 function wait(ms) {
