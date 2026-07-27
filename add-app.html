@@ -2054,21 +2054,105 @@ img{ max-width: 100%; display: block; }
       var checkedProvider = document.querySelector('input[name="storageProvider"]:checked');
       var providerValue = checkedProvider ? checkedProvider.value : '';
 
-      // Agar GitHub Releases select hai, toh publish-app.html par redirect karein
-      if (providerValue === 'GitHub Releases') {
-        var formData = new FormData(appForm);
-        for (var pair of formData.entries()) {
-          sessionStorage.setItem(pair[0], pair[1]);
-        }
-        sessionStorage.setItem('storageProvider', providerValue);
-        window.location.href = 'publish-app.html';
-        return;
-      }
+    if (providerValue === 'GitHub Releases') {
 
-      // Warna Supabase ya Hybrid ke liye yahi se publish process shuru hoga
-      submitApp('published', 'btnPublish', 'Publishing…');
-    });
-  }
+    var formData = new FormData(appForm);
+
+    var appData = {};
+
+    for (var pair of formData.entries()) {
+
+        if (!(pair[1] instanceof File)) {
+            appData[pair[0]] = pair[1];
+        }
+
+    }
+
+    sessionStorage.setItem(
+        "paliaapk_pending_app",
+        JSON.stringify(appData)
+    );
+
+    const request = indexedDB.open("PaliaAPKPendingUpload",1);
+
+    request.onupgradeneeded = function(e){
+
+        const db=e.target.result;
+
+        if(!db.objectStoreNames.contains("files")){
+            db.createObjectStore("files");
+        }
+
+    };
+
+    request.onsuccess=function(e){
+
+        const db=e.target.result;
+
+        const tx=db.transaction("files","readwrite");
+
+        const store=tx.objectStore("files");
+
+        if(document.getElementById("apkFile")?.files[0])
+            store.put(document.getElementById("apkFile").files[0],"apk");
+
+        if(document.getElementById("iconFile")?.files[0])
+            store.put(document.getElementById("iconFile").files[0],"icon");
+
+        if(document.getElementById("bannerFile")?.files[0])
+            store.put(document.getElementById("bannerFile").files[0],"banner");
+
+        for(let i=0;i<5;i++){
+
+            const el=document.getElementById("screenshot"+i);
+
+            if(el && el.files[0]){
+
+                store.put(el.files[0],"screenshot-"+i);
+
+            }
+
+        }
+
+        tx.oncomplete=function(){
+const request = indexedDB.open("PaliaAPKPendingUpload", 1);
+
+request.onupgradeneeded = function(e) {
+    const db = e.target.result;
+    if (!db.objectStoreNames.contains("files")) {
+        db.createObjectStore("files");
+    }
+};
+
+request.onsuccess = function(e) {
+
+    const db = e.target.result;
+    const tx = db.transaction("files", "readwrite");
+    const store = tx.objectStore("files");
+
+    if (uploads.icon) store.put(uploads.icon.file, "icon");
+    if (uploads.banner) store.put(uploads.banner.file, "banner");
+    if (uploads.apk) store.put(uploads.apk.file, "apk");
+
+    if (uploads.screenshot1) store.put(uploads.screenshot1.file, "screenshot-0");
+    if (uploads.screenshot2) store.put(uploads.screenshot2.file, "screenshot-1");
+    if (uploads.screenshot3) store.put(uploads.screenshot3.file, "screenshot-2");
+    if (uploads.screenshot4) store.put(uploads.screenshot4.file, "screenshot-3");
+    if (uploads.screenshot5) store.put(uploads.screenshot5.file, "screenshot-4");
+
+    tx.oncomplete = function() {
+        window.location.href = "publish-app.html";
+    };
+};
+            window.location.href="publish-app.html";
+
+        };
+
+    };
+
+    return;
+
+}
   renderTags();
   renderPreview();
 
