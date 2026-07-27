@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 3. GitHub Publish Button Logic & API Integration
-    const btnPublishGithub = document.getElementById('btnPublishGithub');
+   const btnPublishGithub = document.getElementById('btnPublishGithub');
     if (btnPublishGithub) {
         btnPublishGithub.addEventListener('click', async () => {
             const owner = document.getElementById('ghOwner').value.trim();
@@ -82,12 +82,14 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.style.display = 'flex';
             resetModalStates();
             
+            // Percentage Animation Start - Step 1
             updateProgress(15, 'Authenticating GitHub repository...', 'chkStep1', 'active');
 
             try {
-                await wait(600);
-                updateProgress(40, 'Validating APK Binary Payload...', 'chkStep1', 'completed');
+                await wait(800);
+                updateProgress(35, 'Validating APK Binary Payload...', 'chkStep1', 'completed');
                 updateProgress(50, 'Creating GitHub Release tag...', 'chkStep2', 'active');
+                await wait(800);
 
                 const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`, {
                     method: 'POST',
@@ -115,10 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 updateProgress(75, 'Uploading Application Package...', 'chkStep2', 'completed');
                 updateProgress(90, 'Finalizing Endpoint & Generating URL...', 'chkStep3', 'active');
-                await wait(500);
+                await wait(800);
 
                 updateProgress(100, 'Published Successfully!', 'chkStep4', 'completed');
-                await wait(400);
+                await wait(600);
 
                 showSuccessState(releaseUrl);
 
