@@ -1,331 +1,856 @@
-// github-publisher.js
+(function () {
+"use strict";
 
-/**
- * Helper to update progress UI matching the existing DOM elements.
- * Steps: Preparing, Uploading assets, Creating Release, Uploading APK, Saving database, Finished
- */
-function updateProgress(step, percent, message) {
-    const progressBar = document.getElementById('progress-bar');
-    const progressStatus = document.getElementById('progress-status');
-    const progressPercent = document.getElementById('progress-percent');
+/* ==========================================================
+   PALIAAPK HUB
+   GitHub Publisher v3
+   Part 1
+========================================================== */
 
-    if (progressBar) {
-        progressBar.style.width = `${percent}%`;
-        progressBar.setAttribute('aria-valuenow', percent);
-    }
-    if (progressPercent) {
-        progressPercent.textContent = `${percent}%`;
-    }
-    if (progressStatus) {
-        progressStatus.textContent = message || step;
-    }
+const patInput=document.getElementById("patInput");
+const repoInput=document.getElementById("repoInput");
+const startBtn=document.getElementById("startPublishBtn");
+
+const progressContainer=document.getElementById("progressContainer");
+const progressBar=document.getElementById("progressBarFill");
+const statusText=document.getElementById("statusText");
+
+const DB_NAME="PaliaAPKPendingUpload";
+const STORE_NAME="files";
+
+const SUPABASE_URL="https://ralinnuegsbuvlhwpzln.supabase.co";
+
+const SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE";
+
+const sb=window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+const ctx={
+
+pat:null,
+
+repo:null,
+
+app:null,
+
+apk:null,
+
+icon:null,
+
+banner:null,
+
+screenshots:[],
+
+release:null,
+
+asset:null,
+
+iconUrl:null,
+
+bannerUrl:null,
+
+screenshotUrls:[]
+
+};
+
+patInput.value=
+localStorage.getItem("github_pat")||"";
+
+repoInput.value=
+localStorage.getItem("github_repo")||"";
+
+function saveGithubSettings(){
+
+localStorage.setItem(
+"github_pat",
+patInput.value.trim()
+);
+
+localStorage.setItem(
+"github_repo",
+repoInput.value.trim()
+);
+
 }
 
-/**
- * Utility to retry fetch requests up to 3 times for GitHub operations.
- */
-async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
-    // Ensure Content-Length is never included
-    if (options.headers) {
-        delete options.headers['Content-Length'];
-        delete options.headers['content-length'];
-    }
+function updateProgress(percent,text){
 
-    for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-            const response = await fetch(url, options);
-            if (!response.ok) {
-                // If it's a client error (4xx except 404/422 depending on context), might not want to retry, 
-                // but requirement says retry failed GitHub requests up to 3 times.
-                if (response.status >= 400 && response.status < 500 && response.status !== 429) {
-                    const errorBody = await response.text();
-                    throw new Error(`GitHub API error (${response.status}): ${errorBody}`);
-                }
-                if (attempt === retries) {
-                    const errorBody = await response.text();
-                    throw new Error(`GitHub API failed after ${retries} attempts (${response.status}): ${errorBody}`);
-                }
-            } else {
-                return response;
-            }
-        } catch (error) {
-            if (attempt === retries) throw error;
-        }
-        await new Promise(resolve => setTimeout(resolve, delay * attempt));
-    }
+progressContainer.style.display="block";
+
+progressBar.style.width=
+percent+"%";
+
+statusText.textContent=text;
+
+console.log(
+"[Publisher]",
+percent+"%",
+text
+);
+
 }
 
-/**
- * Opens and validates IndexedDB contents for the app publishing session.
- */
-async function validateAndGetIndexedDBData() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open('AppPublisherDB', 1);
-        request.onerror = () => reject(new Error('Failed to open IndexedDB.'));
-        request.onsuccess = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains('appData')) {
-                reject(new Error('IndexedDB object store "appData" not found.'));
-                return;
-            }
-            const transaction = db.transaction(['appData'], 'readonly');
-            const store = transaction.objectStore('appData');
-            const getReq = store.get('currentApp');
-            getReq.onerror = () => reject(new Error('Failed to read app data from IndexedDB.'));
-            getReq.onsuccess = () => {
-                const data = getReq.result;
-                if (!data) {
-                    reject(new Error('No app data found in IndexedDB.'));
-                    return;
-                }
-                resolve(data);
-            };
-        };
-        // If DB doesn't exist yet, it's invalid for publishing
-        request.onupgradeneeded = (event) => {
-            event.target.transaction.abort();
-            reject(new Error('IndexedDB not initialized.'));
-        };
-    });
+function showError(err){
+
+console.error(err);
+
+alert(err);
+
+updateProgress(
+0,
+err
+);
+
 }
 
-/**
- * Clear IndexedDB and sessionStorage after successful publish.
- */
-async function clearStorageData() {
-    sessionStorage.clear();
-    await new Promise((resolve, reject) => {
-        const request = indexedDB.deleteDatabase('AppPublisherDB');
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(new Error('Failed to clear IndexedDB.'));
-        request.onblocked = () => resolve();
-    });
-}
+function openDB(){
 
-/**
- * Main publish workflow triggered by UI buttons/forms.
- */
-async function handlePublishApp() {
-    try {
-        // 1. Show Preparing state
-        updateProgress('Preparing', 5, 'Validating inputs and storage...');
+return new Promise(function(resolve,reject){
 
-        // Retrieve config from sessionStorage or DOM inputs keeping existing IDs
-        const patInput = document.getElementById('github-pat');
-        const repoInput = document.getElementById('github-repo');
-        
-        const pat = patInput ? patInput.value.trim() : sessionStorage.getItem('github_pat');
-        const repo = repoInput ? repoInput.value.trim() : sessionStorage.getItem('github_repo');
+const request=
+indexedDB.open(
+DB_NAME,
+1
+);
 
-        // 1. Validate GitHub PAT
-        if (!pat || !pat.startsWith('ghp_') && !pat.startsWith('github_pat_') && pat.length < 20) {
-            throw new Error('Invalid GitHub Personal Access Token (PAT) format.');
-        }
+request.onerror=function(){
 
-        // 2. Validate owner/repository format (e.g., owner/repo)
-        const repoRegex = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
-        if (!repo || !repoRegex.test(repo)) {
-            throw new Error('Invalid repository format. Must be "owner/repository".');
-        }
+reject(
+new Error(
+"Cannot open IndexedDB."
+)
+);
 
-        // 3. Validate IndexedDB before publishing
-        const appData = await validateAndGetIndexedDBData();
+};
 
-        // 4. Ensure apk/icon/banner exist before upload
-        if (!appData.apkFile) {
-            throw new Error('APK file is missing in session data.');
-        }
-        if (!appData.iconFile) {
-            throw new Error('Icon file is missing in session data.');
-        }
-        if (!appData.bannerFile) {
-            throw new Error('Banner file is missing in session data.');
-        }
+request.onsuccess=function(e){
 
-        const version = appData.version || 'v1.0.0';
-        const tagName = version.startsWith('v') ? version : `v${version}`;
-        const appName = appData.name || 'App';
-        const packageName = appData.packageName || 'com.app.slug';
+resolve(
+e.target.result
+);
 
-        // 2. Uploading assets (Supabase Storage for icon, banner, screenshots)
-        updateProgress('Uploading assets', 25, 'Uploading icon, banner, and screenshots to Supabase Storage...');
-        
-        // Assuming supabase client is globally available or imported
-        if (typeof supabase === 'undefined' && typeof window.supabase === 'undefined') {
-            throw new Error('Supabase client is not initialized.');
-        }
-        const sb = window.supabase || supabase;
+};
 
-        const uploadFileToSupabase = async (file, folder) => {
-            const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-            const filePath = `${folder}/${fileName}`;
-            const { error: uploadError } = await sb.storage
-                .from('app-assets')
-                .upload(filePath, file, { upsert: true, duplex: 'half' });
-            
-            if (uploadError) {
-                throw new Error(`Supabase Storage error: ${uploadError.message}`);
-            }
-            const { data: publicUrlData } = sb.storage.from('app-assets').getPublicUrl(filePath);
-            return publicUrlData.publicUrl;
-        };
-
-        const iconUrl = await uploadFileToSupabase(appData.iconFile, 'icons');
-        const bannerUrl = await uploadFileToSupabase(appData.bannerFile, 'banners');
-        
-        const screenshotUrls = [];
-        if (appData.screenshots && Array.isArray(appData.screenshots)) {
-            for (const ss of appData.screenshots) {
-                const url = await uploadFileToSupabase(ss, 'screenshots');
-                screenshotUrls.push(url);
-            }
-        }
-
-        // 3. Creating Release / 6. Create Release if missing / 7. Reuse Release if same version already exists
-        updateProgress('Creating Release', 50, 'Checking or creating GitHub Release...');
-        
-        const releasesUrl = `https://api.github.com/repos/${repo}/releases`;
-        const headers = {
-            'Authorization': `token ${pat}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'User-Agent': 'App-Publisher'
-        };
-
-        // Check if release exists
-        let releaseId;
-        let uploadUrl;
-        
-        const existingReleaseRes = await fetchWithRetry(`https://api.github.com/repos/${repo}/releases/tags/${tagName}`, {
-            method: 'GET',
-            headers
-        });
-
-        if (existingReleaseRes.ok) {
-            const releaseData = await existingReleaseRes.json();
-            releaseId = releaseData.id;
-            uploadUrl = releaseData.upload_url;
-        } else if (existingReleaseRes.status === 404) {
-            // Create release
-            const createRes = await fetchWithRetry(releasesUrl, {
-                method: 'POST',
-                headers: { ...headers, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    tag_name: tagName,
-                    name: `Release ${tagName}`,
-                    body: `Automated release for ${appName} version ${tagName}`,
-                    draft: false,
-                    prerelease: false
-                })
-            });
-            const createData = await createRes.json();
-            releaseId = createData.id;
-            uploadUrl = createData.upload_url;
-        } else {
-            const errText = await existingReleaseRes.text();
-            throw new Error(`Failed to check existing release: ${errText}`);
-        }
-
-        // 4. Uploading APK / 5. Remove/Do not use Content-Length header / 8. Replace existing APK asset if same filename already exists
-        updateProgress('Uploading APK', 70, 'Uploading APK file to GitHub Release...');
-
-        const apkFile = appData.apkFile;
-        const apkFileName = apkFile.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
-
-        // Check if asset with same name already exists in release and delete it to replace
-        const assetsRes = await fetchWithRetry(`https://api.github.com/repos/${repo}/releases/${releaseId}/assets`, {
-            method: 'GET',
-            headers
-        });
-        if (assetsRes.ok) {
-            const assets = await assetsRes.json();
-            const existingAsset = assets.find(a => a.name === apkFileName);
-            if (existingAsset) {
-                await fetchWithRetry(`https://api.github.com/repos/${repo}/releases/assets/${existingAsset.id}`, {
-                    method: 'DELETE',
-                    headers
-                });
-            }
-        }
-
-        // Clean template URL for uploads (remove {?name,label})
-        const cleanUploadUrl = uploadUrl.split('{')[0];
-        const apkBuffer = await apkFile.arrayBuffer();
-
-        const uploadApkRes = await fetchWithRetry(`${cleanUploadUrl}?name=${encodeURIComponent(apkFileName)}`, {
-            method: 'POST',
-            headers: {
-                ...headers,
-                'Content-Type': 'application/vnd.android.package-archive'
-            },
-            body: apkBuffer,
-            duplex: 'half'
-        });
-
-        const apkAssetData = await uploadApkRes.json();
-        // 10. Save browser_download_url
-        const browserDownloadUrl = apkAssetData.browser_download_url;
-        if (!browserDownloadUrl) {
-            throw new Error('Failed to retrieve APK download URL from GitHub.');
-        }
-
-        // 5. Saving database / 11. Upload icon/banner/screenshots / 12. Insert app record into Supabase
-        updateProgress('Saving database', 85, 'Saving app details to Supabase database...');
-
-        const { error: dbError } = await sb.from('apps').insert([
-            {
-                name: appName,
-                package_name: packageName,
-                version: version,
-                download_url: browserDownloadUrl,
-                icon_url: iconUrl,
-                banner_url: bannerUrl,
-                screenshots: screenshotUrls,
-                repository: repo,
-                created_at: new Date().toISOString()
-            }
-        ]);
-
-        if (dbError) {
-            throw new Error(`Supabase database error: ${dbError.message}`);
-        }
-
-        // 13. Finished
-        updateProgress('Finished', 100, 'Publishing complete successfully!');
-
-        // 16. Clear IndexedDB and sessionStorage after successful publish
-        await clearStorageData();
-
-        // 17. Redirect to dashboard.html after success
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1200);
-
-    } catch (error) {
-        // 14. Show detailed errors from GitHub and Supabase
-        console.error('Publishing Error:', error);
-        const errorContainer = document.getElementById('error-message') || document.getElementById('error-container');
-        if (errorContainer) {
-            errorContainer.textContent = error.message;
-            errorContainer.style.display = 'block';
-        } else {
-            alert(`Publishing failed: ${error.message}`);
-        }
-        
-        // Reset progress bar indication on error
-        const progressStatus = document.getElementById('progress-status');
-        if (progressStatus) {
-            progressStatus.textContent = 'Failed: ' + error.message;
-        }
-    }
-}
-
-// Bind event listener to publish trigger button if present in existing DOM
-document.addEventListener('DOMContentLoaded', () => {
-    const publishBtn = document.getElementById('publish-btn') || document.getElementById('start-publish-btn');
-    if (publishBtn) {
-        publishBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            handlePublishApp();
-        });
-    }
 });
+
+}
+
+function readFile(key){
+
+return new Promise(async function(resolve,reject){
+
+const db=
+await openDB();
+
+const tx=
+db.transaction(
+STORE_NAME,
+"readonly"
+);
+
+const store=
+tx.objectStore(
+STORE_NAME
+);
+
+const req=
+store.get(key);
+
+req.onsuccess=function(){
+
+resolve(
+req.result
+);
+
+};
+
+req.onerror=function(){
+
+reject(
+new Error(
+"Missing "+key
+)
+);
+
+};
+
+});
+
+}
+
+async function loadPublishData(){
+
+ctx.app=
+JSON.parse(
+sessionStorage.getItem(
+"paliaapk_pending_app"
+)
+);
+
+if(!ctx.app){
+
+throw new Error(
+"No pending app found."
+);
+
+}
+
+ctx.apk=
+await readFile("apk");
+
+ctx.icon=
+await readFile("icon");
+
+ctx.banner=
+await readFile("banner");
+
+for(let i=0;i<5;i++){
+
+const file=
+await readFile(
+"screenshot-"+i
+);
+
+if(file){
+
+ctx.screenshots.push(
+file
+);
+
+}
+
+}
+
+if(!ctx.apk){
+
+throw new Error(
+"APK file missing."
+);
+
+}
+
+ctx.pat=
+patInput.value.trim();
+
+ctx.repo=
+repoInput.value.trim();
+
+if(!ctx.pat){
+
+throw new Error(
+"GitHub PAT required."
+);
+
+}
+
+if(!ctx.repo){
+
+throw new Error(
+"Repository required."
+);
+
+}
+
+}
+
+startBtn.addEventListener(
+"click",
+async function(){
+
+try{
+
+saveGithubSettings();
+
+updateProgress(
+5,
+"Preparing..."
+);
+
+await loadPublishData();
+
+updateProgress(
+10,
+"Initialization Complete"
+);
+
+publishPart2();
+
+}
+catch(e){
+
+showError(
+e.message
+);
+
+}
+
+});
+    /* ==========================================================
+   PART 2
+   GitHub Release Create / Reuse
+========================================================== */
+
+async function githubApi(url, options = {}) {
+
+    options.headers = options.headers || {};
+
+    options.headers.Authorization =
+        "Bearer " + ctx.pat;
+
+    options.headers.Accept =
+        "application/vnd.github+json";
+
+    options.headers["X-GitHub-Api-Version"] =
+        "2022-11-28";
+
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+
+        const errorText = await response.text();
+
+        throw new Error(errorText);
+
+    }
+
+    return response;
+
+}
+
+async function publishPart2() {
+
+    updateProgress(
+        20,
+        "Checking GitHub Release..."
+    );
+
+    const version =
+        ctx.app.version || "1.0.0";
+
+    const tag =
+        version.startsWith("v")
+        ? version
+        : "v" + version;
+
+    let release = null;
+
+    try {
+
+        const res =
+            await githubApi(
+
+                "https://api.github.com/repos/" +
+                ctx.repo +
+                "/releases/tags/" +
+                tag
+
+            );
+
+        release =
+            await res.json();
+
+    }
+
+    catch {
+
+        updateProgress(
+            30,
+            "Creating GitHub Release..."
+        );
+
+        const res =
+            await githubApi(
+
+                "https://api.github.com/repos/" +
+                ctx.repo +
+                "/releases",
+
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                        "application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        tag_name:tag,
+
+                        name:
+                        ctx.app.name+
+                        " "+
+                        version,
+
+                        body:
+                        ctx.app.description ||
+                        "",
+
+                        draft:false,
+
+                        prerelease:false
+
+                    })
+
+                }
+
+            );
+
+        release =
+            await res.json();
+
+    }
+
+    ctx.release = release;
+
+    updateProgress(
+        40,
+        "GitHub Release Ready"
+    );
+
+    publishPart3();
+
+}
+    /* ==========================================================
+   PART 3
+   Upload APK Asset to GitHub Release
+========================================================== */
+
+async function publishPart3() {
+
+    updateProgress(
+        50,
+        "Checking existing release assets..."
+    );
+
+    const headers = {
+
+        Authorization:
+            "Bearer " + ctx.pat,
+
+        Accept:
+            "application/vnd.github+json",
+
+        "X-GitHub-Api-Version":
+            "2022-11-28"
+
+    };
+
+    //----------------------------------------------------------
+    // Load Existing Assets
+    //----------------------------------------------------------
+
+    const assetsResponse =
+        await fetch(
+
+            "https://api.github.com/repos/" +
+            ctx.repo +
+            "/releases/" +
+            ctx.release.id +
+            "/assets",
+
+            {
+                headers
+            }
+
+        );
+
+    if(!assetsResponse.ok){
+
+        throw new Error(
+            "Unable to load GitHub Release assets."
+        );
+
+    }
+
+    const assets =
+        await assetsResponse.json();
+
+    //----------------------------------------------------------
+    // Delete old APK if exists
+    //----------------------------------------------------------
+
+    const existingAsset =
+        assets.find(function(asset){
+
+            return asset.name===ctx.apk.name;
+
+        });
+
+    if(existingAsset){
+
+        updateProgress(
+            60,
+            "Removing old APK..."
+        );
+
+        const deleteResponse =
+            await fetch(
+
+                "https://api.github.com/repos/" +
+                ctx.repo +
+                "/releases/assets/" +
+                existingAsset.id,
+
+                {
+
+                    method:"DELETE",
+
+                    headers
+
+                }
+
+            );
+
+        if(
+            deleteResponse.status!==204 &&
+            !deleteResponse.ok
+        ){
+
+            throw new Error(
+                "Unable to remove existing APK."
+            );
+
+        }
+
+    }
+
+    //----------------------------------------------------------
+    // Upload APK
+    //----------------------------------------------------------
+
+    updateProgress(
+        70,
+        "Uploading APK..."
+    );
+
+    const uploadUrl =
+
+        ctx.release.upload_url
+
+        .replace(/\{.*$/,"")
+
+        + "?name="
+
+        + encodeURIComponent(ctx.apk.name);
+
+    const uploadResponse =
+        await fetch(
+
+            uploadUrl,
+
+            {
+
+                method:"POST",
+
+                headers:{
+
+                    Authorization:
+                        "Bearer "+ctx.pat,
+
+                    Accept:
+                        "application/vnd.github+json",
+
+                    "Content-Type":
+                        "application/vnd.android.package-archive"
+
+                },
+
+                body:ctx.apk
+
+            }
+
+        );
+
+    if(!uploadResponse.ok){
+
+        const txt=
+            await uploadResponse.text();
+
+        throw new Error(
+            txt
+        );
+
+    }
+
+    ctx.asset=
+        await uploadResponse.json();
+
+    console.log(
+        "GitHub Asset",
+        ctx.asset
+    );
+
+    updateProgress(
+        80,
+        "APK uploaded successfully."
+    );
+
+    publishPart4();
+
+}
+    /* ==========================================================
+   PART 4
+   Upload Images to Supabase Storage
+========================================================== */
+
+async function uploadFileToBucket(file, bucket) {
+
+    if (!file) return null;
+
+    const fileName =
+        Date.now() +
+        "-" +
+        Math.random().toString(36).substring(2) +
+        "-" +
+        file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+    const { error } =
+        await sb.storage
+            .from(bucket)
+            .upload(
+                fileName,
+                file,
+                {
+                    cacheControl: "3600",
+                    upsert: true
+                }
+            );
+
+    if (error) {
+
+        throw error;
+
+    }
+
+    const { data } =
+        sb.storage
+          .from(bucket)
+          .getPublicUrl(fileName);
+
+    return data.publicUrl;
+
+}
+
+async function publishPart4() {
+
+    updateProgress(
+        85,
+        "Uploading images..."
+    );
+
+    //--------------------------------------------------
+    // Icon
+    //--------------------------------------------------
+
+    ctx.iconUrl =
+        await uploadFileToBucket(
+            ctx.icon,
+            "app-icons"
+        );
+
+    //--------------------------------------------------
+    // Banner
+    //--------------------------------------------------
+
+    ctx.bannerUrl =
+        await uploadFileToBucket(
+            ctx.banner,
+            "app-banners"
+        );
+
+    //--------------------------------------------------
+    // Screenshots
+    //--------------------------------------------------
+
+    ctx.screenshotUrls = [];
+
+    for (const shot of ctx.screenshots) {
+
+        const url =
+            await uploadFileToBucket(
+                shot,
+                "app-screenshots"
+            );
+
+        ctx.screenshotUrls.push(url);
+
+    }
+
+    console.log("Icon:",ctx.iconUrl);
+    console.log("Banner:",ctx.bannerUrl);
+    console.log("Screens:",ctx.screenshotUrls);
+
+    updateProgress(
+        90,
+        "Images uploaded."
+    );
+
+    publishPart5();
+
+}
+    /* ==========================================================
+   PART 5
+   Save App + Cleanup + Finish
+========================================================== */
+
+async function publishPart5() {
+
+    try {
+
+        updateProgress(
+            95,
+            "Saving app to Supabase..."
+        );
+
+        //--------------------------------------------------
+        // Download URL
+        //--------------------------------------------------
+
+        const downloadUrl =
+            ctx.asset.browser_download_url;
+
+        //--------------------------------------------------
+        // Payload
+        //--------------------------------------------------
+
+        const payload = {
+
+            app_name:
+                ctx.app.name,
+
+            package_name:
+                ctx.app.package_name || null,
+
+            version:
+                ctx.app.version,
+
+            developer:
+                ctx.app.developer || null,
+
+            category:
+                ctx.app.category || null,
+
+            android_version:
+                ctx.app.android_version || null,
+
+            description:
+                ctx.app.description || null,
+
+            whats_new:
+                ctx.app.whats_new || null,
+
+            icon_url:
+                ctx.iconUrl,
+
+            banner_url:
+                ctx.bannerUrl,
+
+            screenshots:
+                ctx.screenshotUrls,
+
+            apk_url:
+                downloadUrl,
+
+            download_count:0,
+
+            created_at:
+                new Date().toISOString()
+
+        };
+
+        //--------------------------------------------------
+        // Insert Database
+        //--------------------------------------------------
+
+        const {error}=
+
+            await sb
+            .from("apps")
+            .insert([payload]);
+
+        if(error){
+
+            throw error;
+
+        }
+
+        //--------------------------------------------------
+        // Cleanup IndexedDB
+        //--------------------------------------------------
+
+        const db=
+            await openDB();
+
+        const tx=
+            db.transaction(
+                STORE_NAME,
+                "readwrite"
+            );
+
+        tx.objectStore(STORE_NAME).clear();
+
+        await new Promise(function(resolve,reject){
+
+            tx.oncomplete=resolve;
+
+            tx.onerror=reject;
+
+        });
+
+        //--------------------------------------------------
+        // Cleanup Session
+        //--------------------------------------------------
+
+        sessionStorage.removeItem(
+            "paliaapk_pending_app"
+        );
+
+        //--------------------------------------------------
+        // Finish
+        //--------------------------------------------------
+
+        updateProgress(
+            100,
+            "Publish Completed Successfully"
+        );
+
+        alert(
+            "App published successfully!"
+        );
+
+        setTimeout(function(){
+
+            window.location.href=
+                "dashboard.html";
+
+        },1000);
+
+    }
+
+    catch(err){
+
+        console.error(err);
+
+        updateProgress(
+            0,
+            "Publish Failed"
+        );
+
+        alert(
+            err.message
+        );
+
+    }
+
+}
+
+/* ==========================================================
+   END
+========================================================== */
+
+})();
+    
