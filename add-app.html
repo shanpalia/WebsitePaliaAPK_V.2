@@ -2050,7 +2050,7 @@ img{ max-width: 100%; display: block; }
 
  var btnPublish = document.getElementById('btnPublish');
   if(btnPublish){
-    btnPublish.addEventListener('click', function(){
+    btnPublish.addEventListener('click', async function() {
       var checkedProvider = document.querySelector('input[name="storageProvider"]:checked');
       var providerValue = checkedProvider ? checkedProvider.value : '';
 
@@ -2072,7 +2072,36 @@ sessionStorage.setItem(
 );
 
 sessionStorage.setItem("storageProvider", providerValue);
+async function savePendingFiles() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open("PaliaAPKPendingUpload", 1);
 
+        req.onupgradeneeded = e => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains("files")) {
+                db.createObjectStore("files");
+            }
+        };
+
+        req.onsuccess = e => {
+            const db = e.target.result;
+            const tx = db.transaction("files", "readwrite");
+            const store = tx.objectStore("files");
+
+            Object.keys(uploads).forEach(key => {
+                if (uploads[key]?.file) {
+                    store.put(uploads[key].file, key);
+                }
+            });
+
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        };
+
+        req.onerror = () => reject(req.error);
+    });
+}
+         await savePendingFiles();
 window.location.href = "publish-app.html";
         return;
       }
