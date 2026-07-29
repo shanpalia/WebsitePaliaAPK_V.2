@@ -2056,12 +2056,24 @@ img{ max-width: 100%; display: block; }
 
       // Agar GitHub Releases select hai, toh publish-app.html par redirect karein
       if (providerValue === 'GitHub Releases') {
-        var formData = new FormData(appForm);
-        for (var pair of formData.entries()) {
-          sessionStorage.setItem(pair[0], pair[1]);
-        }
-        sessionStorage.setItem('storageProvider', providerValue);
-        window.location.href = 'publish-app.html';
+        var appData = {
+    name: document.getElementById("fName").value,
+    version: document.getElementById("fVersion").value,
+    developer: document.getElementById("fDeveloper").value,
+    package_name: document.getElementById("fPackage").value,
+    category: document.getElementById("fCategory").value,
+    android_version: document.getElementById("fAndroid").value,
+    description: document.getElementById("fDescription").value
+};
+
+sessionStorage.setItem(
+    "paliaapk_pending_app",
+    JSON.stringify(appData)
+);
+
+sessionStorage.setItem("storageProvider", providerValue);
+
+window.location.href = "publish-app.html";
         return;
       }
 
