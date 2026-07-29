@@ -1230,22 +1230,25 @@ img{ max-width: 100%; display: block; }
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <div><strong id="submitAlertTitle">Something went wrong</strong><span id="submitAlertBody"></span></div>
           </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn-ghost" id="btnReset">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
-              Reset Form
-            </button>
-            <button type="button" class="btn btn-secondary" id="btnSaveDraft">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-              <span class="btn-spinner"></span>
-              <span class="btn-label">Save Draft</span>
-            </button>
-            <button type="button" class="btn btn-primary" id="btnPublish">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l6 6L20 6"/></svg>
-              <span class="btn-spinner"></span>
-              <span class="btn-label">Publish App</span>
-            </button>
-          </div>
+         <div class="form-actions">
+
+    <button type="button" class="btn btn-ghost" id="btnReset">
+        Reset Form
+    </button>
+
+    <button type="button" class="btn btn-secondary" id="btnSaveDraft">
+        Save Draft
+    </button>
+
+    <button type="button" class="btn btn-secondary" id="btnPublishSupabase">
+        Publish to Supabase
+    </button>
+
+    <button type="button" class="btn btn-primary" id="btnPublishGithub">
+        Publish to GitHub
+    </button>
+
+</div>
         </div>
       </div>
 
@@ -2143,7 +2146,16 @@ request.onsuccess = function(e) {
     tx.oncomplete = function() {
         window.location.href = "publish-app.html";
     };
+};
+            window.location.href="publish-app.html";
 
+        };
+
+    };
+
+    return;
+
+}
   renderTags();
   renderPreview();
 
@@ -2152,3 +2164,4 @@ request.onsuccess = function(e) {
 
 </body>
 </html>
+
