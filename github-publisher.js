@@ -7,13 +7,20 @@
    Part 1
 ========================================================== */
 
-const patInput=document.getElementById("patInput");
-const repoInput=document.getElementById("repoInput");
-const startBtn=document.getElementById("startPublishBtn");
+const patInput = document.getElementById("ghToken");
+const repoInput = {
+    get value() {
+        return document.getElementById("ghOwner").value.trim() + "/" +
+               document.getElementById("ghRepo").value.trim();
+    }
+};
+const startBtn = document.getElementById("btnPublishGithub");
 
-const progressContainer=document.getElementById("progressContainer");
-const progressBar=document.getElementById("progressBarFill");
-const statusText=document.getElementById("statusText");
+const progressContainer =
+document.getElementById("publishModal");
+
+const statusText =
+document.getElementById("progressStatusText");
 
 const DB_NAME="PaliaAPKPendingUpload";
 const STORE_NAME="files";
