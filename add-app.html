@@ -1230,25 +1230,22 @@ img{ max-width: 100%; display: block; }
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             <div><strong id="submitAlertTitle">Something went wrong</strong><span id="submitAlertBody"></span></div>
           </div>
-         <div class="form-actions">
-
-    <button type="button" class="btn btn-ghost" id="btnReset">
-        Reset Form
-    </button>
-
-    <button type="button" class="btn btn-secondary" id="btnSaveDraft">
-        Save Draft
-    </button>
-
-    <button type="button" class="btn btn-secondary" id="btnPublishSupabase">
-        Publish to Supabase
-    </button>
-
-    <button type="button" class="btn btn-primary" id="btnPublishGithub">
-        Publish to GitHub
-    </button>
-
-</div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" id="btnReset">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+              Reset Form
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnSaveDraft">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <span class="btn-spinner"></span>
+              <span class="btn-label">Save Draft</span>
+            </button>
+            <button type="button" class="btn btn-primary" id="btnPublish">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l6 6L20 6"/></svg>
+              <span class="btn-spinner"></span>
+              <span class="btn-label">Publish App</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -2057,105 +2054,21 @@ img{ max-width: 100%; display: block; }
       var checkedProvider = document.querySelector('input[name="storageProvider"]:checked');
       var providerValue = checkedProvider ? checkedProvider.value : '';
 
-    if (providerValue === 'GitHub Releases') {
-
-    var formData = new FormData(appForm);
-
-    var appData = {};
-
-    for (var pair of formData.entries()) {
-
-        if (!(pair[1] instanceof File)) {
-            appData[pair[0]] = pair[1];
+      // Agar GitHub Releases select hai, toh publish-app.html par redirect karein
+      if (providerValue === 'GitHub Releases') {
+        var formData = new FormData(appForm);
+        for (var pair of formData.entries()) {
+          sessionStorage.setItem(pair[0], pair[1]);
         }
+        sessionStorage.setItem('storageProvider', providerValue);
+        window.location.href = 'publish-app.html';
+        return;
+      }
 
-    }
-
-    sessionStorage.setItem(
-        "paliaapk_pending_app",
-        JSON.stringify(appData)
-    );
-
-    const request = indexedDB.open("PaliaAPKPendingUpload",1);
-
-    request.onupgradeneeded = function(e){
-
-        const db=e.target.result;
-
-        if(!db.objectStoreNames.contains("files")){
-            db.createObjectStore("files");
-        }
-
-    };
-
-    request.onsuccess=function(e){
-
-        const db=e.target.result;
-
-        const tx=db.transaction("files","readwrite");
-
-        const store=tx.objectStore("files");
-
-        if(document.getElementById("apkFile")?.files[0])
-            store.put(document.getElementById("apkFile").files[0],"apk");
-
-        if(document.getElementById("iconFile")?.files[0])
-            store.put(document.getElementById("iconFile").files[0],"icon");
-
-        if(document.getElementById("bannerFile")?.files[0])
-            store.put(document.getElementById("bannerFile").files[0],"banner");
-
-        for(let i=0;i<5;i++){
-
-            const el=document.getElementById("screenshot"+i);
-
-            if(el && el.files[0]){
-
-                store.put(el.files[0],"screenshot-"+i);
-
-            }
-
-        }
-
-        tx.oncomplete=function(){
-const request = indexedDB.open("PaliaAPKPendingUpload", 1);
-
-request.onupgradeneeded = function(e) {
-    const db = e.target.result;
-    if (!db.objectStoreNames.contains("files")) {
-        db.createObjectStore("files");
-    }
-};
-
-request.onsuccess = function(e) {
-
-    const db = e.target.result;
-    const tx = db.transaction("files", "readwrite");
-    const store = tx.objectStore("files");
-
-    if (uploads.icon) store.put(uploads.icon.file, "icon");
-    if (uploads.banner) store.put(uploads.banner.file, "banner");
-    if (uploads.apk) store.put(uploads.apk.file, "apk");
-
-    if (uploads.screenshot1) store.put(uploads.screenshot1.file, "screenshot-0");
-    if (uploads.screenshot2) store.put(uploads.screenshot2.file, "screenshot-1");
-    if (uploads.screenshot3) store.put(uploads.screenshot3.file, "screenshot-2");
-    if (uploads.screenshot4) store.put(uploads.screenshot4.file, "screenshot-3");
-    if (uploads.screenshot5) store.put(uploads.screenshot5.file, "screenshot-4");
-
-    tx.oncomplete = function() {
-        window.location.href = "publish-app.html";
-    };
-};
-            window.location.href="publish-app.html";
-
-        };
-
-    };
-
-    return;
-
-}
+      // Warna Supabase ya Hybrid ke liye yahi se publish process shuru hoga
+      submitApp('published', 'btnPublish', 'Publishing…');
+    });
+  }
   renderTags();
   renderPreview();
 
@@ -2164,4 +2077,4 @@ request.onsuccess = function(e) {
 
 </body>
 </html>
-
+```[cite: 3]
