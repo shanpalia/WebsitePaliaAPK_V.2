@@ -347,6 +347,37 @@
         </div>
     </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const providers = document.querySelectorAll(".provider-option");
+    const panels = document.querySelectorAll(".config-panel");
+
+    providers.forEach(provider => {
+
+        if (provider.classList.contains("disabled")) return;
+
+        provider.addEventListener("click", function () {
+
+            providers.forEach(p => p.classList.remove("active"));
+            this.classList.add("active");
+
+            panels.forEach(panel => panel.classList.remove("active"));
+
+            const name = this.dataset.provider;
+
+            const panel = document.getElementById("panel-" + name);
+
+            if(panel){
+                panel.classList.add("active");
+            }
+
+        });
+
+    });
+
+});
+</script>
 <script src="github-publisher.js"></script>
 </body>
 </html>
