@@ -10,8 +10,7 @@
 const patInput = document.getElementById("ghToken");
 const ownerInput = document.getElementById("ghOwner");
 const repoInput = document.getElementById("ghRepo");
-    }
-};
+
 const startBtn = document.getElementById("btnPublishGithub");
 
 const progressContainer =
@@ -19,7 +18,8 @@ document.getElementById("publishModal");
 
 const statusText =
 document.getElementById("progressStatusText");
-
+const progressBar =
+    document.getElementById("progressBarFill");
 const DB_NAME="PaliaAPKPendingUpload";
 const STORE_NAME="files";
 
@@ -71,18 +71,17 @@ if (savedRepo.includes("/")) {
     repoInput.value = repo;
 }
 
-function saveGithubSettings(){
+function saveGithubSettings() {
 
-(
-"github_pat",
-patInput.value.trim()
-);
+    localStorage.setItem(
+        "github_pat",
+        patInput.value.trim()
+    );
 
-localStorage.setItem(
-    "github_repo",
-    ownerInput.value.trim() + "/" + repoInput.value.trim()
-);
-);
+    localStorage.setItem(
+        "github_repo",
+        ownerInput.value.trim() + "/" + repoInput.value.trim()
+    );
 
 }
 
