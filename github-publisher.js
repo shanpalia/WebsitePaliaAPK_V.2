@@ -8,10 +8,8 @@
 ========================================================== */
 
 const patInput = document.getElementById("ghToken");
-const repoInput = {
-    get value() {
-        return document.getElementById("ghOwner").value.trim() + "/" +
-               document.getElementById("ghRepo").value.trim();
+const ownerInput = document.getElementById("ghOwner");
+const repoInput = document.getElementById("ghRepo");
     }
 };
 const startBtn = document.getElementById("btnPublishGithub");
@@ -65,19 +63,25 @@ screenshotUrls:[]
 patInput.value=
 localStorage.getItem("github_pat")||"";
 
-repoInput.value=
-localStorage.getItem("github_repo")||"";
+const savedRepo = localStorage.getItem("github_repo") || "";
+
+if (savedRepo.includes("/")) {
+    const [owner, repo] = savedRepo.split("/");
+    ownerInput.value = owner;
+    repoInput.value = repo;
+}
 
 function saveGithubSettings(){
 
-localStorage.setItem(
+(
 "github_pat",
 patInput.value.trim()
 );
 
 localStorage.setItem(
-"github_repo",
-repoInput.value.trim()
+    "github_repo",
+    ownerInput.value.trim() + "/" + repoInput.value.trim()
+);
 );
 
 }
@@ -241,8 +245,9 @@ throw new Error(
 ctx.pat=
 patInput.value.trim();
 
-ctx.repo=
-repoInput.value.trim();
+ctx.repo =
+    ownerInput.value.trim() + "/" +
+    repoInput.value.trim();
 
 if(!ctx.pat){
 
