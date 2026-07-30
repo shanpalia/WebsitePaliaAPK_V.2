@@ -6,7 +6,7 @@
  * PaliaAPK HUB - publish-app.js
  * Production-ready application publisher matching card-based UI (Supabase & GitHub Release Cards).
  */
-
+import { uploadApkToTelegram } from "./telegram-publisher.js";
 document.addEventListener('DOMContentLoaded', () => {
 
     // 1. Storage Provider Card Switching Logic (Supabase <-> GitHub)
@@ -64,9 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 3. GitHub Publish Button Logic & API Integration
-    const btnPublishGithub = document.getElementById('btnPublishGithub');
-    if (btnPublishGithub) {
-        btnPublishGithub.addEventListener('click', async () => {
+  const btnPublishTelegram =
+document.getElementById("btnPublishTelegram");
+    if (btnPublishTelegram) {
+        btnPublishTelegram.addEventListener("click", async () => {
             const owner = document.getElementById('ghOwner').value.trim();
             const repo = document.getElementById('ghRepo').value.trim();
             const token = document.getElementById('ghToken').value.trim();
@@ -166,7 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnRetryPublish) {
         btnRetryPublish.addEventListener('click', () => {
             document.getElementById('publishModal').style.display = 'none';
-            if (btnPublishGithub) btnPublishGithub.click();
+          if (btnPublishTelegram)
+    btnPublishTelegram.click();
         });
     }
 
