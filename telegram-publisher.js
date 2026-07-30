@@ -36,7 +36,17 @@ if (!apkFile) {
 if (!apkFile.name.toLowerCase().endsWith(".apk")) {
   throw new Error("Only APK files are allowed.");
 }
+const allowedTypes = [
+  "application/vnd.android.package-archive",
+  "application/octet-stream"
+];
 
+if (
+  apkFile.type &&
+  !allowedTypes.includes(apkFile.type)
+) {
+  throw new Error("Invalid APK file.");
+}
 if (!appName?.trim()) {
   throw new Error("App name is required.");
 }
@@ -66,7 +76,7 @@ if (!workerUrl.startsWith("https://")) {
 
     let response;
     try {
-      const endpoint = `${workerUrl.replace(/\/+$/, "")}/upload`;
+      const endpoint = new URL("/upload", workerUrl).toString();
       response = await fetch(endpoint, {
         method: "POST",
         body: formData,
@@ -125,10 +135,10 @@ resultPayload.mime_type =
     apkFile.type ??
     "application/vnd.android.package-archive";
 
-    return resultPayload;
+   return Object.freeze(resultPayload);
   } catch (err) {
     resultPayload.success = false;
     resultPayload.error = err.message;
-    return resultPayload;
+    return Object.freeze(resultPayload);
   }
 }
