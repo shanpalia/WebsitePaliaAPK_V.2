@@ -55,17 +55,26 @@
                         <span class="provider-badge active-badge">Active</span>
                     </div>
 
-                    <div class="provider-option" data-provider="github">
-                        <div class="provider-radio"><i class="fa-solid fa-circle-check"></i></div>
-                        <div class="provider-icon github-ic">
-                            <i class="fa-brands fa-github"></i>
-                        </div>
-                        <div class="provider-details">
-                            <h3>GitHub Releases</h3>
-                            <p>Deploy binaries to repository releases</p>
-                        </div>
-                        <span class="provider-badge active-badge">Active</span>
-                    </div>
+                   <div class="provider-option" data-provider="telegram">
+
+    <div class="provider-radio">
+        <i class="fa-solid fa-circle"></i>
+    </div>
+
+    <div class="provider-icon telegram-ic">
+        <i class="fa-brands fa-telegram"></i>
+    </div>
+
+    <div class="provider-details">
+        <h3>Telegram Storage</h3>
+        <p>Upload APKs via Cloudflare Worker</p>
+    </div>
+
+    <span class="provider-badge active-badge">
+        Active
+    </span>
+
+</div>
 
                     <!-- Future Ready Providers (Disabled) -->
                     <div class="provider-option disabled" data-provider="cloudflare">
@@ -169,94 +178,53 @@
                 </div>
 
                 <!-- 2. GitHub Releases Panel -->
-                <div class="config-panel" id="panel-github">
-                    <div class="panel-header-sub">
-                        <h3>GitHub Releases Configuration</h3>
-                        <p>Provide your repository credentials and release metadata.</p>
-                    </div>
+                <div class="config-panel" id="panel-telegram">
+                   <div class="panel-header-sub">
+    <h3>Telegram Storage Configuration</h3>
+    <p>Upload APK files to Telegram Channel using Cloudflare Worker.</p>
+</div>
 
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="ghOwner">GitHub Owner</label>
-                            <div class="input-with-icon">
-                                <i class="fa-solid fa-user-tag"></i>
-                                <input type="text" id="ghOwner" value="shanpalia" placeholder="e.g. shanpalia">
-                            </div>
-                        </div>
+<div class="form-grid">
 
-                        <div class="form-group">
-                            <label for="ghRepo">Repository Name</label>
-                            <div class="input-with-icon">
-                                <i class="fa-solid fa-code-branch"></i>
-                                <input type="text" id="ghRepo" value="WebsitePaliaAPK_V.2" placeholder="e.g. WebsitePaliaAPK_V.2">
-                            </div>
-                        </div>
+    <div class="form-group full-width">
+        <label>Storage Provider</label>
+        <div class="input-with-icon">
+            <i class="fa-brands fa-telegram"></i>
+            <input type="text" value="Telegram Channel" readonly>
+        </div>
+    </div>
 
-                        <!-- Added Missing Token Input Field Here -->
-                        <div class="form-group full-width">
-                            <label for="ghToken">Personal Access Token (PAT)</label>
-                            <div class="input-with-icon token-group">
-                                <i class="fa-solid fa-key"></i>
-                                <input type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                                <button type="button" id="btnToggleToken" title="Show/Hide Token">
-                                    <i class="fa-solid fa-eye" id="eyeIcon"></i>
-                                </button>
-                            </div>
-                        </div>
+    <div class="form-group full-width">
+        <label>Upload Method</label>
+        <div class="input-with-icon">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <input type="text" value="Cloudflare Worker" readonly>
+        </div>
+    </div>
 
-                        <div class="form-group full-width test-connection-row">
-                            <button type="button" class="btn-outline-mint" id="btnTestConnection">
-                                <i class="fa-solid fa-plug"></i> Test Connection
-                            </button>
-                            <span class="connection-status" id="connectionStatusText">Not tested</span>
-                        </div>
+    <div class="form-group full-width">
+        <label>Worker URL</label>
+        <div class="input-with-icon">
+            <i class="fa-solid fa-link"></i>
+            <input
+                id="workerUrl"
+                type="text"
+                value="https://paliaapk-worker.shanpalia786.workers.dev"
+                readonly>
+        </div>
+    </div>
 
-                        <hr class="form-divider">
+    <div class="form-group full-width">
+        <label>Status</label>
+        <div class="input-with-icon">
+            <i class="fa-solid fa-circle-check"></i>
+            <input type="text" value="Ready to Upload" readonly>
+        </div>
+    </div>
 
-                        <div class="form-group">
-                            <label for="ghVersion">Version (Tag)</label>
-                            <div class="input-with-icon">
-                                <i class="fa-solid fa-tag"></i>
-                                <input type="text" id="ghVersion" value="v1.0.1">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="ghTitle">Release Title</label>
-                            <div class="input-with-icon">
-                                <i class="fa-solid fa-heading"></i>
-                                <input type="text" id="ghTitle" placeholder="PaliaAPK HUB v1.0.0">
-                            </div>
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label for="ghNotes">Release Notes</label>
-                            <textarea id="ghNotes" rows="3" placeholder="Describe the updates, bug fixes, or new features in this release..."></textarea>
-                        </div>
-
-                        <div class="form-group full-width checkbox-group-wrapper">
-                            <label class="custom-checkbox">
-                                <input type="checkbox" id="ghAutoTag" checked>
-                                <span class="checkmark"></span>
-                                Auto Tag Release
-                            </label>
-
-                            <label class="custom-checkbox">
-                                <input type="checkbox" id="ghDraft">
-                                <span class="checkmark"></span>
-                                Draft Release
-                            </label>
-
-                            <label class="custom-checkbox">
-                                <input type="checkbox" id="ghPreRelease">
-                                <span class="checkmark"></span>
-                                Pre Release
-                            </label>
-                        </div>
-                    </div>
-
+</div>
                     <div class="panel-actions">
-                        <button type="button" class="btn-mint-solid" id="btnPublishGithub">
+                        <button type="button" class="btn-mint-solid" id="btnPublishTelegram">
                             <i class="fa-solid fa-rocket"></i> Publish App
                         </button>
                     </div>
