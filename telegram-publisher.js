@@ -13,7 +13,16 @@
  * @param {string} workerUrl - The base URL of the Cloudflare Worker.
  * @returns {Promise<Object>} The standardized result object containing file info or error.
  */
-export async function uploadApkToTelegram(apkFile, appName, version, developer, workerUrl) {
+const WORKER_URL =
+  "https://paliaapk-worker.shanpalia786.workers.dev";
+
+export async function uploadApkToTelegram({
+  apkFile,
+  appName,
+  version,
+  developer,
+  workerUrl = WORKER_URL
+}) {
   // Initialize default response payload structure
  const resultPayload = {
   success: false,
