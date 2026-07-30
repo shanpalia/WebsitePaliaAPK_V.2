@@ -1,259 +1,282 @@
-/**
- * PaliaAPK HUB - publish-app.js
- * Production-ready application publisher matching card-based UI (Supabase & GitHub Release Cards).
- */
-/**
- * PaliaAPK HUB - publish-app.js
- * Production-ready application publisher matching card-based UI (Supabase & GitHub Release Cards).
- */
 import { uploadApkToTelegram } from "./telegram-publisher.js";
-document.addEventListener('DOMContentLoaded', () => {
 
-    // 1. Storage Provider Card Switching Logic (Supabase <-> GitHub)
-    const providerOptions = document.querySelectorAll('.provider-option');
+const WORKER_URL =
+"https://paliaapk-worker.shanpalia786.workers.dev";
 
-    providerOptions.forEach(option => {
-        option.addEventListener('click', () => {
-            if (option.classList.contains('disabled')) return;
+document.addEventListener("DOMContentLoaded", () => {
 
-            // Remove active state from all cards and reset radio icons
-            providerOptions.forEach(opt => {
-                opt.classList.remove('active');
-                const radioIcon = opt.querySelector('.provider-radio i');
-                if (radioIcon) {
-                    radioIcon.className = 'fa-solid fa-circle';
-                }
-            });
-
-            // Set clicked card as active
-            option.classList.add('active');
-            const activeRadioIcon = option.querySelector('.provider-radio i');
-            if (activeRadioIcon) {
-                activeRadioIcon.className = 'fa-solid fa-circle-check';
-            }
-
-            // Hide all configuration panels
-            document.querySelectorAll('.config-panel').forEach(panel => {
-                panel.classList.remove('active');
-            });
-
-            // Show target provider panel
-            const providerName = option.getAttribute('data-provider'); // 'supabase' or 'github'
-            const targetPanel = document.getElementById(`panel-${providerName}`);
-            if (targetPanel) {
-                targetPanel.classList.add('active');
-            }
-        });
-    });
-
-    // 2. Token Show/Hide Toggle Logic for GitHub
-    const btnToggleToken = document.getElementById('btnToggleToken');
-    const ghTokenInput = document.getElementById('ghToken');
-    const eyeIcon = document.getElementById('eyeIcon');
-
-    if (btnToggleToken && ghTokenInput && eyeIcon) {
-        btnToggleToken.addEventListener('click', () => {
-            if (ghTokenInput.type === 'password') {
-                ghTokenInput.type = 'text';
-                eyeIcon.className = 'fa-solid fa-eye-slash';
-            } else {
-                ghTokenInput.type = 'password';
-                eyeIcon.className = 'fa-solid fa-eye';
-            }
-        });
-    }
-
-    // 3. GitHub Publish Button Logic & API Integration
-  const btnPublishTelegram =
+const btnPublishTelegram =
 document.getElementById("btnPublishTelegram");
-    if (btnPublishTelegram) {
-        btnPublishTelegram.addEventListener("click", async () => {
-            const owner = document.getElementById('ghOwner').value.trim();
-            const repo = document.getElementById('ghRepo').value.trim();
-            const token = document.getElementById('ghToken').value.trim();
-            
-            // Auto-generate unique version tag
-            const randomCode = Math.floor(Math.random() * 90000) + 10000;
-            const tagVersion = `v1.0.${randomCode}`;
 
-            const releaseTitle = document.getElementById('ghTitle').value.trim() || `PaliaAPK HUB ${tagVersion}`;
-            const releaseNotes = document.getElementById('ghNotes').value.trim();
-            const isDraft = document.getElementById('ghDraft').checked;
-            const isPrerelease = document.getElementById('ghPreRelease').checked;
+if(!btnPublishTelegram) return;
 
-            if (!owner || !repo || !token) {
-                alert('Please fill in all required GitHub fields (Owner, Repository, and Token).');
-                return;
-            }
+btnPublishTelegram.addEventListener("click", publishTelegram);
 
-            // Open Modal & Reset Steps
-            const modal = document.getElementById('publishModal');
-            if (modal) modal.style.display = 'flex';
-            resetModalStates();
-            
-            // Step 1: Authenticating Storage Provider
-            updateProgress(20, 'Authenticating Storage Provider...', 'chkStep1', 'active');
-
-            try {
-                await wait(800);
-                updateProgress(25, 'Authentication successful.', 'chkStep1', 'completed');
-                
-                // Step 2: Validating APK Binary Payload
-                updateProgress(45, 'Validating APK Binary Payload...', 'chkStep2', 'active');
-                await wait(800);
-                updateProgress(50, 'Payload validated successfully.', 'chkStep2', 'completed');
-
-                // Step 3: Uploading Application Package & Calling GitHub API
-                updateProgress(70, 'Uploading Application Package to GitHub...', 'chkStep3', 'active');
-
-                const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Accept': 'application/vnd.github+json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        tag_name: tagVersion,
-                        name: releaseTitle,
-                        body: releaseNotes,
-                        draft: isDraft,
-                        prerelease: isPrerelease
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Failed to create GitHub release.');
-                }
-
-                const releaseData = await response.json();
-                const releaseUrl = releaseData.html_url;
-
-                updateProgress(85, 'Upload completed.', 'chkStep3', 'completed');
-
-                // Step 4: Finalizing Endpoint & Generating URL
-                updateProgress(95, 'Finalizing Endpoint & Generating URL...', 'chkStep4', 'active');
-                await wait(800);
-
-                updateProgress(100, 'Published Successfully!', 'chkStep4', 'completed');
-                await wait(600);
-
-                showSuccessState(releaseUrl);
-
-            } catch (error) {
-                console.error(error);
-                showFailedState(error.message);
-            }
-        });
-    }
-
-    // Modal Action Buttons Event Listeners
-    const btnCloseSuccess = document.getElementById('btnCloseSuccess');
-    if (btnCloseSuccess) {
-        btnCloseSuccess.addEventListener('click', () => {
-            document.getElementById('publishModal').style.display = 'none';
-        });
-    }
-
-    const btnCancelPublish = document.getElementById('btnCancelPublish');
-    if (btnCancelPublish) {
-        btnCancelPublish.addEventListener('click', () => {
-            document.getElementById('publishModal').style.display = 'none';
-        });
-    }
-
-    const btnRetryPublish = document.getElementById('btnRetryPublish');
-    if (btnRetryPublish) {
-        btnRetryPublish.addEventListener('click', () => {
-            document.getElementById('publishModal').style.display = 'none';
-          if (btnPublishTelegram)
-    btnPublishTelegram.click();
-        });
-    }
-
-    const btnCopyUrl = document.getElementById('btnCopyUrl');
-    if (btnCopyUrl) {
-        btnCopyUrl.addEventListener('click', () => {
-            const urlText = document.getElementById('successDeploymentUrl').innerText;
-            navigator.clipboard.writeText(urlText);
-            alert('URL copied to clipboard!');
-        });
-    }
 });
 
-// Helper Functions for Progress & Modal UI
-function updateProgress(percent, statusText, stepId, statusType) {
-    const fill = document.getElementById('progressBarFill');
-    const percentEl = document.getElementById('progressPercent');
-    const statusEl = document.getElementById('progressStatusText');
-    const progressDetail = document.getElementById('progressDetail');
-    
-    if (fill) fill.style.width = percent + '%';
-    if (percentEl) percentEl.innerText = percent + '%';
-    if (statusEl) statusEl.innerText = statusText;
-    if (progressDetail) progressDetail.innerText = `${Math.round(percent * 0.5)} MB / 50 MB`;
-    
-    if (stepId) {
-        const step = document.getElementById(stepId);
-        if (step) {
-            const textContent = step.innerText.replace(/^[^\w\s]+/, '').trim();
-            if (statusType === 'completed') {
-                step.className = 'checklist-item completed';
-                step.innerHTML = `<i class="fa-solid fa-circle-check"></i> ` + textContent;
-            } else if (statusType === 'active') {
-                step.className = 'checklist-item active';
-                step.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ` + textContent;
-            }
-        }
+async function publishTelegram(){
+
+try{
+
+openPublishModal();
+
+updateProgress(
+5,
+"Preparing upload...",
+"chkStep1",
+"active"
+);
+
+const appData = JSON.parse(
+localStorage.getItem("publish_app") || "{}"
+);
+
+if(!appData){
+throw new Error("Application data not found.");
+}
+
+const apkBlob = await getApkBlob();
+
+if(!apkBlob){
+throw new Error("APK file not found.");
+}
+
+updateProgress(
+20,
+"Uploading APK to Telegram...",
+"chkStep2",
+"active"
+);
+
+const telegramResult =
+await uploadApkToTelegram({
+
+apkFile: apkBlob,
+
+appName: appData.name,
+
+version: appData.version,
+
+developer: appData.developer,
+
+workerUrl: WORKER_URL
+
+});
+
+if(!telegramResult.success){
+
+throw new Error(
+telegramResult.message ||
+"Telegram upload failed."
+);
+
+}
+
+updateProgress(
+55,
+"Telegram upload completed.",
+"chkStep2",
+"completed"
+);
+
+window.telegramUpload = telegramResult;
+
+await uploadAssetsToSupabase(appData);
+
+updateProgress(
+80,
+"Saving app information...",
+"chkStep3",
+"active"
+);
+
+await saveAppToDatabase(
+appData,
+telegramResult
+);
+
+updateProgress(
+100,
+"Publish completed.",
+"chkStep4",
+"completed"
+);
+
+showSuccessState(
+telegramResult.download_url
+);
+
+}catch(err){
+
+console.error(err);
+
+showFailedState(
+err.message
+);
+
+}
+
+}/* ==========================================================
+   PART 2
+   APK + SUPABASE HELPERS
+========================================================== */
+
+async function getApkBlob() {
+
+    // Try IndexedDB
+    if (window.appUploadFiles?.apk) {
+        return window.appUploadFiles.apk;
     }
+
+    // Try File Input
+    const apkInput = document.querySelector(
+        'input[type="file"][accept=".apk,application/vnd.android.package-archive"]'
+    );
+
+    if (apkInput?.files?.length) {
+        return apkInput.files[0];
+    }
+
+    throw new Error("APK file not selected.");
+
 }
 
-function resetModalStates() {
-    const modalStateProgress = document.getElementById('modalStateProgress');
-    const modalStateSuccess = document.getElementById('modalStateSuccess');
-    const modalStateFailed = document.getElementById('modalStateFailed');
 
-    if (modalStateProgress) modalStateProgress.classList.add('active');
-    if (modalStateSuccess) modalStateSuccess.classList.remove('active');
-    if (modalStateFailed) modalStateFailed.classList.remove('active');
-    
-    const steps = [
-        { id: 'chkStep1', text: 'Authenticating Storage Provider' },
-        { id: 'chkStep2', text: 'Validating APK Binary Payload' },
-        { id: 'chkStep3', text: 'Uploading Application Package' },
-        { id: 'chkStep4', text: 'Finalizing Endpoint & Generating URL' }
-    ];
+async function uploadAssetsToSupabase(appData){
 
-    steps.forEach(s => {
-        const el = document.getElementById(s.id);
-        if (el) {
-            el.className = 'checklist-item pending';
-            el.innerHTML = `<i class="fa-regular fa-circle"></i> ` + s.text;
+    updateProgress(
+        65,
+        "Uploading images...",
+        "chkStep3",
+        "active"
+    );
+
+    appData.icon_url =
+        await uploadImageToBucket(
+            window.appUploadFiles?.icon,
+            "app-icons"
+        );
+
+    appData.banner_url =
+        await uploadImageToBucket(
+            window.appUploadFiles?.banner,
+            "app-banners"
+        );
+
+    appData.screenshots = [];
+
+    if(window.appUploadFiles?.screenshots){
+
+        for(const shot of window.appUploadFiles.screenshots){
+
+            const url =
+                await uploadImageToBucket(
+                    shot,
+                    "app-screenshots"
+                );
+
+            appData.screenshots.push(url);
+
         }
-    });
+
+    }
+
+    updateProgress(
+        75,
+        "Images uploaded.",
+        "chkStep3",
+        "completed"
+    );
+
 }
 
-function showSuccessState(url) {
-    const progressState = document.getElementById('modalStateProgress');
-    const successState = document.getElementById('modalStateSuccess');
-    if (progressState) progressState.classList.remove('active');
-    if (successState) successState.classList.add('active');
-    
-    const urlSpan = document.getElementById('successDeploymentUrl');
-    if (urlSpan) urlSpan.innerText = url;
+
+async function uploadImageToBucket(file,bucket){
+
+    if(!file) return null;
+
+    const fileName =
+        Date.now() +
+        "-" +
+        file.name.replace(/\s+/g,"_");
+
+    const {data,error} =
+        await supabase.storage
+        .from(bucket)
+        .upload(fileName,file,{
+            cacheControl:"3600",
+            upsert:false
+        });
+
+    if(error)
+        throw error;
+
+    const {
+        data:publicData
+    }=
+    supabase.storage
+    .from(bucket)
+    .getPublicUrl(fileName);
+
+    return publicData.publicUrl;
+
 }
 
-function showFailedState(message) {
-    const progressState = document.getElementById('modalStateProgress');
-    const failedState = document.getElementById('modalStateFailed');
-    if (progressState) progressState.classList.remove('active');
-    if (failedState) failedState.classList.add('active');
-    
-    const errorLog = document.getElementById('errorLogBox');
-    if (errorLog) errorLog.innerText = message;
-}
 
-function wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+async function saveAppToDatabase(
+    appData,
+    telegram
+){
+
+    const payload={
+
+        name:appData.name,
+
+        version:appData.version,
+
+        developer:appData.developer,
+
+        package_name:appData.packageName,
+
+        category:appData.category,
+
+        description:appData.description,
+
+        android_version:appData.androidVersion,
+
+        tags:appData.tags,
+
+        icon_url:appData.icon_url,
+
+        banner_url:appData.banner_url,
+
+        screenshots:appData.screenshots,
+
+        telegram_file_id:
+            telegram.telegram_file_id,
+
+        telegram_file_unique_id:
+            telegram.telegram_file_unique_id,
+
+        telegram_message_id:
+            telegram.telegram_message_id,
+
+        apk_url:
+            telegram.download_url,
+
+        published:true,
+
+        created_at:
+            new Date().toISOString()
+
+    };
+
+    const {error}=
+    await supabase
+    .from("apps")
+    .insert(payload);
+
+    if(error)
+        throw error;
+
 }
