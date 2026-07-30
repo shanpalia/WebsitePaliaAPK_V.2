@@ -1351,7 +1351,8 @@ img{ max-width: 100%; display: block; }
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
-<script>
+<script type="module">
+import { uploadApkToTelegram } from "./telegram-publisher.js";
 (function(){
   "use strict";
 
@@ -1768,7 +1769,11 @@ img{ max-width: 100%; display: block; }
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-  var BUCKETS = { icon: 'app-icons', apk: 'app-apks', banner: 'app-banners', screenshot: 'app-screenshots' };
+var BUCKETS = {
+    icon: "app-icons",
+    banner: "app-banners",
+    screenshot: "app-screenshots"
+};
   var toastStack = document.getElementById('toastStack');
   var TOAST_SUCCESS_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>';
   var TOAST_ERROR_ICON   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
@@ -1859,6 +1864,9 @@ img{ max-width: 100%; display: block; }
       icon_url: urls.icon || null,
       banner_url: urls.banner || null,
       apk_url: urls.apk || null,
+       telegram_file_id: urls.telegram_file_id || null,
+      telegram_file_unique_id: urls.telegram_file_unique_id || null,
+      telegram_message_id: urls.telegram_message_id || null,
       screenshots: urls.screenshots,
       downloads: 0,
       created_at: new Date().toISOString(),
@@ -1972,22 +1980,34 @@ img{ max-width: 100%; display: block; }
         return uploadAsset(BUCKETS.banner, 'banners', uploads.banner.file).then(function(url){ urls.banner = url; });
       });
     }
-    if(uploads.apk && uploads.apk.file){
-      uploadChain = uploadChain.then(function(){
-        if(status === 'published') updatePublishProgress(85, 'Uploading APK (85%)');
-        return uploadAsset(BUCKETS.apk, 'apk', uploads.apk.file).then(function(url){ urls.apk = url; });
-      });
-    }
-    var shotIds = ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'];
-    
-    shotIds.forEach(function(id){
-      if(uploads[id] && uploads[id].file){
-        uploadChain = uploadChain.then(function(){
-          if(status === 'published') updatePublishProgress(55, 'Uploading Screenshots (55%)');
-          return uploadAsset(BUCKETS.screenshot, 'screenshots', uploads[id].file).then(function(url){ urls.screenshots.push(url); });
+   if (uploads.apk && uploads.apk.file) {
+
+    uploadChain = uploadChain.then(async function () {
+
+        if (status === "published") {
+            updatePublishProgress(85, "Uploading APK to Telegram...");
+        }
+
+        const result = await uploadApkToTelegram({
+            apkFile: uploads.apk.file,
+            appName: currentFieldValue("fName"),
+            version: currentFieldValue("fVersion"),
+            developer: currentFieldValue("fDeveloper")
         });
-      }
+
+        if (!result.success) {
+            throw new Error(result.error || "Telegram upload failed");
+        }
+
+        urls.apk = result.download_url;
+
+        urls.telegram_file_id = result.telegram_file_id;
+        urls.telegram_file_unique_id = result.telegram_file_unique_id;
+        urls.telegram_message_id = result.telegram_message_id;
+
     });
+
+}
 
     uploadChain
       .then(function(){
