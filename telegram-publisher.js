@@ -15,25 +15,43 @@
  */
 export async function uploadApkToTelegram(apkFile, appName, version, developer, workerUrl) {
   // Initialize default response payload structure
-  const resultPayload = {
-    success: false,
-    telegram_file_id: null,
-    telegram_message_id: null,
-    download_url: null,
-    file_name: apkFile ? apkFile.name : null,
-    file_size: apkFile ? apkFile.size : 0,
-    mime_type: apkFile ? apkFile.type : null,
-    error: null,
-  };
+ const resultPayload = {
+  success: false,
+  telegram_file_id: null,
+  telegram_file_unique_id: null,
+  telegram_message_id: null,
+  download_url: null,
+  file_name: apkFile ? apkFile.name : null,
+  file_size: apkFile ? apkFile.size : 0,
+  mime_type: apkFile ? apkFile.type : null,
+  error: null,
+};
 
   try {
-    // Validate required inputs
-    if (!apkFile) {
-      throw new Error("Missing required APK file parameter.");
-    }
-    if (!workerUrl) {
-      throw new Error("Missing Cloudflare Worker URL.");
-    }
+  // Validate required inputs
+if (!apkFile) {
+  throw new Error("Missing required APK file.");
+}
+
+if (!apkFile.name.toLowerCase().endsWith(".apk")) {
+  throw new Error("Only APK files are allowed.");
+}
+
+if (!appName?.trim()) {
+  throw new Error("App name is required.");
+}
+
+if (!version?.trim()) {
+  throw new Error("Version is required.");
+}
+
+if (!workerUrl) {
+  throw new Error("Missing Cloudflare Worker URL.");
+}
+
+if (!workerUrl.startsWith("https://")) {
+  throw new Error("Worker URL must use HTTPS.");
+}
 
     // Construct multipart form data matching worker requirements
     const formData = new FormData();
@@ -84,10 +102,28 @@ export async function uploadApkToTelegram(apkFile, appName, version, developer, 
 
     // Populate successful result data
     resultPayload.success = true;
-    resultPayload.telegram_file_id = data.telegram_file_id || null;
-    resultPayload.telegram_message_id = data.telegram_message_id || null;
-    resultPayload.download_url = data.download_url || null;
-    resultPayload.file_name = data.file_name || apkFile.name;
+    resultPayload.telegram_file_id =
+    data.telegram_file_id || null;
+
+resultPayload.telegram_file_unique_id =
+    data.telegram_file_unique_id || null;
+
+resultPayload.telegram_message_id =
+    data.telegram_message_id || null;
+
+resultPayload.download_url =
+    data.download_url || null;
+
+resultPayload.file_name =
+    data.file_name || apkFile.name;
+
+resultPayload.file_size =
+    data.file_size ?? apkFile.size;
+
+resultPayload.mime_type =
+    data.mime_type ??
+    apkFile.type ??
+    "application/vnd.android.package-archive";
 
     return resultPayload;
   } catch (err) {
