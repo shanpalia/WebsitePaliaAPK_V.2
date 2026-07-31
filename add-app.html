@@ -1989,47 +1989,41 @@ console.log("URLs Object:", urls);
     });
 
 }
-    uploadChain
-      .then(function(){
-        if(status === 'published') updatePublishProgress(95, 'Saving App Details (95%)');
-        var payload = collectPayload(status, urls, slug);
-console.log("========== PAYLOAD ==========");
-console.log(payload);
+  uploadChain
+  .then(function () {
+    if (status === 'published') updatePublishProgress(95, 'Saving App Details (95%)');
 
-return insertWithUniqueSlug(payload, 3)
-  .then(function(result) {
-      console.log("========== INSERT SUCCESS ==========");
-      console.log(result);
-      return result;
+    var payload = collectPayload(status, urls, slug);
+    console.log("Payload:", payload);
+
+    return insertWithUniqueSlug(payload, 3);
   })
-  .catch(function(error) {
-      console.error("========== INSERT ERROR ==========");
-      console.error(error);
-      throw error;
-  });
-      .then(function(){
-        if(status === 'published'){
-          updatePublishProgress(100, 'Publishing App (100%)');
-          handlePublishSuccess();
-        } else {
-          setSubmitting(false, btnId, loadingLabel);
-          markSaved('Draft saved');
-          showToast('success', 'Draft saved', currentFieldValue('fName') + ' was saved as a draft.');
-        }
-      })
-      .catch(function(err){
-        var message = (err && err.message) ? err.message : 'Please check your connection and try again.';
-        if(status === 'published'){
-          handlePublishError(message);
-        } else {
-          setSubmitting(false, btnId, loadingLabel);
-          markDirty();
-          showSubmitAlert('Could not save this app', message);
-          showToast('error', 'Save failed', message);
-        }
-      });
-  }
+  .then(function () {
+    if (status === 'published') {
+      updatePublishProgress(100, 'Publishing App (100%)');
+      handlePublishSuccess();
+    } else {
+      setSubmitting(false, btnId, loadingLabel);
+      markSaved('Draft saved');
+      showToast('success', 'Draft saved', currentFieldValue('fName') + ' was saved as a draft.');
+    }
+  })
+  .catch(function (err) {
+    console.error("Insert Error:", err);
 
+    var message = (err && err.message)
+      ? err.message
+      : 'Please check your connection and try again.';
+
+    if (status === 'published') {
+      handlePublishError(message);
+    } else {
+      setSubmitting(false, btnId, loadingLabel);
+      markDirty();
+      showSubmitAlert('Could not save this app', message);
+      showToast('error', 'Save failed', message);
+    }
+  });
   var btnReset = document.getElementById('btnReset');
   if(btnReset){
     btnReset.addEventListener('click', function(){
