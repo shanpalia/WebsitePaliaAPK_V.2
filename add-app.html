@@ -1194,34 +1194,8 @@ img{ max-width: 100%; display: block; }
         </div>
       </div>
 
-      <!-- Storage Provider Card Added Above Publish App Button -->
-      <div class="panel-card">
-        <div class="panel-card__header">
-          <div class="panel-card__icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-          </div>
-          <div>
-            <h3>Storage Provider</h3>
-            <p>Choose where your app files are stored</p>
-          </div>
-        </div>
-        <div class="panel-card__body">
-          <div style="display: flex; flex-direction: column; gap: 12px;">
-            <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 500; color: var(--ink-900); cursor: pointer;">
-              <input type="radio" name="storageProvider" value="Supabase Storage" style="accent-color: var(--mint-500); width: 16px; height: 16px;">
-              Supabase Storage
-            </label>
-            <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 500; color: var(--ink-900); cursor: pointer;">
-              <input type="radio" name="storageProvider" value="GitHub Releases" style="accent-color: var(--mint-500); width: 16px; height: 16px;">
-              GitHub Releases
-            </label>
-            <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 500; color: var(--ink-900); cursor: pointer;">
-              <input type="radio" name="storageProvider" value="Hybrid (Recommended)" checked style="accent-color: var(--mint-500); width: 16px; height: 16px;">
-              Hybrid (Recommended)
-            </label>
-          </div>
-        </div>
-      </div>
+     
+   
 
       <!-- Actions -->
       <div class="panel-card">
@@ -1247,7 +1221,7 @@ img{ max-width: 100%; display: block; }
             </button>
           </div>
         </div>
-      </div>
+      
 
     </form>
   </section>
@@ -2006,7 +1980,8 @@ var BUCKETS = {
         urls.telegram_file_id = result.telegram_file_id;
         urls.telegram_file_unique_id = result.telegram_file_unique_id;
         urls.telegram_message_id = result.telegram_message_id;
-
+console.log("Telegram Upload Result:", result);
+console.log("URLs Object:", urls);
         if (status === "published") {
             updatePublishProgress(90, "APK uploaded successfully...");
         }
@@ -2018,8 +1993,20 @@ var BUCKETS = {
       .then(function(){
         if(status === 'published') updatePublishProgress(95, 'Saving App Details (95%)');
         var payload = collectPayload(status, urls, slug);
-        return insertWithUniqueSlug(payload, 3);
-      })
+console.log("========== PAYLOAD ==========");
+console.log(payload);
+
+return insertWithUniqueSlug(payload, 3)
+  .then(function(result) {
+      console.log("========== INSERT SUCCESS ==========");
+      console.log(result);
+      return result;
+  })
+  .catch(function(error) {
+      console.error("========== INSERT ERROR ==========");
+      console.error(error);
+      throw error;
+  });
       .then(function(){
         if(status === 'published'){
           updatePublishProgress(100, 'Publishing App (100%)');
