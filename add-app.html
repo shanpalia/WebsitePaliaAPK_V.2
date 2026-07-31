@@ -2061,44 +2061,49 @@ console.log("URLs Object:", urls);
       var providerValue = checkedProvider ? checkedProvider.value : '';
 
       // Agar GitHub Releases select hai, toh publish-app.html par redirect karein
-     if (providerValue === 'GitHub Releases') {
+       if (providerValue === 'GitHub Releases') {
 
-    var appData = {
-        name: document.getElementById("fName").value,
-        version: document.getElementById("fVersion").value,
-        developer: document.getElementById("fDeveloper").value,
-        package_name: document.getElementById("fPackage").value,
-        category: document.getElementById("fCategory").value,
-        android_version: document.getElementById("fAndroid").value,
-        description: document.getElementById("fDescription").value
-    };
+        var appData = {
+            name: document.getElementById("fName").value,
+            version: document.getElementById("fVersion").value,
+            developer: document.getElementById("fDeveloper").value,
+            package_name: document.getElementById("fPackage").value,
+            category: document.getElementById("fCategory").value,
+            android_version: document.getElementById("fAndroid").value,
+            description: document.getElementById("fDescription").value
+        };
 
-    sessionStorage.setItem(
-        "paliaapk_pending_app",
-        JSON.stringify(appData)
-    );
+        sessionStorage.setItem(
+            "paliaapk_pending_app",
+            JSON.stringify(appData)
+        );
 
-    sessionStorage.setItem("storageProvider", providerValue);
+        sessionStorage.setItem("storageProvider", providerValue);
 
-    savePendingFiles()
-        .then(function () {
-            window.location.href = "publish-app.html";
-        })
-        .catch(function (err) {
-            console.error(err);
-            alert("Unable to save pending files.");
-        });
+        savePendingFiles()
+            .then(function () {
+                window.location.href = "publish-app.html";
+            })
+            .catch(function (err) {
+                console.error(err);
+                alert("Unable to save pending files.");
+            });
 
-    return;
-}
-});
-}
-  renderTags();
-  renderPreview();
+        return;
+    }
+
+    // Supabase / Hybrid publish
+    submitApp('published', 'btnPublish', 'Publishing…');
+
+  });   // addEventListener end
+}       // if(btnPublish) end
+
+renderTags();
+renderPreview();
 
 })();
 </script>
 
 </body>
 </html>
-```[cite: 3]
+
