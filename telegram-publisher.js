@@ -69,10 +69,9 @@ if (!API_URL) {
 
     // Construct multipart form data matching worker requirements
     const formData = new FormData();
-    formData.append("apk", apkFile);
-    formData.append("app_name", appName || "");
-    formData.append("version", version || "");
-    formData.append("developer", developer || "");
+   formData.append("appName", appName || "");
+formData.append("version", version || "");
+formData.append("developer", developer || "");
 
     // Set up a 60-second timeout using AbortController
     const controller = new AbortController();
@@ -103,9 +102,9 @@ if (!API_URL) {
     try {
       data = JSON.parse(responseText);
     } catch (jsonError) {
-      throw new Error(
-        Invalid JSON response from Render server (HTTP status ${response.status}): ${responseText || "Empty response"}`
-      );
+     throw new Error(
+  `Invalid JSON response from Render server (HTTP ${response.status}): ${responseText || "Empty response"}`
+);
     }
 
     // Check if worker returned an HTTP error or logical failure
