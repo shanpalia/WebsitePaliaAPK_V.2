@@ -20,8 +20,7 @@ export async function uploadApkToTelegram({
   apkFile,
   appName,
   version,
-  developer,
-  workerUrl = WORKER_URL
+  developer
 }) {
   // Initialize default response payload structure
  const resultPayload = {
@@ -64,12 +63,8 @@ if (!version?.trim()) {
   throw new Error("Version is required.");
 }
 
-if (!workerUrl) {
-  throw new Error("Missing Cloudflare Worker URL.");
-}
-
-if (!workerUrl.startsWith("https://")) {
-  throw new Error("Worker URL must use HTTPS.");
+if (!API_URL) {
+    throw new Error("Missing Render API URL.");
 }
 
     // Construct multipart form data matching worker requirements
@@ -85,7 +80,8 @@ if (!workerUrl.startsWith("https://")) {
 
     let response;
     try {
-      const endpoint = new URL("/upload", workerUrl).toString();
+     const endpoint =
+`${API_URL}/upload-apk`;
       response = await fetch(endpoint, {
         method: "POST",
         body: formData,
@@ -108,15 +104,16 @@ if (!workerUrl.startsWith("https://")) {
       data = JSON.parse(responseText);
     } catch (jsonError) {
       throw new Error(
-        `Invalid JSON response from worker (HTTP status ${response.status}): ${responseText || "Empty response"}`
+        Invalid JSON response from Render server (HTTP status ${response.status}): ${responseText || "Empty response"}`
       );
     }
 
     // Check if worker returned an HTTP error or logical failure
     if (!response.ok || !data.success) {
-      throw new Error(
-        data.error || `Worker upload failed with HTTP status ${response.status}`
-      );
+     throw new Error(
+data.error ||
+`Render upload failed (HTTP ${response.status})`
+);
     }
 
     // Populate successful result data
