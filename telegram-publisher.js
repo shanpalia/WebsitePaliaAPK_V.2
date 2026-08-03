@@ -69,7 +69,7 @@ if (!API_URL) {
 
     // Construct multipart form data matching worker requirements
     const formData = new FormData();
-   formData.append("appName", appName || "");
+  formData.append("app_name", appName || "");
 formData.append("version", version || "");
 formData.append("developer", developer || "");
 
