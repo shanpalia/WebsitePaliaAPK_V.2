@@ -13,11 +13,12 @@ app.use(cors());
 app.use(express.json());
 
 const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: {
-        fileSize: 500 * 1024 * 1024 // 500MB
+  storage: multer.diskStorage({
+    destination: "uploads/",
+    filename: (req,file,cb)=>{
+        cb(null,file.originalname);
     }
-});
+})
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CHANNEL_ID = process.env.CHANNEL_ID;
@@ -80,7 +81,7 @@ app.post(
             form.append(
                 "caption",
 `
-📦 ${req.body.appName}
+📦 ${req.body.app_name}
 
 Version : ${req.body.version}
 
@@ -137,7 +138,7 @@ Developer : ${req.body.developer}
                 success: true,
 
                 download_url:
-`https://t.me/c/${CHANNEL_ID.replace("-100","")}/${result.message_id}`,
+https://t.me/PaliaAPKHUB/${result.message_id}
 
                 telegram_file_id:
                     result.document.file_id,
