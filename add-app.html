@@ -1825,14 +1825,43 @@ var BUCKETS = {
   }
 
   function uploadAsset(bucket, folder, file){
-    var path = folder + '/' + Date.now() + '-' + randomSuffix() + '.' + fileExtension(file.name);
-    return sb.storage.from(bucket).upload(path, file, { cacheControl: '3600', upsert: false })
-      .then(function(res){
-        if(res.error) throw res.error;
-        var pub = sb.storage.from(bucket).getPublicUrl(path);
-        return pub.data.publicUrl;
-      });
-  }
+
+    var path =
+        folder + "/" +
+        Date.now() + "-" +
+        randomSuffix() + "." +
+        fileExtension(file.name);
+
+    return sb.storage
+        .from(bucket)
+        .upload(path, file, {
+            cacheControl: "3600",
+            upsert: false
+        })
+        .then(function(res){
+
+            console.log("UPLOAD RESPONSE:", res);
+
+            if (res.error) {
+                console.error("UPLOAD ERROR:", res.error);
+                throw res.error;
+            }
+
+            console.log("BUCKET:", bucket);
+            console.log("PATH:", path);
+
+            var pub =
+                sb.storage
+                .from(bucket)
+                .getPublicUrl(path);
+
+            console.log("PUBLIC URL:", pub.data.publicUrl);
+
+            return pub.data.publicUrl;
+
+        });
+
+}
 
   var submitBtnLabels = {
     btnSaveDraft: 'Save Draft',
