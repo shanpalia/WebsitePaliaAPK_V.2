@@ -101,6 +101,13 @@ function deleteFile(filePath) {
     }
 
 }
+app.get("/upload-apk", (req, res) => {
+    res.json({
+        success: true,
+        message: "GET route working",
+        version: "2.0.1"
+    });
+});
 app.post(
     "/upload-apk",
     upload.single("apk"),
