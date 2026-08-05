@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaliaAPK HUB - App Publishing Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #f0f4f9 0%, #e8eef8 50%, #f5f7fc 100%);
+      --surface-glass: rgba(255, 255, 255, 0.82);
+      --surface-border: rgba(255, 255, 255, 0.9);
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      
+      --primary: #1a73e8;
+      --primary-light: #e8f0fe;
+      --primary-glow: rgba(26, 115, 232, 0.35);
+      
+      --success: #1e8e3e;
+      --success-light: #e6f4ea;
+      --success-glow: rgba(30, 142, 62, 0.3);
+      
+      --danger: #d93025;
+      --danger-light: #fce8e6;
+      --danger-glow: rgba(217, 48, 37, 0.3);
+      
+      --pending: #70757a;
+      --pending-bg: #f8f9fa;
+      --pending-border: #f1f3f4;
+      
+      --text-main: #1f1f1f;
+      --text-muted: #5f6368;
+      --text-sub: #80868b;
+      
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 8px;
+      
+      --shadow-xl: 0 24px 48px -12px rgba(60, 64, 67, 0.18), 0 8px 24px -8px rgba(60, 64, 67, 0.12);
+      --shadow-card: 0 4px 16px rgba(60, 64, 67, 0.05);
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background blobs for Apple/M3 feel */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.6;
+      animation: float 18s ease-in-out infinite alternate;
+    }
+    .blob-1 {
+      width: 450px;
+      height: 450px;
+      background: #d2e3fc;
+      top: -100px;
+      left: -100px;
+    }
+    .blob-2 {
+      width: 400px;
+      height: 400px;
+      background: #ceead6;
+      bottom: -100px;
+      right: -100px;
+      animation-delay: -9s;
+    }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(60px, 40px) scale(1.08); }
+    }
+
+    /* Top Brand Navigation */
+    .brand-header {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding: 8px 18px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--surface-border);
+      border-radius: 50px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+    .brand-logo {
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 14px;
+    }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      color: var(--text-main);
+    }
+    .brand-tag {
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Main Dialog Modal Container */
+    .dialog-card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 680px;
+      background: var(--surface-glass);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+      animation: dialogSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes dialogSlideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Card Header */
+    .dialog-header {
+      padding: 32px 32px 24px 32px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.4) 100%);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .header-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-icon {
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .header-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+    }
+    .header-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Body Layout */
+    .dialog-body {
+      padding: 28px 32px;
+    }
+
+    /* Overall Progress Panel */
+    .overall-panel {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+    .overall-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .overall-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .overall-title::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+    }
+    .overall-percentage {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Glass Progress Bar Base */
+    .progress-bar-track {
+      width: 100%;
+      height: 10px;
+      background: #edf2f7;
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      border-radius: 20px;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s ease;
+      position: relative;
+    }
+    .progress-bar-fill.animated-glow::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .overall-panel .progress-bar-track {
+      height: 14px;
+    }
+    .overall-panel .progress-bar-fill {
+      background: linear-gradient(90deg, #1a73e8 0%, #34a853 100%);
+    }
+
+    /* Steps Scroll Area */
+    .steps-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+    
+    /* Custom Scrollbar */
+    .steps-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .steps-container::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.03);
+      border-radius: 10px;
+    }
+    .steps-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    /* Individual Step Card */
+    .step-card {
+      background: var(--pending-bg);
+      border: 1px solid var(--pending-border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+
+    /* Step States */
+    /* PENDING */
+    .step-card.pending {
+      opacity: 0.7;
+    }
+    .step-card.pending .step-title {
+      color: var(--text-muted);
+    }
+    .step-card.pending .step-status-badge {
+      background: #e9ecef;
+      color: var(--pending);
+    }
+
+    /* ACTIVE / CURRENT */
+    .step-card.active {
+      background: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 20px var(--primary-glow), 0 0 0 1px var(--primary);
+      opacity: 1;
+      transform: scale(1.01);
+    }
+    .step-card.active .step-title {
+      color: var(--text-main);
+      font-weight: 700;
+    }
+    .step-card.active .step-status-badge {
+      background: var(--primary-light);
+      color: var(--primary);
+      animation: pulseGlow 1.8s infinite ease-in-out;
+    }
+    .step-card.active .progress-bar-fill {
+      background: var(--primary);
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4); }
+      70% { box-shadow: 0 0 0 8px rgba(26, 115, 232, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(26, 115, 232, 0); }
+    }
+
+    /* COMPLETED */
+    .step-card.completed {
+      background: rgba(230, 244, 234, 0.4);
+      border-color: rgba(54, 179, 126, 0.3);
+      opacity: 1;
+    }
+    .step-card.completed .step-title {
+      color: var(--text-main);
+    }
+    .step-card.completed .step-status-badge {
+      background: var(--success-light);
+      color: var(--success);
+      font-weight: 700;
+    }
+    .step-card.completed .progress-bar-fill {
+      background: var(--success);
+    }
+
+    /* FAILED */
+    .step-card.failed {
+      background: var(--danger-light);
+      border-color: var(--danger);
+      box-shadow: 0 4px 20px var(--danger-glow);
+    }
+    .step-card.failed .step-title {
+      color: var(--danger);
+    }
+    .step-card.failed .step-status-badge {
+      background: var(--danger);
+      color: #ffffff;
+    }
+    .step-card.failed .progress-bar-fill {
+      background: var(--danger);
+    }
+
+    /* Inner Card Layout */
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .step-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .step-card.active .step-num {
+      background: var(--primary);
+      color: white;
+    }
+    .step-card.completed .step-num {
+      background: var(--success);
+      color: white;
+    }
+    .step-card.failed .step-num {
+      background: var(--danger);
+      color: white;
+    }
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.1px;
+    }
+
+    .step-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .step-percent {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .step-card.active .step-percent {
+      color: var(--primary);
+    }
+    .step-card.completed .step-percent {
+      color: var(--success);
+    }
+    .step-card.failed .step-percent {
+      color: var(--danger);
+    }
+
+    .step-status-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    /* SUCCESS STATE CONTAINER (HIDDEN INITIALLY) */
+    .result-view {
+      display: none;
+      text-align: center;
+      padding: 20px 10px 10px 10px;
+      animation: fadeIn 0.5s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .result-icon-wrapper {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px auto;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      position: relative;
+    }
+    .success-icon-bg {
+      background: var(--success-light);
+      color: var(--success);
+      box-shadow: 0 0 0 12px rgba(230, 244, 234, 0.5);
+      animation: bounceSuccess 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .error-icon-bg {
+      background: var(--danger-light);
+      color: var(--danger);
+      box-shadow: 0 0 0 12px rgba(252, 232, 230, 0.5);
+      animation: shakeError 0.5s ease-in-out;
+    }
+
+    @keyframes bounceSuccess {
+      0% { transform: scale(0); }
+      60% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    @keyframes shakeError {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+
+    .result-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+    .result-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 420px;
+      margin: 0 auto 28px auto;
+      line-height: 1.5;
+    }
+
+    /* Buttons Footer */
+    .dialog-footer {
+      padding: 20px 32px 28px 32px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.5);
+      border-top: 1px solid rgba(226, 232, 240, 0.6);
+    }
+
+    .btn {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+      box-shadow: 0 4px 14px var(--success-glow);
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+      box-shadow: 0 4px 14px var(--danger-glow);
+    }
+    .btn-secondary {
+      background: #f1f3f4;
+      color: var(--text-main);
+    }
+    .btn-secondary:hover {
+      background: #e8eaed;
+    }
+
+    /* Dev Controls Bar (Simulate Error / Speed) */
+    .dev-controls {
+      position: relative;
+      z-index: 1;
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 50px;
+      border: 1px solid var(--surface-border);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .dev-controls label {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+    .dev-controls input[type="checkbox"] {
+      accent-color: var(--danger);
+      cursor: pointer;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 640px) {
+      .dialog-card {
+        border-radius: var(--radius-lg);
+      }
+      .dialog-header {
+        padding: 24px 20px 18px 20px;
+      }
+      .dialog-body {
+        padding: 20px;
+      }
+      .dialog-footer {
+        padding: 16px 20px 20px 20px;
+      }
+      .header-title {
+        font-size: 20px;
+      }
+      .step-card {
+        padding: 12px 14px;
+      }
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Blurred Lighting Blobs -->
+  <div class="ambient-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <!-- Branding Badge -->
+  <div class="brand-header">
+    <div class="brand-logo">P</div>
+    <span class="brand-title">PaliaAPK HUB</span>
+    <span class="brand-tag">Console</span>
+  </div>
+
+  <!-- Main Publish Dialog Card -->
+  <div class="dialog-card">
+    
+    <!-- Header -->
+    <div class="dialog-header">
+      <div class="header-top">
+        <div class="header-title-group">
+          <div class="header-icon">🚀</div>
+          <div>
+            <h1 class="header-title">Publishing App</h1>
+            <p class="header-subtitle">Please wait while your application is being published.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dialog Content Body -->
+    <div class="dialog-body">
+
+      <!-- Active Upload View -->
+      <div id="uploadView">
+        <!-- Overall Progress Section -->
+        <div class="overall-panel">
+          <div class="overall-header">
+            <span class="overall-title">Overall Progress</span>
+            <span id="overallPercentage" class="overall-percentage">0%</span>
+          </div>
+          <div class="progress-bar-track">
+            <div id="overallProgressBar" class="progress-bar-fill animated-glow"></div>
+          </div>
+        </div>
+
+        <!-- Scrollable List of Upload Steps -->
+        <div id="stepsContainer" class="steps-container">
+          <!-- Step cards rendered dynamically by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Result View: Success State -->
+      <div id="successView" class="result-view">
+        <div class="result-icon-wrapper success-icon-bg">🎉</div>
+        <h2 class="result-title">App Published Successfully</h2>
+        <p class="result-desc">Your application has been successfully published to PaliaAPK HUB and is now available to users worldwide.</p>
+      </div>
+
+      <!-- Result View: Failure State -->
+      <div id="failureView" class="result-view">
+        <div class="result-icon-wrapper error-icon-bg">⚠️</div>
+        <h2 class="result-title">Upload Failed</h2>
+        <p id="errorMessage" class="result-desc">An unexpected network error occurred while transferring the application assets. Please check your connection and try again.</p>
+      </div>
+
+    </div>
+
+    <!-- Dialog Action Footer -->
+    <div id="dialogFooter" class="dialog-footer" style="display: none;">
+      <!-- Dynamic Buttons injected via JS -->
+    </div>
+
+  </div>
+
+  <!-- Optional Dev Mode Controls for Testing Failure & Retry -->
+  <div class="dev-controls">
+    <span>Simulation Mode:</span>
+    <label>
+      <input type="checkbox" id="toggleFailMode">
+      Simulate Failure on Step 8 (APK)
+    </label>
+  </div>
+
+  <!-- Inline Vanilla JavaScript Controller -->
+  <script>
+    // Definition of all 10 publish steps strictly as specified
+    const UPLOAD_STEPS = [
+      { id: 1, title: "Preparing Files" },
+      { id: 2, title: "Uploading App Icon" },
+      { id: 3, title: "Uploading Banner" },
+      { id: 4, title: "Uploading Screenshot 1" },
+      { id: 5, title: "Uploading Screenshot 2" },
+      { id: 6, title: "Uploading Screenshot 3" },
+      { id: 7, title: "Uploading Screenshot 4" },
+      { id: 8, title: "Uploading APK" },
+      { id: 9, title: "Saving App Information" },
+      { id: 10, title: "Publishing Completed" }
+    ];
+
+    // State Tracking Variables
+    let currentStepIndex = 0;
+    let stepProgress = 0;
+    let isUploading = false;
+    let timer = null;
+
+    // DOM Elements
+    const stepsContainer = document.getElementById('stepsContainer');
+    const overallProgressBar = document.getElementById('overallProgressBar');
+    const overallPercentage = document.getElementById('overallPercentage');
+    const uploadView = document.getElementById('uploadView');
+    const successView = document.getElementById('successView');
+    const failureView = document.getElementById('failureView');
+    const dialogFooter = document.getElementById('dialogFooter');
+    const toggleFailMode = document.getElementById('toggleFailMode');
+
+    // Initialize Card Elements on Load
+    function initUI() {
+      stepsContainer.innerHTML = '';
+      UPLOAD_STEPS.forEach((step, index) => {
+        const card = document.createElement('div');
+        card.id = `step-card-${index}`;
+        card.className = 'step-card pending';
+        card.innerHTML = `
+          <div class="step-header">
+            <div class="step-title-group">
+              <div id="step-num-${index}" class="step-num">${step.id}</div>
+              <span class="step-title">${step.title}</span>
+            </div>
+            <div class="step-meta">
+              <span id="step-percent-${index}" class="step-percent">0%</span>
+              <span id="step-status-${index}" class="step-status-badge">Pending</span>
+            </div>
+          </div>
+          <div class="progress-bar-track">
+            <div id="step-bar-${index}" class="progress-bar-fill"></div>
+          </div>
+        `;
+        stepsContainer.appendChild(card);
+      });
+    }
+
+    // Start Sequential Upload Process
+    function startPublishing() {
+      currentStepIndex = 0;
+      stepProgress = 0;
+      isUploading = true;
+
+      // Reset Views
+      uploadView.style.display = 'block';
+      successView.style.display = 'none';
+      failureView.style.display = 'none';
+      dialogFooter.style.display = 'none';
+      dialogFooter.innerHTML = '';
+
+      initUI();
+      updateOverallProgress();
+      processNextStep();
+    }
+
+    // Process Active Step
+    function processNextStep() {
+      if (currentStepIndex >= UPLOAD_STEPS.length) {
+        completeAllUploads();
+        return;
+      }
+
+      // Check for Simulated Failure
+      if (toggleFailMode.checked && currentStepIndex === 7 && stepProgress === 0) { // Step 8 is index 7
+        setTimeout(() => {
+          handleStepFailure("Failed to upload APK file. Connection timed out on server end.");
+        }, 800);
+        return;
+      }
+
+      // Set active status on current step card
+      const card = document.getElementById(`step-card-${currentStepIndex}`);
+      const statusBadge = document.getElementById(`step-status-${currentStepIndex}`);
+      const bar = document.getElementById(`step-bar-${currentStepIndex}`);
+      
+      card.className = 'step-card active';
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      statusBadge.innerText = 'Uploading...';
+      bar.classList.add('animated-glow');
+
+      stepProgress = 0;
+
+      // Animate progress smoothly
+      const speed = Math.floor(Math.random() * 25) + 30; // Random smooth speed tick
+      
+      timer = setInterval(() => {
+        const increment = Math.floor(Math.random() * 12) + 6;
+        stepProgress += increment;
+
+        if (stepProgress >= 100) {
+          stepProgress = 100;
+          updateStepUI(currentStepIndex, 100);
+          clearInterval(timer);
+          
+          // Mark step completed
+          markStepCompleted(currentStepIndex);
+          
+          // Move to next step automatically
+          currentStepIndex++;
+          setTimeout(processNextStep, 250);
+        } else {
+          updateStepUI(currentStepIndex, stepProgress);
+        }
+        updateOverallProgress();
+      }, speed);
+    }
+
+    // Update Individual Step UI
+    function updateStepUI(index, percent) {
+      const percentText = document.getElementById(`step-percent-${index}`);
+      const bar = document.getElementById(`step-bar-${index}`);
+      
+      if (percentText) percentText.innerText = `${percent}%`;
+      if (bar) bar.style.width = `${percent}%`;
+    }
+
+    // Mark Step as ✔ Completed
+    function markStepCompleted(index) {
+      const card = document.getElementById(`step-card-${index}`);
+      const statusBadge = document.getElementById(`step-status-${index}`);
+      const numIcon = document.getElementById(`step-num-${index}`);
+      const bar = document.getElementById(`step-bar-${index}`);
+
+      card.className = 'step-card completed';
+      statusBadge.innerHTML = '✔ Completed';
+      numIcon.innerHTML = '✓';
+      bar.classList.remove('animated-glow');
+    }
+
+    // Handle Step Failure State
+    function handleStepFailure(msg) {
+      clearInterval(timer);
+      isUploading = false;
+
+      const card = document.getElementById(`step-card-${currentStepIndex}`);
+      const statusBadge = document.getElementById(`step-status-${currentStepIndex}`);
+      const numIcon = document.getElementById(`step-num-${index = currentStepIndex}`);
+
+      card.className = 'step-card failed';
+      statusBadge.innerText = 'Failed';
+      numIcon.innerText = '✕';
+
+      // Transition to Failure View after short pause
+      setTimeout(() => {
+        uploadView.style.display = 'none';
+        failureView.style.display = 'block';
+        if (msg) document.getElementById('errorMessage').innerText = msg;
+
+        // Show Retry Button
+        dialogFooter.style.display = 'flex';
+        dialogFooter.innerHTML = `
+          <button class="btn btn-danger" onclick="retryPublishing()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Retry Upload
+          </button>
+        `;
+      }, 900);
+    }
+
+    // Retry Action
+    function retryPublishing() {
+      startPublishing();
+    }
+
+    // Compute and Render Overall Progress Percentage
+    function updateOverallProgress() {
+      const completedStepsCount = currentStepIndex;
+      const currentStepContribution = (stepProgress / 100);
+      const totalProgressPercent = Math.min(
+        100,
+        Math.round(((completedStepsCount + currentStepContribution) / UPLOAD_STEPS.length) * 100)
+      );
+
+      overallProgressBar.style.width = `${totalProgressPercent}%`;
+      overallPercentage.innerText = `${totalProgressPercent}%`;
+    }
+
+    // Show All Uploads Finished View
+    function completeAllUploads() {
+      isUploading = false;
+      updateOverallProgress();
+
+      setTimeout(() => {
+        uploadView.style.display = 'none';
+        successView.style.display = 'block';
+
+        // Show Green Done Button
+        dialogFooter.style.display = 'flex';
+        dialogFooter.innerHTML = `
+          <button class="btn btn-success" onclick="closeConsole()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></polyline></svg>
+            Done
+          </button>
+        `;
+      }, 600);
+    }
+
+    // Final Action Button Callback
+    function closeConsole() {
+      alert("Application submission finalized! Returning to PaliaAPK HUB Dashboard.");
+      // Can be redirected to dashboard e.g.: window.location.href = '/dashboard';
+    }
+
+    // Auto Start On Load
+    window.addEventListener('DOMContentLoaded', () => {
+      startPublishing();
+    });
+  </script>
+</body>
+</html>
+upload-progress.html
+Displaying upload-progress.html.
