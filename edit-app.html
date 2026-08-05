@@ -1129,10 +1129,16 @@ img{ max-width: 100%; display: block; }
 
     </div>
   </main>
-
+uploadApkToTelegram({
+    apkFile: uploads.apk.file,
+    appName: currentFieldValue("fName"),
+    version: currentFieldValue("fVersion"),
+    developer: currentFieldValue("fDeveloper")
+})
   <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+   <script src="telegram-publish.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1147,7 +1153,11 @@ img{ max-width: 100%; display: block; }
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-  var BUCKETS = { icon: 'app-icons', apk: 'app-apks', banner: 'app-banners', screenshot: 'app-screenshots' };
+var BUCKETS = {
+    icon: 'app-icons',
+    banner: 'app-banners',
+    screenshot: 'app-screenshots'
+};
   var REDIRECT_TARGET = 'manage-app.html';
 
   /* ==========================================================
@@ -1852,8 +1862,30 @@ function resolveUploaderForSave(id, bucket){
     var chain = Promise.resolve()
       .then(function(){ return resolveUploaderForSave('icon', BUCKETS.icon).then(function(u){ finalUrls.icon = u; }); })
       .then(function(){ return resolveUploaderForSave('banner', BUCKETS.banner).then(function(u){ finalUrls.banner = u; }); })
-      .then(function(){ return resolveUploaderForSave('apk', BUCKETS.apk).then(function(u){ finalUrls.apk = u; }); });
+     .then(async function(){
 
+    if (!uploads.apk.file) {
+        finalUrls.apk = loadedApp.apk_url;
+        return;
+    }
+
+    const result = await uploadApkToTelegram({
+        apkFile: uploads.apk.file,
+        appName: currentFieldValue("fName"),
+        version: currentFieldValue("fVersion"),
+        developer: currentFieldValue("fDeveloper")
+    });
+
+    if (!result.success) {
+        throw new Error(result.error);
+    }
+
+    finalUrls.apk = result.download_url;
+    finalUrls.telegram_file_id = result.telegram_file_id;
+    finalUrls.telegram_file_unique_id = result.telegram_file_unique_id;
+    finalUrls.telegram_message_id = result.telegram_message_id;
+
+});
     ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'].forEach(function(id){
       chain = chain.then(function(){
         return resolveUploaderForSave(id, BUCKETS.screenshot).then(function(u){
