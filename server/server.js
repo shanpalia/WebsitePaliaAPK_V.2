@@ -263,20 +263,20 @@ app.post(
 
             });
 
-        } catch (err) {
+        }catch (err) {
 
     console.error("========== UPLOAD ERROR ==========");
-    console.error(err.response?.data || err);
 
-    res.status(500).json({
+    if (err.response) {
+        console.error("Telegram Response:");
+        console.error(err.response.data);
+    } else {
+        console.error(err);
+    }
 
+    return res.status(500).json({
         success: false,
-
-        error:
-            err.response?.data?.description ||
-            err.message ||
-            "Unknown error"
-
+        error: err.response?.data?.description || err.message
     });
 
 }
