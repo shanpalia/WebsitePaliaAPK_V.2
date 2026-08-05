@@ -83,10 +83,16 @@ app.get("/", (req, res) => {
         version: "2.0.0",
         status: "Running",
         storage: "Telegram",
-        max_upload: "500 MB"
+        max_upload: "500 MB",
+
+        botTokenPrefix: BOT_TOKEN.substring(0,15) + "...",
+        channelId: CHANNEL_ID
+
     });
 
 });
+
+
 
 function deleteFile(filePath) {
 
