@@ -268,21 +268,14 @@ app.post(
         }catch (err) {
 
     console.error("========== UPLOAD ERROR ==========");
-
-    if (err.response) {
-        console.error("Telegram Response:");
-        console.error(err.response.data);
-    } else {
-        console.error(err);
-    }
+    console.error(err.response?.data || err);
+    console.error(err.stack);
 
     return res.status(500).json({
         success: false,
         error: err.response?.data?.description || err.message
     });
-
 }
-
     }
 
 );
