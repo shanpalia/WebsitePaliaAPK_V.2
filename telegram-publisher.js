@@ -76,27 +76,24 @@ formData.append("version", version || "");
 formData.append("developer", developer || "");
 
     // Set up a 60-second timeout using AbortController
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
+   const endpoint = `${API_URL}/upload-apk`;
 
-    let response;
-    try {
-     const endpoint =
-`${API_URL}/upload-apk`;
-      response = await fetch(endpoint, {
+let response;
+
+try {
+
+    response = await fetch(endpoint, {
         method: "POST",
-        body: formData,
-        signal: controller.signal,
-      });
-    } catch (networkError) {
-      throw new Error(
-        networkError.name === "AbortError"
-          ? "Request timed out after 60 seconds while uploading APK."
-          : `Network error occurred: ${networkError.message}`
-      );
-    } finally {
-      clearTimeout(timeoutId);
-    }
+        body: formData
+    });
+
+} catch (networkError) {
+
+    throw new Error(
+        `Network error occurred: ${networkError.message}`
+    );
+
+}
 
     // Parse response body as text first to safely handle non-JSON responses (invalid JSON / worker crashes)
     const responseText = await response.text();
