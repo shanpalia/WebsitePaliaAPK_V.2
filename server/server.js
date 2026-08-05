@@ -116,7 +116,8 @@ app.post(
         let uploadedFile = null;
 
         try {
-
+               console.log("BODY:", req.body);
+               console.log("FILE:", req.file);
             if (!req.file) {
 
                 return res.status(400).json({
@@ -264,27 +265,21 @@ app.post(
 
         } catch (err) {
 
-            console.error(
-                "UPLOAD ERROR:",
-                err.response?.data || err.message
-            );
+    console.error("========== UPLOAD ERROR ==========");
+    console.error(err.response?.data || err);
 
-            deleteFile(uploadedFile);
+    res.status(500).json({
 
-            return res.status(500).json({
+        success: false,
 
-                success: false,
+        error:
+            err.response?.data?.description ||
+            err.message ||
+            "Unknown error"
 
-                error:
-                    err.response?.data?.description ||
+    });
 
-                    err.message ||
-
-                    "Unknown upload error"
-
-            });
-
-        }
+}
 
     }
 
