@@ -152,6 +152,7 @@ app.post(
             if (fileSizeMB > 500) {
 
                 deleteFile(uploadedFile);
+               console.log("Sending success response to frontend...");
 
                 return res.json({
 
