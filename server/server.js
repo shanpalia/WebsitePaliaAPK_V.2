@@ -128,7 +128,9 @@ app.post(
             }
 
             uploadedFile = req.file.path;
-
+         console.log("APK RECEIVED:", req.file.originalname);
+         console.log("APK SIZE:", req.file.size);
+         console.log("Sending APK to Telegram...");
             const appName =
                 req.body.appName || "Unknown App";
 
@@ -207,7 +209,7 @@ app.post(
                 }
 
             );
-
+            console.log("Telegram upload completed.");
             if (!telegramResponse.data.ok) {
 
                 deleteFile(uploadedFile);
