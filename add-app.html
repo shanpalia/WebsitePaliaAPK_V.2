@@ -1356,7 +1356,7 @@ img{ max-width: 100%; display: block; }
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
 <script type="module">
-import { uploadApkToTelegram } from "./telegram-upload.js";
+import { uploadApkToTelegram } from "./telegram-publisher.js";
 (function(){
   "use strict";
 
@@ -1390,44 +1390,6 @@ import { uploadApkToTelegram } from "./telegram-upload.js";
     { id: 'icon',        type: 'image', label: 'App Icon', required: true,  container: 'uploaderGridTop',     extraClass: 'uploader--icon',        hint: 'PNG/JPG, square' },
     { id: 'banner',      type: 'image', label: 'Banner',   required: false, container: 'uploaderGridTop',     extraClass: 'uploader--banner',      hint: 'PNG/JPG, 16:9' },
     { id: 'apk',         type: 'apk',   label: 'APK File',  required: true,  container: 'uploaderApkWrap',     extraClass: 'uploader--apk',         hint: '.apk file' },
-     // =====================================
-// Upload Screenshots
-// =====================================
-
-urls.screenshots = [];
-
-for (let i = 1; i <= 5; i++) {
-
-    const shot = uploads["screenshot" + i];
-
-    if (!shot || !shot.file) continue;
-
-    setPublishStep(
-        "step-screenshot",
-        Math.round((i / 5) * 100),
-        "Uploading Screenshot " + i + " / 5"
-    );
-
-    const url = await uploadAsset(
-        BUCKETS.screenshot,
-        "screenshots",
-        shot.file
-    );
-
-    urls.screenshots.push(url);
-
-    nextScreenshot(
-        i,
-        5,
-        url
-    );
-}
-
-setPublishStep(
-    "step-screenshot",
-    100,
-    "✔ Screenshots Uploaded"
-);
     { id: 'screenshot1', type: 'image', label: 'Screenshot 1', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG' },
     { id: 'screenshot2', type: 'image', label: 'Screenshot 2', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG' },
     { id: 'screenshot3', type: 'image', label: 'Screenshot 3', required: false, container: 'uploaderGridScreens', extraClass: 'uploader--screenshot', hint: 'PNG/JPG' },
@@ -2015,45 +1977,7 @@ var BUCKETS = {
       showToast('error', 'Supabase not configured', 'Set SUPABASE_URL and SUPABASE_ANON_KEY first.');
       return;
     }
-// =======================================================
-// Open Publish Popup
-// =======================================================
 
-if(status === "published"){
-
-    openPublishProgressDialog();
-
-    setPublishStep(
-        "step-icon",
-        0,
-        "Waiting..."
-    );
-
-    setPublishStep(
-        "step-banner",
-        0,
-        "Waiting..."
-    );
-
-    setPublishStep(
-        "step-screenshot",
-        0,
-        "Waiting..."
-    );
-
-    setPublishStep(
-        "step-apk",
-        0,
-        "Waiting..."
-    );
-
-    setPublishStep(
-        "step-info",
-        0,
-        "Waiting..."
-    );
-
-}
     var strict = status === 'published';
     if(!validateForm(strict)){
       markDirty();
@@ -2077,82 +2001,21 @@ if(status === "published"){
 
     var slug = slugify(currentFieldValue('fName')) + '-' + randomSuffix();
     var urls = { icon: null, banner: null, apk: null, screenshots: [] };
-  
 
     var uploadChain = Promise.resolve();
 
     if(uploads.icon && uploads.icon.file){
       uploadChain = uploadChain.then(function(){
         if(status === 'published') updatePublishProgress(15, 'Uploading Icon (15%)');
-       return uploadAsset(BUCKETS.icon, 'icons', uploads.icon.file)
-.then(function(url){
-
-    urls.icon = url;
-
-    setPublishPreview("step-icon", url);
-
-    setPublishStep(
-        "step-icon",
-        100,
-        "✔ Icon Uploaded"
-    );
-
-});
+        return uploadAsset(BUCKETS.icon, 'icons', uploads.icon.file).then(function(url){ urls.icon = url; });
+      });
     }
-   if (uploads.banner && uploads.banner.file) {
-    uploadChain = uploadChain.then(function () {
-        if (status === "published") {
-            updatePublishProgress(30, "Uploading Banner (30%)");
-        }
-
-        return uploadAsset(BUCKETS.banner, "banners", uploads.banner.file)
-            .then(function (url) {
-                urls.banner = url;
-
-                setPublishPreview("step-banner", url);
-
-                setPublishStep(
-                    "step-banner",
-                    100,
-                    "✔ Banner Uploaded"
-                );
-            });
-    });
-}
-
-uploadChain = uploadChain.then(async function () {
-
-    urls.screenshots = [];
-
-    for (let i = 1; i <= 5; i++) {
-
-        const shot = uploads["screenshot" + i];
-
-        if (!shot || !shot.file) continue;
-
-        setPublishStep(
-            "step-screenshot",
-            Math.round((i / 5) * 100),
-            `Uploading Screenshot ${i}/5`
-        );
-
-        const shotUrl = await uploadAsset(
-            BUCKETS.screenshot,
-            "screenshots",
-            shot.file
-        );
-
-        urls.screenshots.push(shotUrl);
-
-        nextScreenshot(i, 5, shotUrl);
+    if(uploads.banner && uploads.banner.file){
+      uploadChain = uploadChain.then(function(){
+        if(status === 'published') updatePublishProgress(30, 'Uploading Banner (30%)');
+        return uploadAsset(BUCKETS.banner, 'banners', uploads.banner.file).then(function(url){ urls.banner = url; });
+      });
     }
-
-    setPublishStep(
-        "step-screenshot",
-        100,
-        "✔ Screenshots Uploaded"
-    );
-});
    if (uploads.apk && uploads.apk.file) {
 
     uploadChain = uploadChain.then(async function () {
@@ -2160,24 +2023,7 @@ uploadChain = uploadChain.then(async function () {
         if (status === "published") {
             updatePublishProgress(85, "Uploading APK to Telegram...");
         }
-// ================================
-// APK Upload Started
-// ================================
 
-setPublishStep(
-    "step-apk",
-    5,
-    "Uploading APK..."
-);
-       // ================================
-// APK Upload Completed
-// ================================
-
-setPublishStep(
-    "step-apk",
-    100,
-    "✔ APK Uploaded"
-);
         const result = await uploadApkToTelegram({
             apkFile: uploads.apk.file,
             appName: currentFieldValue("fName"),
