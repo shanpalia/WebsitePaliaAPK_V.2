@@ -1133,7 +1133,6 @@ img{ max-width: 100%; display: block; }
   <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
- <script src="telegram-upload.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1148,11 +1147,7 @@ img{ max-width: 100%; display: block; }
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
-var BUCKETS = {
-    icon: 'app-icons',
-    banner: 'app-banners',
-    screenshot: 'app-screenshots'
-};
+  var BUCKETS = { icon: 'app-icons', apk: 'app-apks', banner: 'app-banners', screenshot: 'app-screenshots' };
   var REDIRECT_TARGET = 'manage-app.html';
 
   /* ==========================================================
@@ -1732,18 +1727,11 @@ var BUCKETS = {
     }
 
     sb.from('apps').select('*').eq('id', appId).single()
-  .then(function(res){
-
-    console.log("App ID:", appId);
-    console.log("Supabase Error:", res.error);
-    console.log("Supabase Data:", res.data);
-
-    if(res.error || !res.data){
-      throw (res.error || new Error('App not found.'));
-    }
-
-    populateForm(res.data);
-       
+      .then(function(res){
+        if(res.error || !res.data){
+          throw (res.error || new Error('App not found.'));
+        }
+        populateForm(res.data);
         appLoaded = true;
         btnUpdate.disabled = false;
         btnDelete.disabled = false;
@@ -1779,40 +1767,21 @@ var BUCKETS = {
     document.getElementById('formPanel').classList.toggle('is-submitting', isSubmitting);
   }
 
-function resolveUploaderForSave(id, bucket){
+  function resolveUploaderForSave(id, bucket){
     var d = uploads[id];
-
-    if (d.file) {
-
-        var oldUrl = d.dbUrl;
-
-        var folder = id.replace(/[0-9]+$/, '');
-
-        // APK hamesha apk folder me upload hogi
-        if (id === "apk") {
-    folder = "apk";
-}
-
-        return uploadAsset(bucket, folder, d.file)
-            .then(function(newUrl){
-
-                if (oldUrl) {
-                    deleteAssetByUrl(bucket, oldUrl);
-                }
-
-                return newUrl;
-            });
+    if(d.file){
+      var oldUrl = d.dbUrl;
+      return uploadAsset(bucket, id.replace(/[0-9]+$/, ''), d.file).then(function(newUrl){
+        if(oldUrl){ deleteAssetByUrl(bucket, oldUrl); }
+        return newUrl;
+      });
     }
-
-    if (d.removed) {
-        if (d.dbUrl) {
-            deleteAssetByUrl(bucket, d.dbUrl);
-        }
-        return Promise.resolve(null);
+    if(d.removed){
+      if(d.dbUrl){ deleteAssetByUrl(bucket, d.dbUrl); }
+      return Promise.resolve(null);
     }
-
     return Promise.resolve(d.dbUrl || null);
-}
+  }
 
   function collectPayload(finalUrls, finalApkSize){
     return {
@@ -1851,162 +1820,21 @@ function resolveUploaderForSave(id, bucket){
     hideSubmitAlert();
     setSubmitting(true, 'btnUpdate');
 
-   var finalUrls = { icon: null, banner: null, apk: null, screenshots: [] };
-var finalApkSize = null;
+    var finalUrls = { icon: null, banner: null, apk: null, screenshots: [] };
+    var finalApkSize = null;
 
-var chain = Promise.resolve()
+    var chain = Promise.resolve()
+      .then(function(){ return resolveUploaderForSave('icon', BUCKETS.icon).then(function(u){ finalUrls.icon = u; }); })
+      .then(function(){ return resolveUploaderForSave('banner', BUCKETS.banner).then(function(u){ finalUrls.banner = u; }); })
+      .then(function(){ return resolveUploaderForSave('apk', BUCKETS.apk).then(function(u){ finalUrls.apk = u; }); });
 
-// ===================================================
-// ICON
-// ===================================================
-.then(function(){
-
-    setPublishStep("step-icon",0,"Uploading Icon");
-
-    return resolveUploaderForSave("icon",BUCKETS.icon)
-    .then(function(url){
-
-        finalUrls.icon = url;
-
-        if(url){
-            setPublishPreview("step-icon",url);
-        }
-
-        setPublishStep(
-            "step-icon",
-            100,
-            "✔ Icon Uploaded"
-        );
-
-    });
-
-})
-
-// ===================================================
-// BANNER
-// ===================================================
-.then(function(){
-
-    setPublishStep("step-banner",0,"Uploading Banner");
-
-    return resolveUploaderForSave("banner",BUCKETS.banner)
-    .then(function(url){
-
-        finalUrls.banner = url;
-
-        if(url){
-            setPublishPreview("step-banner",url);
-        }
-
-        setPublishStep(
-            "step-banner",
-            100,
-            "✔ Banner Uploaded"
-        );
-
-    });
-
-})
-
-// ===================================================
-// SCREENSHOTS
-// ===================================================
-.then(function(){
-
-    finalUrls.screenshots=[];
-
-    var shotChain=Promise.resolve();
-
-    ["screenshot1","screenshot2","screenshot3","screenshot4","screenshot5"]
-    .forEach(function(id,index){
-
-        shotChain=shotChain.then(function(){
-
-            return resolveUploaderForSave(id,BUCKETS.screenshot)
-
-            .then(function(url){
-
-                if(!url) return;
-
-                finalUrls.screenshots.push(url);
-
-                nextScreenshot(
-                    index+1,
-                    5,
-                    url
-                );
-
-                setPublishStep(
-                    "step-screenshot",
-                    ((index+1)*20),
-                    "Uploading Screenshot "+(index+1)+" / 5"
-                );
-
-            });
-
+    ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'].forEach(function(id){
+      chain = chain.then(function(){
+        return resolveUploaderForSave(id, BUCKETS.screenshot).then(function(u){
+          if(u) finalUrls.screenshots.push(u);
         });
-
+      });
     });
-
-    return shotChain;
-
-})
-
-// ===================================================
-// APK
-// ===================================================
-.then(async function(){
-
-    setPublishStep(
-        "step-apk",
-        0,
-        "Uploading APK"
-    );
-
-    if(!uploads.apk.file){
-
-        finalUrls.apk=loadedApp.apk_url;
-
-        return;
-
-    }
-
-    const result=await uploadApkToTelegram({
-
-        apkFile:uploads.apk.file,
-
-        appName:currentFieldValue("fName"),
-
-        version:currentFieldValue("fVersion"),
-
-        developer:currentFieldValue("fDeveloper")
-
-    });
-
-    if(!result.success){
-
-        throw new Error(result.error);
-
-    }
-
-    finalUrls.apk=result.download_url;
-
-    finalUrls.telegram_file_id=result.telegram_file_id;
-
-    finalUrls.telegram_file_unique_id=result.telegram_file_unique_id;
-
-    finalUrls.telegram_message_id=result.telegram_message_id;
-
-    setPublishStep(
-        "step-apk",
-        100,
-        "✔ APK Uploaded"
-    );
-
-});
-
-   
-   
 
     chain
       .then(function(){
