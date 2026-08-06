@@ -1884,32 +1884,28 @@ var BUCKETS = {
   function collectPayload(status, urls, slug){
     var calculatedSize = (uploads.apk && uploads.apk.file) ? (uploads.apk.file.size / (1024 * 1024)).toFixed(1) + ' MB' : null;
 
-   return {
-  slug: slug,
+    return {
+      name: currentFieldValue('fName'),
+      version: currentFieldValue('fVersion'),
+      developer: currentFieldValue('fDeveloper') || null,
+      package_name: currentFieldValue('fPackage') || null,
+      category: currentFieldValue('fCategory') || null,
+      android_version: currentFieldValue('fAndroid') || null,
+      apk_size: calculatedSize,
+      description: fDescription.value.trim(),
+      icon_url: urls.icon || null,
+      banner_url: urls.banner || null,
+      apk_url: urls.apk || null,
+       telegram_file_id: urls.telegram_file_id || null,
+      telegram_file_unique_id: urls.telegram_file_unique_id || null,
+      telegram_message_id: urls.telegram_message_id || null,
+      screenshots: urls.screenshots,
+      downloads: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
 
-  name: currentFieldValue('fName'),
-  version: currentFieldValue('fVersion'),
-  developer: currentFieldValue('fDeveloper') || null,
-  package_name: currentFieldValue('fPackage') || null,
-  category: currentFieldValue('fCategory') || null,
-  android_version: currentFieldValue('fAndroid') || null,
-  apk_size: calculatedSize,
-  description: fDescription.value.trim(),
-
-  icon_url: urls.icon || null,
-  banner_url: urls.banner || null,
-  apk_url: urls.apk || null,
-
-  telegram_file_id: urls.telegram_file_id || null,
-  telegram_file_unique_id: urls.telegram_file_unique_id || null,
-  telegram_message_id: urls.telegram_message_id || null,
-
-  screenshots: urls.screenshots || [],
-  downloads: 0,
-
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString()
-};
   function insertWithUniqueSlug(payload, attemptsLeft){
     return sb.from('apps').insert([payload]).select().then(function(res){
       if(res.error){
