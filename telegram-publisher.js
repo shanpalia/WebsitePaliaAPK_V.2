@@ -13,12 +13,10 @@
  * @param {string} workerUrl - The base URL of the Cloudflare Worker.
  * @returns {Promise<Object>} The standardized result object containing file info or error.
  */
-
-
 const API_URL =
 "https://paliaapk-telegram-api.onrender.com";
 
-async function uploadApkToTelegram({
+export async function uploadApkToTelegram({
   apkFile,
   appName,
   version,
@@ -148,4 +146,3 @@ resultPayload.mime_type =
     return Object.freeze(resultPayload);
   }
 }
-window.uploadApkToTelegram = uploadApkToTelegram;
