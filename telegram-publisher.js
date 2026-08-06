@@ -16,7 +16,10 @@
 const API_URL =
 "https://paliaapk-telegram-api.onrender.com";
 
-export async function uploadApkToTelegram({
+const API_URL =
+"https://paliaapk-telegram-api.onrender.com";
+
+async function uploadApkToTelegram({
   apkFile,
   appName,
   version,
@@ -146,3 +149,4 @@ resultPayload.mime_type =
     return Object.freeze(resultPayload);
   }
 }
+window.uploadApkToTelegram = uploadApkToTelegram;
