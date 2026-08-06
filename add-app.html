@@ -1826,10 +1826,11 @@ var BUCKETS = {
 
   function uploadAsset(bucket, folder, file){
 
-   var path =
-    Date.now() + "-" +
-    randomSuffix() + "." +
-    fileExtension(file.name);
+    var path =
+        folder + "/" +
+        Date.now() + "-" +
+        randomSuffix() + "." +
+        fileExtension(file.name);
 
     return sb.storage
         .from(bucket)
