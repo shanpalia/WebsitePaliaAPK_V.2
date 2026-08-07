@@ -11,7 +11,13 @@ import { StringSession } from "telegram/sessions/index.js";
 import { CustomFile } from "telegram/client/uploads.js";
 
 dotenv.config();
-
+console.log({
+  API_ID: process.env.API_ID,
+  API_HASH: process.env.API_HASH ? "FOUND" : "MISSING",
+  SESSION_STRING: process.env.SESSION_STRING ? "FOUND" : "MISSING",
+  CHANNEL_USERNAME: process.env.CHANNEL_USERNAME,
+  PORT: process.env.PORT
+});
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
