@@ -1967,7 +1967,30 @@ var BUCKETS = {
       submitApp('published', 'btnPublish', 'Publishing…');
     });
   }
+async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
 
+    const formData = new FormData();
+
+    // आपके server.js में upload.single("file") है,
+    // इसलिए key "file" ही होगी
+    formData.append("file", apkFile);
+
+    formData.append("app_name", appName || "");
+    formData.append("version", version || "");
+    formData.append("developer", developer || "");
+
+    const response = await fetch(
+        "https://paliaapk-telegram-api.onrender.com/upload-apk",
+        {
+            method: "POST",
+            body: formData
+        }
+    );
+
+    const result = await response.json();
+
+    return result;
+}
   function submitApp(status, btnId, loadingLabel){
     if(!sb){
       showSubmitAlert('Supabase is not configured', 'Add your project URL and anon key at the top of the script before saving or publishing.');
