@@ -1,12 +1,14 @@
 import express from "express";
 import multer from "multer";
-import axios from "axios";
-import FormData from "form-data";
-import dotenv from "dotenv";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+
+import { TelegramClient, Api } from "telegram";
+import { StringSession } from "telegram/sessions/index.js";
+import { CustomFile } from "telegram/client/uploads.js";
 
 dotenv.config();
 
@@ -15,372 +17,246 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.use(cors({
-    origin: "*",
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type"]
-}));
-
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const CHANNEL_ID = process.env.CHANNEL_ID;
-const PORT = process.env.PORT || 10000;
-
-if (!BOT_TOKEN) {
-    console.error("❌ BOT_TOKEN missing");
-    process.exit(1);
-}
-
-if (!CHANNEL_ID) {
-    console.error("❌ CHANNEL_ID missing");
-    process.exit(1);
-}
-
-const uploadDir = path.join(__dirname, "uploads");
-
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
-    destination(req, file, cb) {
-        cb(null, uploadDir);
+    destination: (req, file, cb) => {
+        cb(null, uploadsDir);
     },
-    filename(req, file, cb) {
-        const timestamp = Date.now();
-        const safeName = file.originalname.replace(/[^\w.\-]/g, "_");
-        cb(null, `${timestamp}-${safeName}`);
+    filename: (req, file, cb) => {
+        const uniquePrefix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const safeName = file.originalname.replace(/[^\w.-]/g, "_");
+        cb(null, `${uniquePrefix}-${safeName}`);
     }
 });
 
 const upload = multer({
-    storage,
+    storage: storage,
     limits: {
-        fileSize: 500 * 1024 * 1024
+       fileSize: 2 * 1024 * 1024 * 1024
     },
-    fileFilter(req, file, cb) {
-
-        if (
-            file.originalname
-                .toLowerCase()
-                .endsWith(".apk")
-        ) {
-            cb(null, true);
-        } else {
-            cb(new Error("Only APK files are allowed"));
-        }
-
+    fileFilter: (req, file, cb) => {
+    if (file.originalname.toLowerCase().endsWith(".apk")) {
+        cb(null, true);
+    } else {
+        cb(new Error("Only APK files are allowed."));
     }
-});
-
-app.get("/", (req, res) => {
-
-    res.json({
-        success: true,
-        service: "PaliaAPK Telegram Upload API",
-        version: "2.0.0",
-        status: "Running",
-        storage: "Telegram",
-        max_upload: "500 MB",
-
-        botTokenPrefix: BOT_TOKEN.substring(0,15) + "...",
-        channelId: CHANNEL_ID
-
-    });
-
-});
-
-
-
-function deleteFile(filePath) {
-
-    if (filePath && fs.existsSync(filePath)) {
-
-        try {
-            fs.unlinkSync(filePath);
-        } catch (e) {
-            console.error("Cleanup error:", e.message);
-        }
-
-    }
-
 }
-app.get("/upload-apk", (req, res) => {
-    res.json({
-        success: true,
-        message: "GET route working",
-        version: "2.0.1"
+});
+
+const apiId = parseInt(process.env.API_ID, 10);
+const apiHash = process.env.API_HASH;
+const sessionString = process.env.SESSION_STRING || "";
+const channelUsername = process.env.CHANNEL_USERNAME;
+const port = process.env.PORT || 3000;
+
+if (!apiId || isNaN(apiId) || !apiHash || !sessionString || !channelUsername) {
+    console.error("CRITICAL ERROR: Missing required environment variables (API_ID, API_HASH, SESSION_STRING, CHANNEL_USERNAME).");
+}
+
+const stringSession = new StringSession(sessionString);
+const client = new TelegramClient(stringSession, apiId, apiHash, {
+    connectionRetries: 10,
+    requestRetries: 5,
+    retryDelay: 2000,
+    useWSS: false
+});
+
+let isConnected = false;
+
+async function ensureTelegramClient() {
+    if (!isConnected) {
+        console.log("Connecting to Telegram MTProto servers via official telegram package...");
+        await client.connect();
+        const checkAuth = await client.checkAuthorization();
+        if (!checkAuth) {
+            isConnected = false;
+            throw new Error("Telegram SESSION_STRING is unauthorized or expired. Please re-authenticate.");
+        }
+        isConnected = true;
+        console.log("Successfully connected and authorized with Telegram MTProto.");
+    }
+}
+
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "UP",
+        service: "PaliaAPK HUB Telegram Upload API",
+        telegramConnected: isConnected,
+        timestamp: new Date().toISOString()
     });
 });
-app.post(
-    "/upload-apk",
-    upload.single("apk"),
-    async (req, res) => {
 
-        let uploadedFile = null;
-
-        try {
-               console.log("BODY:", req.body);
-               console.log("FILE:", req.file);
-            if (!req.file) {
-
+app.post("/upload-apk", (req, res, next) => {
+    upload.single("file")(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            if (err.code === "LIMIT_FILE_SIZE") {
                 return res.status(400).json({
                     success: false,
-                    error: "APK file is required."
+                    error: "File size exceeds maximum allowed upload limit."
                 });
-
             }
-
-            uploadedFile = req.file.path;
-         console.log("APK RECEIVED:", req.file.originalname);
-         console.log("APK SIZE:", req.file.size);
-         console.log("Sending APK to Telegram...");
-            const appName =
-                req.body.appName || "Unknown App";
-
-            const version =
-                req.body.version || "1.0";
-
-            const developer =
-                req.body.developer || "Unknown Developer";
-
-            const fileSizeMB =
-                req.file.size / 1024 / 1024;
-
-            if (fileSizeMB > 500) {
-
-                deleteFile(uploadedFile);
-               console.log("Sending success response to frontend...");
-
-                return res.json({
-
-                    success: false,
-
-                    manual_upload: true,
-
-                    message:
-                        "APK is larger than 500 MB. Please upload manually."
-
-                });
-
-            }
-
-            const telegramForm =
-                new FormData();
-
-            telegramForm.append(
-                "chat_id",
-                CHANNEL_ID
-            );
-
-            telegramForm.append(
-                "caption",
-`📦 ${appName}
-
-📌 Version : ${version}
-
-👨‍💻 Developer : ${developer}
-
-🌐 Uploaded via PaliaAPK HUB`
-            );
-
-            telegramForm.append(
-                "document",
-                fs.createReadStream(uploadedFile),
-                {
-                    filename:
-                        req.file.originalname
-                }
-            );
-
-            const telegramResponse =
-                await axios.post(
-
-`https://api.telegram.org/bot${BOT_TOKEN}/sendDocument`,
-
-                telegramForm,
-
-                {
-
-                    headers:
-                        telegramForm.getHeaders(),
-
-                    maxBodyLength: Infinity,
-
-                    maxContentLength: Infinity,
-
-                    timeout: 1000 * 60 * 15
-
-                }
-
-            );
-            console.log("Telegram upload completed.");
-            if (!telegramResponse.data.ok) {
-
-                deleteFile(uploadedFile);
-
-                return res.status(500).json({
-
-                    success: false,
-
-                    error:
-                        "Telegram upload failed."
-
-                });
-
-            }
-
-            const tg =
-                telegramResponse.data.result;
-            const document = tg.document || {};
-
-            const publicChannel =
-                process.env.CHANNEL_USERNAME || "PaliaAPKHUB";
-
-            const downloadUrl =
-                `https://t.me/${publicChannel}/${tg.message_id}`;
-
-            deleteFile(uploadedFile);
-
-            return res.json({
-
-                success: true,
-
-                download_url: downloadUrl,
-
-                telegram_file_id:
-                    document.file_id,
-
-                telegram_file_unique_id:
-                    document.file_unique_id,
-
-                telegram_message_id:
-                    tg.message_id,
-
-                file_name:
-                    req.file.originalname,
-
-                file_size:
-                    req.file.size,
-
-                mime_type:
-                    req.file.mimetype ||
-
-                    "application/vnd.android.package-archive"
-
-            });
-
-        }catch (err) {
-
-    console.error("========== UPLOAD ERROR ==========");
-    console.error(err.response?.data || err);
-    console.error(err.stack);
-
-    return res.status(500).json({
-        success: false,
-        error: err.response?.data?.description || err.message
-    });
-}
-    }
-
-);
-// ----------------------------------------------------
-// 404 Route
-// ----------------------------------------------------
-
-app.use((req, res) => {
-
-    res.status(404).json({
-
-        success: false,
-
-        error: "Endpoint not found."
-
-    });
-
-});
-
-// ----------------------------------------------------
-// Multer Error Handler
-// ----------------------------------------------------
-
-app.use((err, req, res, next) => {
-
-    if (err instanceof multer.MulterError) {
-
-        if (err.code === "LIMIT_FILE_SIZE") {
-
             return res.status(400).json({
-
                 success: false,
-
-                manual_upload: true,
-
-                error:
-                    "APK exceeds 500 MB limit."
-
+                error: `Multer upload error: ${err.message}`
             });
+        } else if (err) {
+            return res.status(500).json({
+                success: false,
+                error: `Upload middleware error: ${err.message}`
+            });
+        }
+        next();
+    });
+}, async (req, res) => {
+    let filePath = null;
 
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: "No file received in upload request."
+            });
         }
 
-        return res.status(400).json({
+        filePath = req.file.path;
+        const fileName = req.file.originalname;
+        const fileSize = req.file.size;
+        const mimeType = req.file.mimetype || "application/vnd.android.package-archive";
 
-            success: false,
+        await ensureTelegramClient();
 
-            error: err.message
+        const formattedChannel = channelUsername.startsWith("@") ? channelUsername : `@${channelUsername}`;
 
+        const customFile = new CustomFile(fileName, fileSize, filePath);
+
+        const uploadedFile = await client.uploadFile({
+            file: customFile,
+            workers: 4,
+            onProgress: (progress) => {
+                const percentage = Math.round(progress * 100);
+                console.log(`Uploading ${fileName}: ${percentage}%`);
+            }
         });
 
-    }
+        const result = await client.sendFile(formattedChannel, {
+            file: uploadedFile,
+           caption: `📦 ${fileName}\n💾 Size: ${(fileSize / (1024 * 1024)).toFixed(2)} MB`,
+            forceDocument: true,
+            attributes: [
+                new Api.DocumentAttributeFilename({
+                    fileName: fileName
+                })
+            ]
+        });
 
-    if (err) {
+        const messageId = result.id;
+        const cleanChannelName = formattedChannel.replace("@", "");
+        const downloadUrl = `https://t.me/${cleanChannelName}/${messageId}`;
+
+        let telegramFileId = String(messageId);
+        let telegramFileUniqueId = String(messageId);
+
+        if (result.media && result.media.document) {
+            telegramFileId = String(result.media.document.id);
+            telegramFileUniqueId = String(result.media.document.accessHash);
+        }
+
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        return res.status(200).json({
+            success: true,
+            download_url: downloadUrl,
+            telegram_file_id: telegramFileId,
+            telegram_file_unique_id: telegramFileUniqueId,
+            telegram_message_id: messageId,
+            file_name: fileName,
+            file_size: fileSize,
+            mime_type: mimeType
+        });
+
+    } catch (error) {
+        console.error("APK Upload Error:", error);
+
+        if (filePath && fs.existsSync(filePath)) {
+            try {
+                fs.unlinkSync(filePath);
+            } catch (unlinkErr) {
+                console.error("Failed to cleanup temporary file:", unlinkErr);
+            }
+        }
+
+        if (error.message && error.message.includes("SESSION_STRING")) {
+            return res.status(401).json({
+                success: false,
+                error: "Telegram authentication failed. Invalid or expired session."
+            });
+        }
 
         return res.status(500).json({
-
             success: false,
-
-            error: err.message
-
+            error: error.message || "Internal server error occurred during APK processing."
         });
-
     }
-
-    next();
-
 });
 
-// ----------------------------------------------------
-// Graceful Shutdown
-// ----------------------------------------------------
-
-process.on("SIGINT", () => {
-
-    console.log("Stopping server...");
-
-    process.exit(0);
-
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        error: "Route not found"
+    });
 });
 
-process.on("SIGTERM", () => {
-
-    console.log("Stopping server...");
-
-    process.exit(0);
-
+app.use((err, req, res, next) => {
+    console.error("Unhandled Global Error:", err);
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+        try {
+            fs.unlinkSync(req.file.path);
+        } catch (unlinkErr) {
+            console.error("Failed to cleanup temporary file in global error handler:", unlinkErr);
+        }
+    }
+    res.status(500).json({
+        success: false,
+        error: "An unexpected global server error occurred."
+    });
 });
 
-// ----------------------------------------------------
-// Start Server
-// ----------------------------------------------------
-
-app.listen(PORT, () => {
-
-    console.log("====================================");
-    console.log("PaliaAPK Telegram Upload API");
-    console.log("Running on Port :", PORT);
-    console.log("Channel ID      :", CHANNEL_ID);
-    console.log("====================================");
-
+const server = app.listen(port, () => {
+    console.log(`Server running and listening on port ${port}`);
 });
+(async () => {
+    try {
+        await ensureTelegramClient();
+        console.log("Telegram Connected Successfully.");
+    } catch (err) {
+        console.error("Telegram Connection Failed:", err.message);
+    }
+})();
+async function shutdownGracefully(signal) {
+    console.log(`Received ${signal}. Initiating graceful shutdown...`);
+    server.close(async () => {
+        console.log("HTTP server closed.");
+        if (isConnected) {
+            try {
+                await client.disconnect();
+                console.log("Telegram client disconnected.");
+            } catch (disconnectErr) {
+                console.error("Error disconnecting Telegram client:", disconnectErr);
+            }
+        }
+        process.exit(0);
+    });
+}
+
+process.on("SIGTERM", () => shutdownGracefully("SIGTERM"));
+process.on("SIGINT", () => shutdownGracefully("SIGINT"));
