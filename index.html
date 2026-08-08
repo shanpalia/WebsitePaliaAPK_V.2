@@ -472,7 +472,27 @@
             { name: 'Business', icon: 'fa-briefcase' },
             { name: 'Health', icon: 'fa-heart-pulse' }
         ];
+// ===============================
+// SITE VISIT TRACKING
+// ===============================
 
+async function recordSiteVisit() {
+    try {
+        const { error } = await supabaseClient
+            .from("site_visits")
+            .insert({
+                page: window.location.pathname
+            });
+
+        if (error) {
+            console.error("Site Visit Error:", error);
+        }
+    } catch (error) {
+        console.error("Site Visit Tracking Error:", error);
+    }
+}
+
+recordSiteVisit();
         // Dark Mode Setup
         const darkModeToggle = document.getElementById('darkModeToggle');
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
