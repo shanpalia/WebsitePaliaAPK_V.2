@@ -799,10 +799,23 @@
 
             let filtered = window.allAppsCache || [];
 
-            if (category !== 'All') {
-                filtered = filtered.filter(app => app.category && app.category.toLowerCase() === category.toLowerCase());
-            }
+          if (category !== 'All') {
+    filtered = filtered.filter(app => {
+        if (!app.category) return false;
 
+        const appCategory = app.category
+            .toString()
+            .trim()
+            .toLowerCase();
+
+        const selectedCategory = category
+            .toString()
+            .trim()
+            .toLowerCase();
+
+        return appCategory === selectedCategory;
+    });
+}
             if (query) {
                 filtered = filtered.filter(app => (app.name && app.name.toLowerCase().includes(query)) || (app.category && app.category.toLowerCase().includes(query)));
             }
