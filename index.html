@@ -689,8 +689,20 @@
             card.appendChild(circle);
 
             window.currentCategory = categoryName;
-            renderCategoriesSection(window.allAppsCache);
-            filterAndRenderApps();
+
+console.log('CATEGORY CLICKED:', categoryName);
+
+renderCategoriesSection(window.allAppsCache);
+filterAndRenderApps();
+
+const appsSection = document.getElementById('appsGrid');
+
+if (appsSection) {
+    appsSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
         };
 
         window.scrollCategories = function(direction) {
@@ -793,72 +805,113 @@
         }
 
         // Filter and Render Apps with live search highlight
-        window.filterAndRenderApps = function() {
-            const category = window.currentCategory || 'All';
-            const query = (window.currentSearchQuery || '').toLowerCase().trim();
+      window.filterAndRenderApps = function() {
+    const category = (window.currentCategory || 'All').toString().trim();
+    const query = (window.currentSearchQuery || '').toString().trim().toLowerCase();
 
-            let filtered = window.allAppsCache || [];
+    const allApps = Array.isArray(window.allAppsCache)
+        ? window.allAppsCache
+        : [];
 
-          if (category !== 'All') {
-    filtered = filtered.filter(app => {
-        if (!app.category) return false;
+    let filtered = allApps;
 
-        const appCategory = app.category
-            .toString()
-            .trim()
-            .toLowerCase();
+    // Category filter
+    if (category.toLowerCase() !== 'all') {
+        filtered = allApps.filter(function(app) {
+            const appCategory = app && app.category
+                ? app.category.toString().trim().toLowerCase()
+                : '';
 
-        const selectedCategory = category
-            .toString()
-            .trim()
-            .toLowerCase();
+            return appCategory === category.toLowerCase();
+        });
+    }
 
-        return appCategory === selectedCategory;
-    });
-}
-            if (query) {
-                filtered = filtered.filter(app => (app.name && app.name.toLowerCase().includes(query)) || (app.category && app.category.toLowerCase().includes(query)));
-            }
+    // Search filter
+    if (query) {
+        filtered = filtered.filter(function(app) {
+            const name = app && app.name
+                ? app.name.toString().toLowerCase()
+                : '';
 
-            const sectionHeading = document.getElementById('sectionHeading');
-            if (sectionHeading) {
-                sectionHeading.textContent = query ? `Search: "${query}"` : (category === 'All' ? 'All Apps' : category);
-            }
+            const appCategory = app && app.category
+                ? app.category.toString().toLowerCase()
+                : '';
 
-            const appsGrid = document.getElementById('appsGrid');
-            if (!appsGrid) return;
+            return name.includes(query) || appCategory.includes(query);
+        });
+    }
 
-            if (filtered.length === 0) {
-                appsGrid.innerHTML = `
-                    <div class="col-span-full py-16 text-center">
-                        <div class="w-16 h-16 bg-mint-50 dark:bg-mint-900/20 text-mint-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
-                            <i class="fa-solid fa-box-open"></i>
-                        </div>
-                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300">No apps available in this category.</p>
-                    </div>`;
-            } else {
-                appsGrid.innerHTML = filtered.map(app => {
-                    let displayName = app.name;
-                    if (query) {
-                        const regex = new RegExp(`(${query})`, 'gi');
-                        displayName = app.name.replace(regex, `<span class="bg-mint-200 dark:bg-mint-900/60 text-mint-800 dark:text-mint-200 px-0.5 rounded">$1</span>`);
-                    }
+    console.log(
+        'CATEGORY FILTER:',
+        category,
+        'TOTAL:',
+        allApps.length,
+        'RESULT:',
+        filtered.length
+    );
 
-                    return `
-                        <div class="app-card p-3.5 flex flex-col justify-between">
-                            <div>
-                                <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
-                                    <img src="${app.icon_url || ''}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
-                                </div>
-                                <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">${displayName}</h5>
-                                <p class="text-[10px] text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
-                            </div>
-                            <button onclick="handleDownloadClick(${app.id})" class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">Install</button>
-                        </div>
-                    `;
-                }).join('');
-            }
-        };
+    const sectionHeading = document.getElementById('sectionHeading');
+
+    if (sectionHeading) {
+        sectionHeading.textContent =
+            query
+                ? `Search: "${query}"`
+                : (category.toLowerCase() === 'all' ? 'All Apps' : category);
+    }
+
+    const appsGrid = document.getElementById('appsGrid');
+
+    if (!appsGrid) return;
+
+    if (filtered.length === 0) {
+        appsGrid.innerHTML = `
+            <div class="col-span-full py-16 text-center">
+                <div class="w-16 h-16 bg-mint-50 dark:bg-mint-900/20 text-mint-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+
+                <p class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                    No apps available in this category.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+    appsGrid.innerHTML = filtered.map(function(app) {
+
+        return `
+            <div class="app-card p-3.5 flex flex-col justify-between">
+
+                <div>
+                    <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                        <img
+                            src="${app.icon_url || ''}"
+                            alt="${app.name || 'App'}"
+                            class="w-full h-full hero-img-contain rounded-lg"
+                        >
+                    </div>
+
+                    <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">
+                        ${app.name || 'Unnamed App'}
+                    </h5>
+
+                    <p class="text-[10px] text-gray-400 mt-0.5">
+                        ${app.category || 'App'} • ⭐ ${app.rating || '4.9'}
+                    </p>
+                </div>
+
+                <button
+                    onclick="handleDownloadClick(${app.id})"
+                    class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">
+                    Install
+                </button>
+
+            </div>
+        `;
+
+    }).join('');
+};
 
         // Live Search & Autocomplete
         function setupLiveSearch() {
