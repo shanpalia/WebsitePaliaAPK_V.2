@@ -492,21 +492,40 @@ async function recordSiteVisit() {
     }
 }
 
-recordSiteVisit();
-        // Dark Mode Setup
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
+// ===============================
+// SITE VISIT TRACKING
+// ===============================
+
+async function recordSiteVisit() {
+
+    if (!supabaseClient) {
+        console.error("Supabase is not configured.");
+        return;
+    }
+
+    try {
+
+        const { error } = await supabaseClient
+            .from("site_visits")
+            .insert({
+                page: window.location.pathname
+            });
+
+        if (error) {
+            console.error("Site Visit Error:", error);
+            return;
         }
-        darkModeToggle?.addEventListener('click', () => {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.theme = 'light';
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
-            }
-        });
+
+        console.log("Site visit recorded successfully.");
+
+    } catch (error) {
+
+        console.error("Site Visit Tracking Error:", error);
+
+    }
+}
+
+recordSiteVisit();
 
         // Hidden Admin Trigger Logic: 5 clicks on logo within 2 seconds
         let logoClickCount = 0;
