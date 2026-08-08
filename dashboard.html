@@ -297,7 +297,16 @@ async function fetchDashboardData() {
   if (count !== null) {
     document.getElementById("totalApps").innerText = count;
   }
+// ===============================
+// TOTAL DOWNLOADS
+// ===============================
 
+const totalDownloads = (apps || []).reduce((total, app) => {
+    return total + Number(app.downloads || 0);
+}, 0);
+
+document.getElementById("totalDownloads").innerText =
+    totalDownloads.toLocaleString();
   // Populate App Table List
   const tableBody = document.getElementById("appTableBody");
   tableBody.innerHTML = "";
