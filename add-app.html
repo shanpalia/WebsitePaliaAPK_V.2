@@ -1883,7 +1883,9 @@ var BUCKETS = {
   }
 
   function collectPayload(status, urls, slug){
-    var calculatedSize = (uploads.apk && uploads.apk.file) ? (uploads.apk.file.size / (1024 * 1024)).toFixed(1) + ' MB' : null;
+   var calculatedSize = urls.apk_size
+  ? (urls.apk_size / (1024 * 1024)).toFixed(2) + ' MB'
+  : null;
 
     return {
       name: currentFieldValue('fName'),
@@ -2060,6 +2062,7 @@ async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
         urls.telegram_file_id = result.telegram_file_id;
         urls.telegram_file_unique_id = result.telegram_file_unique_id;
         urls.telegram_message_id = result.telegram_message_id;
+       urls.apk_size = result.file_size;
 
     });
 
