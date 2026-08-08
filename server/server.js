@@ -99,7 +99,126 @@ app.get("/health", (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
+// ============================================
+// DIRECT APK DOWNLOAD FROM TELEGRAM
+// ============================================
+app.get("/download-apk/:messageId", async (req, res) => {
+    try {
+        const messageId = parseInt(req.params.messageId, 10);
 
+        if (!messageId || isNaN(messageId)) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid Telegram message ID."
+            });
+        }
+
+        await ensureTelegramClient();
+
+        const formattedChannel = channelUsername.startsWith("@")
+            ? channelUsername
+            : `@${channelUsername}`;
+
+        console.log(
+            `Direct APK download requested: ${formattedChannel}/${messageId}`
+        );
+
+        const messages = await client.getMessages(formattedChannel, {
+            ids: messageId
+        });
+
+        const message = messages && messages.length ? messages[0] : null;
+
+        if (!message) {
+            return res.status(404).json({
+                success: false,
+                error: "Telegram message not found."
+            });
+        }
+
+        if (!message.media || !message.document) {
+            return res.status(404).json({
+                success: false,
+                error: "No APK document found in this Telegram message."
+            });
+        }
+
+        let fileName = "download.apk";
+
+        if (message.document.attributes) {
+            for (const attribute of message.document.attributes) {
+                if (
+                    attribute instanceof Api.DocumentAttributeFilename &&
+                    attribute.fileName
+                ) {
+                    fileName = attribute.fileName;
+                    break;
+                }
+            }
+        }
+
+        const fileSize = Number(message.document.size || 0);
+
+        res.status(200);
+
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.android.package-archive"
+        );
+
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${fileName.replace(/"/g, "")}"`
+        );
+
+        if (fileSize > 0) {
+            res.setHeader("Content-Length", fileSize);
+        }
+
+        console.log(
+            `Streaming APK: ${fileName} (${fileSize} bytes)`
+        );
+
+        const iterator = client.iterDownload({
+            file: message.media,
+            requestSize: 512 * 1024
+        });
+
+        for await (const chunk of iterator) {
+            if (res.destroyed) {
+                break;
+            }
+
+            const canContinue = res.write(chunk);
+
+            if (!canContinue) {
+                await new Promise(resolve => {
+                    res.once("drain", resolve);
+                });
+            }
+        }
+
+        if (!res.destroyed) {
+            res.end();
+        }
+
+        console.log(`APK download completed: ${fileName}`);
+
+    } catch (error) {
+        console.error("Direct APK Download Error:", error);
+
+        if (!res.headersSent) {
+            return res.status(500).json({
+                success: false,
+                error: error.message || "APK download failed."
+            });
+        }
+
+        if (!res.destroyed) {
+            res.destroy();
+        }
+    }
+});
 app.post("/upload-apk", (req, res, next) => {
     upload.single("file")(req, res, (err) => {
         if (err instanceof multer.MulterError) {
