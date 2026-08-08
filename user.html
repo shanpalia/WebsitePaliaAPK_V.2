@@ -232,7 +232,40 @@
             firebase.initializeApp(firebaseConfig);
         }
         const auth = firebase.auth();
+// ===============================
+// SUPABASE USER SYNC
+// ===============================
 
+const SUPABASE_URL = "https://ralinnuegsbuvlhwpzln.supabase.co";
+
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE";
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
+
+async function syncUserToSupabase(user) {
+
+    if (!user) return;
+
+    const { error } = await supabaseClient
+        .from("users")
+        .upsert({
+            id: user.uid,
+            email: user.email || null,
+            name: user.displayName || null,
+            last_login_at: new Date().toISOString()
+        }, {
+            onConflict: "id"
+        });
+
+    if (error) {
+        console.error("User sync error:", error);
+    } else {
+        console.log("Firebase user synced to Supabase.");
+    }
+}
         // Parse URL Redirect parameters
         const urlParams = new URLSearchParams(window.location.search);
         let redirectTarget = urlParams.get('redirect') || 'index.html';
@@ -255,11 +288,16 @@
         }
 
         // Auto-redirect if already logged in
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                window.location.href = redirectTarget;
-            }
-        });
+        auth.onAuthStateChanged(async (user) => {
+
+    if (user) {
+
+        await syncUserToSupabase(user);
+
+        window.location.href = redirectTarget;
+    }
+
+});
 
         // Toast Notification Helper
         function showToast(message, type = 'error') {
