@@ -315,7 +315,40 @@ document.getElementById("totalDownloads").innerText =
     tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No apps found.</td></tr>`;
     return;
   }
+// ===============================
+// TOTAL SITE VISITS
+// ===============================
 
+const { count: visitCount, error: visitError } = await _supabase
+    .from("site_visits")
+    .select("*", {
+        count: "exact",
+        head: true
+    });
+
+if (visitError) {
+    console.error("Visit Count Error:", visitError);
+} else {
+    document.getElementById("totalSiteVisits").innerText =
+        Number(visitCount || 0).toLocaleString();
+}
+  // ===============================
+// TOTAL USERS
+// ===============================
+
+const { count: userCount, error: userError } = await _supabase
+    .from("users")
+    .select("*", {
+        count: "exact",
+        head: true
+    });
+
+if (userError) {
+    console.error("User Count Error:", userError);
+} else {
+    document.getElementById("totalUsers").innerText =
+        Number(userCount || 0).toLocaleString();
+}
   apps.forEach(app => {
     const row = document.createElement("tr");
     row.innerHTML = `
