@@ -822,7 +822,7 @@ if (appsSection) {
                 ? app.category.toString().trim().toLowerCase()
                 : '';
 
-            return appCategory === category.toLowerCase();
+           return appCategory.includes(category.toLowerCase());
         });
     }
 
