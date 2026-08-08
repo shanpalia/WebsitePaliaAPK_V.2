@@ -315,7 +315,17 @@ document.getElementById("totalDownloads").innerText =
     tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No apps found.</td></tr>`;
     return;
   }
+const { count: visitCount, error: visitError } = await _supabase
+    .from("site_visits")
+    .select("*", {
+        count: "exact",
+        head: true
+    });
 
+if (!visitError) {
+    document.getElementById("totalSiteVisits").innerText =
+        Number(visitCount || 0).toLocaleString();
+}
   apps.forEach(app => {
     const row = document.createElement("tr");
     row.innerHTML = `
