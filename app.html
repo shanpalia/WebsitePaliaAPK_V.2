@@ -333,22 +333,16 @@ const auth = firebase.auth();
                 document.getElementById('appVersion').textContent = app.version || '1.0';
 
 // ===============================
-// DOWNLOAD APK + SAVE HISTORY
+// DOWNLOAD APK
 // ===============================
 const downloadBtn = document.getElementById("downloadBtn");
 
 if (downloadBtn) {
 
-    downloadBtn.addEventListener("click", async function (e) {
+    downloadBtn.onclick = async function(e) {
 
         e.preventDefault();
 
-        if (!app) {
-            alert("App information is not available.");
-            return;
-        }
-
-        // APK URL
         let downloadUrl = "";
 
         if (app.telegram_message_id) {
@@ -366,13 +360,12 @@ if (downloadBtn) {
             return;
         }
 
-        // Firebase logged-in user
+        // Save download history
         const user = auth.currentUser;
 
-        // Save download history
         if (user) {
 
-            const { error } = await _supabase
+            const result = await _supabase
                 .from("downloads")
                 .insert({
                     user_id: user.uid,
@@ -383,19 +376,18 @@ if (downloadBtn) {
                     download_url: downloadUrl
                 });
 
-            if (error) {
-                console.error("Download history error:", error);
+            if (result.error) {
+                console.error(
+                    "Download history error:",
+                    result.error
+                );
             }
         }
 
         // Start APK download
         window.location.href = downloadUrl;
-
-    });
-
+    };
 }
-  
-
                 // Description
                 document.getElementById('appDescription').textContent = app.description || 'No description available.';
 
