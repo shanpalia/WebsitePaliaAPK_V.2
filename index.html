@@ -315,10 +315,14 @@
 
             <!-- View All Categories CTA Button -->
             <div class="mt-6 text-center">
-                <a href="category.html" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 dark:hover:bg-mint-900/30 text-gray-800 dark:text-gray-200 hover:text-mint-600 dark:hover:text-mint-400 font-bold text-xs transition border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <span>View All Categories</span>
-                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                </a>
+               <button
+    id="viewAllCategoriesBtn"
+    onclick="toggleAllCategories()"
+    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-mint-50 hover:bg-mint-100 text-mint-700 font-bold text-xs transition border border-mint-200 shadow-sm"
+>
+    <span id="viewAllCategoriesText">View All Categories</span>
+    <i id="viewAllCategoriesIcon" class="fa-solid fa-chevron-down text-[10px]"></i>
+</button>
             </div>
         </section>
 
@@ -638,7 +642,44 @@ recordSiteVisit();
             setupCategoryScrollListeners();
             setupLiveSearch();
         }
+// ===============================
+// VIEW ALL CATEGORIES
+// ===============================
 
+window.showAllCategories = false;
+
+window.toggleAllCategories = function () {
+
+    window.showAllCategories = !window.showAllCategories;
+
+    renderCategoriesSection(window.allAppsCache);
+
+    const text = document.getElementById("viewAllCategoriesText");
+    const icon = document.getElementById("viewAllCategoriesIcon");
+
+    if (window.showAllCategories) {
+
+        text.textContent = "Show Less Categories";
+
+        icon.className = "fa-solid fa-chevron-up text-[10px]";
+
+        // नीचे categories तक smooth scroll
+        setTimeout(() => {
+            document.getElementById("categoriesContainer")
+                ?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+        }, 100);
+
+    } else {
+
+        text.textContent = "View All Categories";
+
+        icon.className = "fa-solid fa-chevron-down text-[10px]";
+
+    }
+};
         // Hero Slider with dynamic loop check (< 3 items disables loop)
         function renderHeroSlider(apps) {
             const wrapper = document.getElementById('featured-slider');
@@ -703,7 +744,11 @@ recordSiteVisit();
             const container = document.getElementById('categoriesContainer');
             if (!container) return;
 
-            container.innerHTML = defaultCategoriesConfig.slice(0, 10).map(catConfig => {
+           const categoriesToShow = window.showAllCategories
+    ? defaultCategoriesConfig
+    : defaultCategoriesConfig.slice(0, 10);
+
+container.innerHTML = categoriesToShow.map(catConfig => {
                 const matchedCount = catConfig.name === 'All' 
                     ? (appsArray || []).length 
                     : (appsArray || []).filter(a => a.category && a.category.toLowerCase() === catConfig.name.toLowerCase()).length;
