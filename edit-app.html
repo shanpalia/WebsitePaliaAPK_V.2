@@ -1782,6 +1782,60 @@ img{ max-width: 100%; display: block; }
     }
     return Promise.resolve(d.dbUrl || null);
   }
+// ===============================
+// TELEGRAM CAPTION UPDATE
+// ===============================
+async function updateTelegramCaption(messageId, appData) {
+
+  if (!messageId) {
+    console.log("No Telegram message ID. Skipping Telegram sync.");
+    return null;
+  }
+
+  const response = await fetch(
+    "https://paliaapk-telegram-api.onrender.com/update-telegram-caption",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messageId: messageId,
+        appName: appData.name,
+        version: appData.version,
+        developer: appData.developer,
+        description: appData.description
+      })
+    }
+  );
+
+  const responseText = await response.text();
+
+  let data;
+
+  try {
+    data = JSON.parse(responseText);
+  } catch (error) {
+    throw new Error(
+      "Telegram API returned invalid response: " + responseText
+    );
+  }
+
+  if (!response.ok || !data.success) {
+    throw new Error(
+      data.error || "Telegram caption update failed."
+    );
+  }
+
+  console.log("Telegram caption updated:", data);
+
+  return data;
+}
+
+
+// ===============================
+// COLLECT PAYLOAD
+// ===============================
 
   function collectPayload(finalUrls, finalApkSize){
     return {
@@ -1802,66 +1856,234 @@ img{ max-width: 100%; display: block; }
     };
   }
 
-  function updateApp(){
+ // ============================================
+// UPDATE APP - SUPABASE + TELEGRAM
+// ============================================
+async function updateApp(){
+
     if(!sb){
-      showSubmitAlert('Supabase is not configured', 'Add your project URL and anon key at the top of the script.');
-      return;
+        showSubmitAlert(
+            'Supabase is not configured',
+            'Add your project URL and anon key at the top of the script.'
+        );
+        return;
     }
+
     if(!appLoaded || !appId){
-      showSubmitAlert('App not loaded', 'Wait for the app data to finish loading before saving.');
-      return;
+        showSubmitAlert(
+            'App not loaded',
+            'Wait for the app data to finish loading before saving.'
+        );
+        return;
     }
+
     if(!validateForm()){
-      markDirty();
-      showSubmitAlert('Missing required fields', 'App Name, Version, Category, Description, App Icon and the APK file are all required.');
-      return;
+        markDirty();
+
+        showSubmitAlert(
+            'Missing required fields',
+            'App Name, Version, Category, Description, App Icon and the APK file are all required.'
+        );
+
+        return;
     }
 
     hideSubmitAlert();
     setSubmitting(true, 'btnUpdate');
 
-    var finalUrls = { icon: null, banner: null, apk: null, screenshots: [] };
-    var finalApkSize = null;
+    try {
 
-    var chain = Promise.resolve()
-      .then(function(){ return resolveUploaderForSave('icon', BUCKETS.icon).then(function(u){ finalUrls.icon = u; }); })
-      .then(function(){ return resolveUploaderForSave('banner', BUCKETS.banner).then(function(u){ finalUrls.banner = u; }); })
-      .then(function(){ return resolveUploaderForSave('apk', BUCKETS.apk).then(function(u){ finalUrls.apk = u; }); });
+        // ============================================
+        // 1. UPLOAD CHANGED SUPABASE FILES
+        // ============================================
 
-    ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'].forEach(function(id){
-      chain = chain.then(function(){
-        return resolveUploaderForSave(id, BUCKETS.screenshot).then(function(u){
-          if(u) finalUrls.screenshots.push(u);
-        });
-      });
-    });
+        var finalUrls = {
+            icon: null,
+            banner: null,
+            apk: null,
+            screenshots: []
+        };
 
-    chain
-      .then(function(){
-        if(uploads.apk.file){
-          finalApkSize = formatBytes(uploads.apk.file.size);
-        } else if(!uploads.apk.removed){
-          finalApkSize = loadedApkSizeLabel;
+        var finalApkSize = null;
+
+        finalUrls.icon =
+            await resolveUploaderForSave(
+                'icon',
+                BUCKETS.icon
+            );
+
+        finalUrls.banner =
+            await resolveUploaderForSave(
+                'banner',
+                BUCKETS.banner
+            );
+
+        finalUrls.apk =
+            await resolveUploaderForSave(
+                'apk',
+                BUCKETS.apk
+            );
+
+        for (
+            const id of [
+                'screenshot1',
+                'screenshot2',
+                'screenshot3',
+                'screenshot4',
+                'screenshot5'
+            ]
+        ){
+
+            const url =
+                await resolveUploaderForSave(
+                    id,
+                    BUCKETS.screenshot
+                );
+
+            if(url){
+                finalUrls.screenshots.push(url);
+            }
         }
-        var payload = collectPayload(finalUrls, finalApkSize);
-        return sb.from('apps').update(payload).eq('id', appId).select();
-      })
-      .then(function(res){
-        if(res.error) throw res.error;
-        setSubmitting(false, 'btnUpdate');
-        markSaved('Updated');
-        showToast('success', 'App Updated Successfully', currentFieldValue('fName') + ' has been updated.');
-        window.setTimeout(function(){ window.location.href = REDIRECT_TARGET; }, 1100);
-      })
-      .catch(function(err){
-        setSubmitting(false, 'btnUpdate');
-        markDirty();
-        var message = (err && err.message) ? err.message : 'Please check your connection and try again.';
-        showSubmitAlert('Could not update this app', message);
-        showToast('error', 'Update failed', message);
-      });
-  }
 
+        // ============================================
+        // 2. APK SIZE
+        // ============================================
+
+        if(uploads.apk.file){
+
+            finalApkSize =
+                formatBytes(
+                    uploads.apk.file.size
+                );
+
+        } else if(!uploads.apk.removed){
+
+            finalApkSize =
+                loadedApkSizeLabel;
+        }
+
+        // ============================================
+        // 3. CREATE SUPABASE PAYLOAD
+        // ============================================
+
+        var payload =
+            collectPayload(
+                finalUrls,
+                finalApkSize
+            );
+
+        // Keep Telegram message ID
+        if(telegramMessageId){
+
+            payload.telegram_message_id =
+                telegramMessageId;
+        }
+
+        // ============================================
+        // 4. UPDATE SUPABASE
+        // ============================================
+
+        const { data: updatedApp, error: updateError } =
+            await sb
+                .from('apps')
+                .update(payload)
+                .eq('id', appId)
+                .select()
+                .single();
+
+        if(updateError){
+            throw updateError;
+        }
+
+        console.log(
+            "Supabase app updated:",
+            updatedApp
+        );
+
+        // ============================================
+        // 5. UPDATE TELEGRAM CAPTION
+        // ============================================
+
+        if(telegramMessageId){
+
+            await updateTelegramCaption(
+                telegramMessageId,
+                {
+                    name:
+                        currentFieldValue('fName'),
+
+                    version:
+                        currentFieldValue('fVersion'),
+
+                    developer:
+                        currentFieldValue('fDeveloper'),
+
+                    description:
+                        fDescription.value.trim()
+                }
+            );
+
+            console.log(
+                "Telegram caption synchronized."
+            );
+
+        } else {
+
+            console.log(
+                "No telegram_message_id found. Telegram sync skipped."
+            );
+        }
+
+        // ============================================
+        // 6. SUCCESS
+        // ============================================
+
+        setSubmitting(false, 'btnUpdate');
+
+        markSaved('Updated');
+
+        showToast(
+            'success',
+            'App Updated Successfully',
+            currentFieldValue('fName') +
+            ' has been updated in Supabase and Telegram.'
+        );
+
+        window.setTimeout(function(){
+
+            window.location.href =
+                REDIRECT_TARGET;
+
+        }, 1100);
+
+    } catch(err){
+
+        console.error(
+            "Update App Error:",
+            err
+        );
+
+        setSubmitting(false, 'btnUpdate');
+
+        markDirty();
+
+        var message =
+            err && err.message
+                ? err.message
+                : 'Please check your connection and try again.';
+
+        showSubmitAlert(
+            'Could not update this app',
+            message
+        );
+
+        showToast(
+            'error',
+            'Update failed',
+            message
+        );
+    }
+}
   /* ==========================================================
      13. DELETE APP
      ========================================================== */
