@@ -332,46 +332,68 @@ const auth = firebase.auth();
                 document.getElementById('appSize').textContent = app.apk_size || 'Varies';
                 document.getElementById('appVersion').textContent = app.version || '1.0';
 
-       // ===============================
-// DOWNLOAD + DOWNLOAD HISTORY
+// ===============================
+// DOWNLOAD APK + SAVE HISTORY
 // ===============================
 const downloadBtn = document.getElementById("downloadBtn");
 
-downloadBtn.addEventListener("click", async function (e) {
-    e.preventDefault();
+if (downloadBtn) {
 
-    let downloadUrl = "";
+    downloadBtn.addEventListener("click", async function (e) {
 
-    if (app.telegram_message_id) {
-        downloadUrl =
-            `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
-    } else if (app.apk_url) {
-        downloadUrl = app.apk_url;
-    } else {
-        alert("APK download is currently unavailable.");
-        return;
-    }
+        e.preventDefault();
 
-    // Save download history if user is logged in
-    const user = auth.currentUser;
-
-    if (user) {
-        const { error } = await _supabase
-            .from("downloads")
-            .insert({
-                user_id: user.uid,
-                app_id: app.id,
-                app_name: app.name || "Unknown App",
-                version: app.version || "Unknown",
-                icon_url: app.icon_url || null,
-                download_url: downloadUrl
-            });
-
-        if (error) {
-            console.error("Download history error:", error);
+        if (!app) {
+            alert("App information is not available.");
+            return;
         }
-    }
 
+        // APK URL
+        let downloadUrl = "";
+
+        if (app.telegram_message_id) {
+
+            downloadUrl =
+                `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
+
+        } else if (app.apk_url) {
+
+            downloadUrl = app.apk_url;
+
+        } else {
+
+            alert("APK download is currently unavailable.");
+            return;
+        }
+
+        // Firebase logged-in user
+        const user = auth.currentUser;
+
+        // Save download history
+        if (user) {
+
+            const { error } = await _supabase
+                .from("downloads")
+                .insert({
+                    user_id: user.uid,
+                    app_id: app.id,
+                    app_name: app.name || "Unknown App",
+                    version: app.version || "Unknown",
+                    icon_url: app.icon_url || null,
+                    download_url: downloadUrl
+                });
+
+            if (error) {
+                console.error("Download history error:", error);
+            }
+        }
+
+        // Start APK download
+        window.location.href = downloadUrl;
+
+    });
+
+}
     // Open APK download
     window.location.href = downloadUrl;
 });
