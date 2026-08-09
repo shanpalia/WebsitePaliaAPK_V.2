@@ -932,6 +932,19 @@ if (appsSection) {
 
             return appCategory.includes(category.toLowerCase());
         });
+        // ===============================
+// OPEN APP DETAILS
+// ===============================
+window.openAppDetails = function(appId) {
+
+    if (!appId) {
+        console.error("App ID missing");
+        return;
+    }
+
+    window.location.href =
+        `app.html?id=${encodeURIComponent(appId)}`;
+};
     }
 
     // Search filter
@@ -989,35 +1002,38 @@ if (appsSection) {
     appsGrid.innerHTML = filtered.map(function(app) {
 
         return `
-            <div class="app-card p-3.5 flex flex-col justify-between">
+    <div
+        class="app-card p-3.5 flex flex-col justify-between cursor-pointer"
+        onclick="openAppDetails('${app.id}')"
+    >
 
-                <div>
-                    <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
-                        <img
-                            src="${app.icon_url || ''}"
-                            alt="${app.name || 'App'}"
-                            class="w-full h-full hero-img-contain rounded-lg"
-                        >
-                    </div>
-
-                    <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">
-                        ${app.name || 'Unnamed App'}
-                    </h5>
-
-                    <p class="text-[10px] text-gray-400 mt-0.5">
-                        ${app.category || 'App'} • ⭐ ${app.rating || '4.9'}
-                    </p>
-                </div>
-
-                <button
-                    onclick="handleDownloadClick(${app.id})"
-                    class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">
-                    Install
-                </button>
-
+        <div>
+            <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                <img
+                    src="${app.icon_url || ''}"
+                    alt="${app.name || 'App'}"
+                    class="w-full h-full hero-img-contain rounded-lg"
+                >
             </div>
-        `;
 
+            <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">
+                ${displayName}
+            </h5>
+
+            <p class="text-[10px] text-gray-400 mt-0.5">
+                ${app.category || 'App'} • ⭐ ${app.rating || '4.9'}
+            </p>
+        </div>
+
+        <button
+            onclick="event.stopPropagation(); handleDownloadClick('${app.id}')"
+            class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">
+            Install
+        </button>
+
+    </div>
+`;
+        
     }).join('');
 };
 
