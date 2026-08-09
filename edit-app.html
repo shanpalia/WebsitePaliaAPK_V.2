@@ -1840,6 +1840,96 @@ async function updateTelegramCaption(messageId, appData) {
 }
 
 
+
+
+// ============================================
+// TELEGRAM APK REPLACEMENT
+// ============================================
+async function replaceTelegramApk(
+    messageId,
+    apkFile,
+    appData
+) {
+
+    if (!messageId) {
+        throw new Error(
+            "Telegram message ID is missing."
+        );
+    }
+
+    if (!apkFile) {
+        throw new Error(
+            "APK file is missing."
+        );
+    }
+
+    const formData = new FormData();
+
+    // IMPORTANT:
+    // Backend expects "file"
+    formData.append("file", apkFile);
+
+    formData.append(
+        "messageId",
+        String(messageId)
+    );
+
+    formData.append(
+        "appName",
+        appData.name || ""
+    );
+
+    formData.append(
+        "version",
+        appData.version || ""
+    );
+
+    formData.append(
+        "developer",
+        appData.developer || ""
+    );
+
+    formData.append(
+        "description",
+        appData.description || ""
+    );
+
+    const response = await fetch(
+        "https://paliaapk-telegram-api.onrender.com/replace-apk",
+        {
+            method: "POST",
+            body: formData
+        }
+    );
+
+    const responseText =
+        await response.text();
+
+    let data;
+
+    try {
+        data = JSON.parse(responseText);
+    } catch (error) {
+        throw new Error(
+            "Telegram APK API returned invalid response: " +
+            responseText
+        );
+    }
+
+    if (!response.ok || !data.success) {
+        throw new Error(
+            data.error ||
+            "Telegram APK replacement failed."
+        );
+    }
+
+    console.log(
+        "Telegram APK replaced:",
+        data
+    );
+
+    return data;
+}
 // ===============================
 // COLLECT PAYLOAD
 // ===============================
@@ -1858,88 +1948,118 @@ async function updateTelegramCaption(messageId, appData) {
       banner_url: finalUrls.banner,
       apk_url: finalUrls.apk,
       screenshots: finalUrls.screenshots,
-      downloads: originalDownloads,
-      updated_at: new Date().toISOString()
+     downloads: originalDownloads,
+telegram_message_id: telegramMessageId || null,
+updated_at: new Date().toISOString()
     };
   }
 
- // ============================================
-// UPDATE APP - SUPABASE + TELEGRAM
 // ============================================
-async function updateApp(){
+// UPDATE APP
+// SUPABASE + TELEGRAM
+// ============================================
+async function updateApp() {
 
-    if(!sb){
+    if (!sb) {
         showSubmitAlert(
-            'Supabase is not configured',
-            'Add your project URL and anon key at the top of the script.'
+            "Supabase is not configured",
+            "Check your Supabase configuration."
         );
         return;
     }
 
-    if(!appLoaded || !appId){
+    if (!appLoaded || !appId) {
         showSubmitAlert(
-            'App not loaded',
-            'Wait for the app data to finish loading before saving.'
+            "App not loaded",
+            "Please wait for the app to finish loading."
         );
         return;
     }
 
-    if(!validateForm()){
+    if (!validateForm()) {
         markDirty();
 
         showSubmitAlert(
-            'Missing required fields',
-            'App Name, Version, Category, Description, App Icon and the APK file are all required.'
+            "Missing required fields",
+            "Please fill all required fields."
         );
 
         return;
     }
 
     hideSubmitAlert();
-    setSubmitting(true, 'btnUpdate');
+    setSubmitting(true, "btnUpdate");
 
     try {
 
         // ============================================
-        // 1. UPLOAD CHANGED SUPABASE FILES
+        // CURRENT APP DATA
         // ============================================
+        const appData = {
+            name: currentFieldValue("fName"),
+            version: currentFieldValue("fVersion"),
+            developer: currentFieldValue("fDeveloper"),
+            description: fDescription.value.trim()
+        };
 
-        var finalUrls = {
+
+        // ============================================
+        // CHECK WHETHER APK WAS CHANGED
+        // ============================================
+        const newApkFile =
+            uploads.apk.file || null;
+
+
+        // ============================================
+        // 1. UPLOAD NORMAL SUPABASE ASSETS
+        // ============================================
+        const finalUrls = {
             icon: null,
             banner: null,
             apk: null,
             screenshots: []
         };
 
-        var finalApkSize = null;
+        let finalApkSize = null;
+
 
         finalUrls.icon =
             await resolveUploaderForSave(
-                'icon',
+                "icon",
                 BUCKETS.icon
             );
 
+
         finalUrls.banner =
             await resolveUploaderForSave(
-                'banner',
+                "banner",
                 BUCKETS.banner
             );
 
+
+        /*
+         * APK:
+         *
+         * We still save the APK to Supabase Storage.
+         * Telegram replacement is handled separately below.
+         */
         finalUrls.apk =
             await resolveUploaderForSave(
-                'apk',
+                "apk",
                 BUCKETS.apk
             );
 
+
+        // Screenshots
         for (
             const id of [
-                'screenshot1',
-                'screenshot2',
-                'screenshot3',
-                'screenshot4',
-                'screenshot5'
+                "screenshot1",
+                "screenshot2",
+                "screenshot3",
+                "screenshot4",
+                "screenshot5"
             ]
-        ){
+        ) {
 
             const url =
                 await resolveUploaderForSave(
@@ -1947,150 +2067,216 @@ async function updateApp(){
                     BUCKETS.screenshot
                 );
 
-            if(url){
+            if (url) {
                 finalUrls.screenshots.push(url);
             }
         }
 
-        // ============================================
-        // 2. APK SIZE
-        // ============================================
 
-        if(uploads.apk.file){
+        // ============================================
+        // APK SIZE
+        // ============================================
+        if (newApkFile) {
 
             finalApkSize =
                 formatBytes(
-                    uploads.apk.file.size
+                    newApkFile.size
                 );
 
-        } else if(!uploads.apk.removed){
+        } else if (!uploads.apk.removed) {
 
             finalApkSize =
                 loadedApkSizeLabel;
         }
 
-        // ============================================
-        // 3. CREATE SUPABASE PAYLOAD
-        // ============================================
 
-        var payload =
+        // ============================================
+        // 2. CREATE SUPABASE PAYLOAD
+        // ============================================
+        const payload =
             collectPayload(
                 finalUrls,
                 finalApkSize
             );
 
-        // Keep Telegram message ID
-        if(telegramMessageId){
 
+        // ============================================
+        // 3. TELEGRAM
+        // ============================================
+        let telegramResult = null;
+
+
+        if (newApkFile) {
+
+            // ----------------------------------------
+            // NEW APK → REPLACE TELEGRAM APK
+            // ----------------------------------------
+            if (!telegramMessageId) {
+
+                throw new Error(
+                    "This app does not have a Telegram message ID. Cannot replace Telegram APK."
+                );
+            }
+
+
+            showSubmitAlert(
+                "Uploading APK",
+                "Uploading the new APK to Telegram..."
+            );
+
+
+            telegramResult =
+                await replaceTelegramApk(
+                    telegramMessageId,
+                    newApkFile,
+                    appData
+                );
+
+
+            // New Telegram message ID
+            telegramMessageId =
+                telegramResult.telegram_message_id;
+
+
+            // Use Telegram download URL
+            if (
+                telegramResult.download_url
+            ) {
+
+                payload.apk_url =
+                    "https://paliaapk-telegram-api.onrender.com/download-apk/" +
+                    telegramMessageId;
+            }
+
+
+            // Save new Telegram message ID
             payload.telegram_message_id =
                 telegramMessageId;
+
+
+        } else {
+
+            // ----------------------------------------
+            // NO APK CHANGE
+            // → UPDATE TELEGRAM CAPTION ONLY
+            // ----------------------------------------
+            if (telegramMessageId) {
+
+                showSubmitAlert(
+                    "Updating Telegram",
+                    "Updating app information..."
+                );
+
+
+                await updateTelegramCaption(
+                    telegramMessageId,
+                    appData
+                );
+            }
         }
+
 
         // ============================================
         // 4. UPDATE SUPABASE
         // ============================================
+        showSubmitAlert(
+            "Saving changes",
+            "Updating Supabase..."
+        );
 
-        const { data: updatedApp, error: updateError } =
+
+        const {
+            data: updatedApp,
+            error: updateError
+        } =
             await sb
-                .from('apps')
+                .from("apps")
                 .update(payload)
-                .eq('id', appId)
+                .eq("id", appId)
                 .select()
                 .single();
 
-        if(updateError){
+
+        if (updateError) {
             throw updateError;
         }
 
+
         console.log(
-            "Supabase app updated:",
+            "Supabase updated:",
             updatedApp
         );
 
-        // ============================================
-        // 5. UPDATE TELEGRAM CAPTION
-        // ============================================
-
-        if(telegramMessageId){
-
-            await updateTelegramCaption(
-                telegramMessageId,
-                {
-                    name:
-                        currentFieldValue('fName'),
-
-                    version:
-                        currentFieldValue('fVersion'),
-
-                    developer:
-                        currentFieldValue('fDeveloper'),
-
-                    description:
-                        fDescription.value.trim()
-                }
-            );
-
-            console.log(
-                "Telegram caption synchronized."
-            );
-
-        } else {
-
-            console.log(
-                "No telegram_message_id found. Telegram sync skipped."
-            );
-        }
 
         // ============================================
-        // 6. SUCCESS
+        // 5. SUCCESS
         // ============================================
-
-        setSubmitting(false, 'btnUpdate');
-
-        markSaved('Updated');
-
-        showToast(
-            'success',
-            'App Updated Successfully',
-            currentFieldValue('fName') +
-            ' has been updated in Supabase and Telegram.'
+        setSubmitting(
+            false,
+            "btnUpdate"
         );
 
-        window.setTimeout(function(){
+        markSaved("Updated");
 
-            window.location.href =
-                REDIRECT_TARGET;
 
-        }, 1100);
+        showToast(
+            "success",
+            "App Updated",
+            newApkFile
+                ? "Supabase and Telegram APK updated successfully."
+                : "Supabase and Telegram information updated successfully."
+        );
 
-    } catch(err){
+
+        // Reload after short delay
+        window.setTimeout(
+            function () {
+
+                window.location.href =
+                    REDIRECT_TARGET;
+
+            },
+            1200
+        );
+
+
+    } catch (error) {
 
         console.error(
             "Update App Error:",
-            err
+            error
         );
 
-        setSubmitting(false, 'btnUpdate');
+
+        setSubmitting(
+            false,
+            "btnUpdate"
+        );
 
         markDirty();
 
-        var message =
-            err && err.message
-                ? err.message
-                : 'Please check your connection and try again.';
+
+        const message =
+            error &&
+            error.message
+                ? error.message
+                : "Update failed.";
+
 
         showSubmitAlert(
-            'Could not update this app',
+            "Could not update app",
             message
         );
 
+
         showToast(
-            'error',
-            'Update failed',
+            "error",
+            "Update failed",
             message
         );
     }
 }
+       
   /* ==========================================================
      13. DELETE APP
      ========================================================== */
