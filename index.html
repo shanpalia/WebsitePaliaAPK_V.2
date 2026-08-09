@@ -606,22 +606,63 @@ recordSiteVisit();
         });
 
         // Initialize Data from Supabase
-        async function initData() {
-            if (!supabaseClient) {
-                loadFallbacks();
-                return;
-            }
-            try {
-                const { data: apps, error } = await supabaseClient.from('apps').select('*');
-                if (error) throw error;
-                window.allAppsCache = apps || [];
-                renderPageData(window.allAppsCache);
-            } catch (err) {
-                console.warn('Supabase fallback invoked:', err);
-                loadFallbacks();
-            }
+       // ===============================
+// LOAD APPS FROM SUPABASE
+// ===============================
+async function initData() {
+
+    if (!supabaseClient) {
+        console.error("Supabase client not initialized");
+        return;
+    }
+
+    try {
+
+        const { data: apps, error } = await supabaseClient
+            .from("apps")
+            .select("*");
+
+        if (error) {
+            console.error("SUPABASE APPS ERROR:", error);
+            throw error;
         }
 
+        console.log("SUPABASE APPS:", apps);
+        console.log("TOTAL APPS:", apps?.length || 0);
+
+        window.allAppsCache = apps || [];
+
+        renderPageData(window.allAppsCache);
+
+    } catch (err) {
+
+        console.error("FAILED TO LOAD APPS FROM SUPABASE:", err);
+
+        // IMPORTANT:
+        // Don't show fake fallback apps.
+        window.allAppsCache = [];
+
+        const appsGrid = document.getElementById("appsGrid");
+
+        if (appsGrid) {
+            appsGrid.innerHTML = `
+                <div class="col-span-full py-16 text-center">
+                    <div class="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+
+                    <p class="text-sm font-bold text-red-600">
+                        Unable to load apps from Supabase
+                    </p>
+
+                    <p class="text-xs text-gray-500 mt-2">
+                        Check browser console for the exact error.
+                    </p>
+                </div>
+            `;
+        }
+    }
+}
         function loadFallbacks() {
             window.allAppsCache = [
                 { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300'], featured: true, top_chart: true, recently_updated: true },
