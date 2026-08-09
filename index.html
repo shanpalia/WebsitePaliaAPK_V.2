@@ -973,18 +973,7 @@ if (appsSection) {
 
             return appCategory.includes(category.toLowerCase());
         });
-// ===============================
-// OPEN APP DETAILS
-// ===============================
-window.openAppDetails = function(appId) {
 
-    if (!appId) {
-        console.error("App ID missing");
-        return;
-    }
-
-    window.location.href = `app.html?id=${encodeURIComponent(appId)}`;
-};
     // Search filter
     if (query) {
         filtered = filtered.filter(function(app) {
@@ -1082,6 +1071,18 @@ window.openAppDetails = function(appId) {
         </div>
     `;
 }).join('');
+        // ===============================
+// OPEN APP DETAILS
+// ===============================
+window.openAppDetails = function(appId) {
+
+    if (!appId) {
+        console.error("App ID missing");
+        return;
+    }
+
+    window.location.href = `app.html?id=${encodeURIComponent(appId)}`;
+};
         // Live Search & Autocomplete
         function setupLiveSearch() {
             const searchInput = document.getElementById('searchInput');
