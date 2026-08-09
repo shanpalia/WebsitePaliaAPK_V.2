@@ -332,30 +332,48 @@ const auth = firebase.auth();
                 document.getElementById('appSize').textContent = app.apk_size || 'Varies';
                 document.getElementById('appVersion').textContent = app.version || '1.0';
 
-         // Download Button - Direct APK Download
-
+       // ===============================
+// DOWNLOAD + DOWNLOAD HISTORY
+// ===============================
 const downloadBtn = document.getElementById("downloadBtn");
 
-downloadBtn.addEventListener("click", function (e) {
-
+downloadBtn.addEventListener("click", async function (e) {
     e.preventDefault();
 
+    let downloadUrl = "";
+
     if (app.telegram_message_id) {
-
-        window.location.href =
+        downloadUrl =
             `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
-
     } else if (app.apk_url) {
-
-        // Fallback for old apps without Telegram message ID
-        window.location.href = app.apk_url;
-
+        downloadUrl = app.apk_url;
     } else {
-
         alert("APK download is currently unavailable.");
-
+        return;
     }
 
+    // Save download history if user is logged in
+    const user = auth.currentUser;
+
+    if (user) {
+        const { error } = await _supabase
+            .from("downloads")
+            .insert({
+                user_id: user.uid,
+                app_id: app.id,
+                app_name: app.name || "Unknown App",
+                version: app.version || "Unknown",
+                icon_url: app.icon_url || null,
+                download_url: downloadUrl
+            });
+
+        if (error) {
+            console.error("Download history error:", error);
+        }
+    }
+
+    // Open APK download
+    window.location.href = downloadUrl;
 });
 
                 // Description
@@ -411,7 +429,7 @@ downloadBtn.addEventListener("click", function (e) {
                 // Show Content & Hide Skeleton
                 skeletonLoader.classList.add('hidden');
                 appContainer.classList.remove('hidden');
-
+               checkFavorite();
             } catch (err) {
                 console.error('Error loading app details:', err);
             }
@@ -482,18 +500,103 @@ downloadBtn.addEventListener("click", function (e) {
             }
         });
 
-        document.getElementById('bookmarkBtn').addEventListener('click', function() {
-            const icon = this.querySelector('i');
-            if (icon.classList.contains('fa-regular')) {
-                icon.classList.remove('fa-regular');
-                icon.classList.add('fa-solid', 'text-mint-600');
-                alert('App bookmarked successfully!');
-            } else {
-                icon.classList.remove('fa-solid', 'text-mint-600');
-                icon.classList.add('fa-regular');
-                alert('App removed from bookmarks.');
-            }
-        });
+       // ===============================
+// FAVORITES / BOOKMARK
+// ===============================
+const bookmarkBtn = document.getElementById("bookmarkBtn");
+const bookmarkIcon = bookmarkBtn.querySelector("i");
+
+async function checkFavorite() {
+
+    const user = auth.currentUser;
+
+    if (!user || !appId) return;
+
+    const { data, error } = await _supabase
+        .from("favorites")
+        .select("id")
+        .eq("user_id", user.uid)
+        .eq("app_id", appId)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Favorite check error:", error);
+        return;
+    }
+
+    if (data) {
+        bookmarkIcon.classList.remove("fa-regular");
+        bookmarkIcon.classList.add("fa-solid", "text-mint-600");
+        bookmarkBtn.dataset.favoriteId = data.id;
+    } else {
+        bookmarkIcon.classList.remove("fa-solid", "text-mint-600");
+        bookmarkIcon.classList.add("fa-regular");
+        delete bookmarkBtn.dataset.favoriteId;
+    }
+}
+
+bookmarkBtn.addEventListener("click", async function () {
+
+    const user = auth.currentUser;
+
+    if (!user) {
+        window.location.href = "user.html";
+        return;
+    }
+
+    try {
+
+        // Already favorite → remove
+        if (bookmarkBtn.dataset.favoriteId) {
+
+            const { error } = await _supabase
+                .from("favorites")
+                .delete()
+                .eq("id", bookmarkBtn.dataset.favoriteId)
+                .eq("user_id", user.uid);
+
+            if (error) throw error;
+
+            delete bookmarkBtn.dataset.favoriteId;
+
+            bookmarkIcon.classList.remove("fa-solid", "text-mint-600");
+            bookmarkIcon.classList.add("fa-regular");
+
+            alert("Removed from Favorites.");
+
+        } else {
+
+            // Add favorite
+            const { data, error } = await _supabase
+                .from("favorites")
+                .insert({
+                    user_id: user.uid,
+                    app_id: app.id,
+                    app_name: app.name || "Unknown App",
+                    version: app.version || "Unknown",
+                    icon_url: app.icon_url || null
+                })
+                .select("id")
+                .single();
+
+            if (error) throw error;
+
+            bookmarkBtn.dataset.favoriteId = data.id;
+
+            bookmarkIcon.classList.remove("fa-regular");
+            bookmarkIcon.classList.add("fa-solid", "text-mint-600");
+
+            alert("Added to Favorites.");
+
+        }
+
+    } catch (error) {
+
+        console.error("Favorite error:", error);
+        alert("Could not update Favorites: " + error.message);
+
+    }
+});
 
         document.getElementById('reportBtn').addEventListener('click', () => {
             alert('Thank you for reporting. Our moderation team will review this app.');
