@@ -333,7 +333,289 @@ app.post("/upload-apk", (req, res, next) => {
         });
     }
 });
+// ============================================
+// UPDATE TELEGRAM MESSAGE CAPTION
+// ============================================
+app.post("/update-telegram-caption", async (req, res) => {
 
+    try {
+
+        const {
+            messageId,
+            appName,
+            version,
+            developer,
+            description
+        } = req.body;
+
+        if (!messageId) {
+            return res.status(400).json({
+                success: false,
+                error: "Telegram message ID is required."
+            });
+        }
+
+        await ensureTelegramClient();
+
+        const formattedChannel =
+            channelUsername.startsWith("@")
+                ? channelUsername
+                : `@${channelUsername}`;
+
+        const caption =
+`📦 ${appName || "App"}
+📱 Version: ${version || "Unknown"}
+👨‍💻 Developer: ${developer || "Unknown"}
+
+${description || ""}`;
+
+        await client.invoke(
+            new Api.messages.EditMessage({
+                peer: formattedChannel,
+                id: parseInt(messageId, 10),
+                message: caption
+            })
+        );
+
+        return res.status(200).json({
+            success: true,
+            telegram_message_id: Number(messageId)
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Telegram Caption Update Error:",
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            error: error.message || "Failed to update Telegram caption."
+        });
+    }
+});
+
+
+// ============================================
+// REPLACE APK ON TELEGRAM
+// ============================================
+app.post("/replace-apk", (req, res, next) => {
+
+    upload.single("file")(req, res, (err) => {
+
+        if (err instanceof multer.MulterError) {
+
+            return res.status(400).json({
+                success: false,
+                error: `Multer error: ${err.message}`
+            });
+        }
+
+        if (err) {
+
+            return res.status(400).json({
+                success: false,
+                error: err.message
+            });
+        }
+
+        next();
+    });
+
+}, async (req, res) => {
+
+    let filePath = null;
+
+    try {
+
+        const {
+            messageId,
+            appName,
+            version,
+            developer,
+            description
+        } = req.body;
+
+        if (!req.file) {
+
+            return res.status(400).json({
+                success: false,
+                error: "No APK file received."
+            });
+        }
+
+        if (!messageId) {
+
+            return res.status(400).json({
+                success: false,
+                error: "Old Telegram message ID is required."
+            });
+        }
+
+        filePath = req.file.path;
+
+        const fileName = req.file.originalname;
+        const fileSize = req.file.size;
+
+        await ensureTelegramClient();
+
+        const formattedChannel =
+            channelUsername.startsWith("@")
+                ? channelUsername
+                : `@${channelUsername}`;
+
+        // Upload new APK
+        const customFile =
+            new CustomFile(
+                fileName,
+                fileSize,
+                filePath
+            );
+
+        const uploadedFile =
+            await client.uploadFile({
+                file: customFile,
+                workers: 4
+            });
+
+        const caption =
+`📦 ${appName || "App"}
+📱 Version: ${version || "Unknown"}
+👨‍💻 Developer: ${developer || "Unknown"}
+
+${description || ""}`;
+
+        // Send new APK
+        const result =
+            await client.sendFile(
+                formattedChannel,
+                {
+                    file: uploadedFile,
+                    caption: caption,
+                    forceDocument: true,
+                    attributes: [
+                        new Api.DocumentAttributeFilename({
+                            fileName: fileName
+                        })
+                    ]
+                }
+            );
+
+        const newMessageId =
+            Number(result.id);
+
+        const downloadUrl =
+            `https://t.me/${formattedChannel.replace("@", "")}/${newMessageId}`;
+
+        // Delete old Telegram APK message
+        try {
+
+            await client.deleteMessages(
+                formattedChannel,
+                [parseInt(messageId, 10)]
+            );
+
+            console.log(
+                `Old Telegram message deleted: ${messageId}`
+            );
+
+        } catch (deleteError) {
+
+            console.error(
+                "Old Telegram message delete failed:",
+                deleteError
+            );
+
+            // Don't fail the complete replacement
+        }
+
+        // Get Telegram file IDs
+        let telegramFileId =
+            String(newMessageId);
+
+        let telegramFileUniqueId =
+            String(newMessageId);
+
+        if (
+            result.media &&
+            result.media.document
+        ) {
+
+            telegramFileId =
+                String(result.media.document.id);
+
+            telegramFileUniqueId =
+                String(
+                    result.media.document.accessHash
+                );
+        }
+
+        // Remove temporary file
+        if (
+            filePath &&
+            fs.existsSync(filePath)
+        ) {
+
+            fs.unlinkSync(filePath);
+            filePath = null;
+        }
+
+        return res.status(200).json({
+
+            success: true,
+
+            telegram_message_id:
+                newMessageId,
+
+            telegram_file_id:
+                telegramFileId,
+
+            telegram_file_unique_id:
+                telegramFileUniqueId,
+
+            download_url:
+                downloadUrl,
+
+            file_name:
+                fileName,
+
+            file_size:
+                fileSize
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Telegram APK Replacement Error:",
+            error
+        );
+
+        if (
+            filePath &&
+            fs.existsSync(filePath)
+        ) {
+
+            try {
+                fs.unlinkSync(filePath);
+            } catch (cleanupError) {
+                console.error(
+                    "Cleanup error:",
+                    cleanupError
+                );
+            }
+        }
+
+        return res.status(500).json({
+
+            success: false,
+
+            error:
+                error.message ||
+                "APK replacement failed."
+        });
+    }
+});
 app.use((req, res) => {
     res.status(404).json({
         success: false,
