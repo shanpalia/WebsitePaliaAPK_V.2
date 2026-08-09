@@ -309,9 +309,9 @@
             </div>
             
             <!-- Horizontal Scrolling Categories Container -->
-            <div id="categoriesContainer" class="flex gap-3.5 overflow-x-auto no-scrollbar pb-3 scroll-smooth snap-x snap-mandatory">
-                <!-- Dynamically injected via JavaScript -->
-            </div>
+            <div id="categoriesContainer"
+     class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+</div>
 
             <!-- View All Categories CTA Button -->
             <div class="mt-6 text-center">
@@ -459,20 +459,62 @@
         window.currentSearchQuery = '';
 
         // Exact 10 requested categories + All
-        const defaultCategoriesConfig = [
-            { name: 'All', icon: 'fa-fire' },
-            { name: 'AI', icon: 'fa-robot' },
-            { name: 'Social', icon: 'fa-comments' },
-            { name: 'Games', icon: 'fa-gamepad' },
-            { name: 'Tools', icon: 'fa-screwdriver-wrench' },
-            { name: 'Music', icon: 'fa-music' },
-            { name: 'Video', icon: 'fa-play' },
-            { name: 'Photography', icon: 'fa-camera' },
-            { name: 'Education', icon: 'fa-graduation-cap' },
-            { name: 'Business', icon: 'fa-briefcase' },
-            { name: 'Health', icon: 'fa-heart-pulse' }
-        ];
+      const defaultCategoriesConfig = [
+    { name: 'All', icon: 'fa-fire' },
+    { name: 'AI', icon: 'fa-robot' },
+    { name: 'Social', icon: 'fa-comments' },
+    { name: 'Games', icon: 'fa-gamepad' },
+    { name: 'Tools', icon: 'fa-screwdriver-wrench' },
+    { name: 'Music', icon: 'fa-music' },
+    { name: 'Video', icon: 'fa-play' },
+    { name: 'Photography', icon: 'fa-camera' },
+    { name: 'Education', icon: 'fa-graduation-cap' },
+    { name: 'Business', icon: 'fa-briefcase' },
 
+    { name: 'Finance', icon: 'fa-wallet' },
+    { name: 'News', icon: 'fa-newspaper' },
+    { name: 'Entertainment', icon: 'fa-film' },
+    { name: 'Shopping', icon: 'fa-cart-shopping' },
+    { name: 'Travel', icon: 'fa-plane' },
+    { name: 'Food & Drink', icon: 'fa-utensils' },
+    { name: 'Lifestyle', icon: 'fa-heart' },
+    { name: 'Productivity', icon: 'fa-list-check' },
+    { name: 'Communication', icon: 'fa-message' },
+    { name: 'Security', icon: 'fa-shield-halved' },
+
+    { name: 'Weather', icon: 'fa-cloud-sun' },
+    { name: 'Sports', icon: 'fa-futbol' },
+    { name: 'Books', icon: 'fa-book' },
+    { name: 'Kids', icon: 'fa-child' },
+    { name: 'Health & Fitness', icon: 'fa-dumbbell' },
+    { name: 'Maps & Navigation', icon: 'fa-map-location-dot' },
+    { name: 'Photo Editing', icon: 'fa-image' },
+    { name: 'Video Editing', icon: 'fa-video' },
+    { name: 'Developer', icon: 'fa-code' },
+    { name: 'Internet', icon: 'fa-globe' },
+
+    { name: 'Browser', icon: 'fa-compass' },
+    { name: 'File Manager', icon: 'fa-folder-open' },
+    { name: 'Cloud Storage', icon: 'fa-cloud' },
+    { name: 'VPN', icon: 'fa-user-shield' },
+    { name: 'Launcher', icon: 'fa-mobile-screen-button' },
+    { name: 'Customization', icon: 'fa-palette' },
+    { name: 'Wallpaper', icon: 'fa-image' },
+    { name: 'Keyboard', icon: 'fa-keyboard' },
+    { name: 'Messaging', icon: 'fa-comment-dots' },
+    { name: 'Calling', icon: 'fa-phone' },
+
+    { name: 'Health', icon: 'fa-heart-pulse' },
+    { name: 'Fitness', icon: 'fa-person-running' },
+    { name: 'Utilities', icon: 'fa-toolbox' },
+    { name: 'OCR', icon: 'fa-file-lines' },
+    { name: 'Translation', icon: 'fa-language' },
+    { name: 'Audio', icon: 'fa-headphones' },
+    { name: 'Streaming', icon: 'fa-tv' },
+    { name: 'Remote Control', icon: 'fa-computer-mouse' },
+    { name: 'Developer Tools', icon: 'fa-terminal' },
+    { name: 'Other', icon: 'fa-layer-group' }
+];
 
 
 // ===============================
@@ -661,21 +703,20 @@ recordSiteVisit();
             const container = document.getElementById('categoriesContainer');
             if (!container) return;
 
-            container.innerHTML = defaultCategoriesConfig.map(catConfig => {
+            container.innerHTML = defaultCategoriesConfig.slice(0, 10).map(catConfig => {
                 const matchedCount = catConfig.name === 'All' 
                     ? (appsArray || []).length 
                     : (appsArray || []).filter(a => a.category && a.category.toLowerCase() === catConfig.name.toLowerCase()).length;
                 
                 const isSelected = window.currentCategory.toLowerCase() === catConfig.name.toLowerCase();
 
-                const cardClasses = isSelected
-                    ? "category-card snap-start p-4 rounded-2xl bg-mint-600 text-white shadow-lg shadow-mint-600/25 flex flex-col items-center justify-center gap-2 cursor-pointer transform -translate-y-1"
-                    : "category-card snap-start p-4 rounded-2xl bg-white dark:bg-gray-800/90 hover:bg-mint-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-gray-700/80 flex flex-col items-center justify-center gap-2 cursor-pointer shadow-sm";
+               const cardClasses = isSelected
+    ? "category-card snap-start p-4 rounded-2xl bg-mint-50 text-mint-700 border-2 border-mint-200 shadow-md shadow-mint-100 flex flex-col items-center justify-center gap-2 cursor-pointer transform -translate-y-1"
+    : "category-card snap-start p-4 rounded-2xl bg-white dark:bg-gray-800/90 hover:bg-mint-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-gray-700/80 flex flex-col items-center justify-center gap-2 cursor-pointer shadow-sm";
 
-                const iconBoxClasses = isSelected
-                    ? "w-11 h-11 rounded-xl bg-white/20 text-white flex items-center justify-center text-base"
-                    : "w-11 h-11 rounded-xl bg-mint-50 dark:bg-mint-900/40 text-mint-600 dark:text-mint-400 flex items-center justify-center text-base";
-
+               const iconBoxClasses = isSelected
+    ? "w-11 h-11 rounded-xl bg-mint-100 text-mint-600 flex items-center justify-center text-base"
+    : "w-11 h-11 rounded-xl bg-mint-50 dark:bg-mint-900/40 text-mint-600 dark:text-mint-400 flex items-center justify-center text-base";
                 const countTextClasses = isSelected
                     ? "text-[11px] text-white/90 font-medium mt-0.5"
                     : "text-[11px] text-gray-400 font-medium mt-0.5";
