@@ -1121,17 +1121,92 @@ window.openAppDetails = function(appId) {
             });
         }
 
-        // Download Click Logic: Guests redirected to user.html with redirect back
-        window.handleDownloadClick = function(appId) {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    window.location.href = `app.html?id=${appId}`;
-                } else {
-                    localStorage.setItem('redirect_after_login', `app.html?id=${appId}`);
-                    window.location.href = 'user.html';
-                }
-            });
-        };
+       // ===============================
+// HOMEPAGE DOWNLOAD
+// ===============================
+window.handleDownloadClick = async function(appId) {
+
+    if (!appId) {
+        console.error("App ID missing");
+        return;
+    }
+
+    try {
+
+        const { data: app, error } = await supabaseClient
+            .from("apps")
+            .select("*")
+            .eq("id", appId)
+            .single();
+
+        if (error || !app) {
+            console.error("App loading error:", error);
+            alert("App information not found.");
+            return;
+        }
+
+        let downloadUrl = "";
+
+        // Telegram APK
+        if (app.telegram_message_id) {
+
+            downloadUrl =
+                `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
+
+        }
+
+        // Direct APK
+        else if (app.apk_url) {
+
+            downloadUrl = app.apk_url;
+
+        }
+
+        else {
+
+            alert("APK download is currently unavailable.");
+            return;
+        }
+
+        // Firebase logged-in user
+        const user =
+            typeof auth !== "undefined"
+                ? auth.currentUser
+                : null;
+
+        // Save download history
+        if (user) {
+
+            const { error: historyError } =
+                await supabaseClient
+                    .from("downloads")
+                    .insert({
+                        user_id: user.uid,
+                        app_id: app.id,
+                        app_name: app.name || "Unknown App",
+                        version: app.version || "Unknown",
+                        icon_url: app.icon_url || null,
+                        download_url: downloadUrl
+                    });
+
+            if (historyError) {
+                console.error(
+                    "Download history error:",
+                    historyError
+                );
+            }
+        }
+
+        // Start APK download
+        window.location.href = downloadUrl;
+
+    } catch (error) {
+
+        console.error("Homepage download error:", error);
+        alert("Unable to start download.");
+
+    }
+};
 
         // Share Website Feature (Native Android API, Desktop Clipboard, Fallback Dialog)
         window.triggerShareWebsite = function() {
