@@ -2037,18 +2037,29 @@ async function updateApp() {
             );
 
 
-        /*
-         * APK:
-         *
-         * We still save the APK to Supabase Storage.
-         * Telegram replacement is handled separately below.
-         */
-        finalUrls.apk =
-            await resolveUploaderForSave(
-                "apk",
-                BUCKETS.apk
-            );
+      // ============================================
+// APK IS STORED ON TELEGRAM
+// ============================================
 
+if (newApkFile) {
+
+    // New APK will be uploaded/replaced on Telegram
+    // below by replaceTelegramApk().
+    finalUrls.apk = null;
+
+} else if (telegramMessageId) {
+
+    // Keep existing Telegram APK
+    finalUrls.apk =
+        "https://paliaapk-telegram-api.onrender.com/download-apk/" +
+        telegramMessageId;
+
+} else {
+
+    // Old app fallback
+    finalUrls.apk =
+        uploads.apk.dbUrl || null;
+}
 
         // Screenshots
         for (
@@ -2286,12 +2297,10 @@ async function updateApp() {
 
     hideSubmitAlert();
     setSubmitting(true, 'btnDelete');
-
-    var deletions = [
-      deleteAssetByUrl(BUCKETS.icon, uploads.icon.dbUrl),
-      deleteAssetByUrl(BUCKETS.banner, uploads.banner.dbUrl),
-      deleteAssetByUrl(BUCKETS.apk, uploads.apk.dbUrl)
-    ];
+var deletions = [
+    deleteAssetByUrl(BUCKETS.icon, uploads.icon.dbUrl),
+    deleteAssetByUrl(BUCKETS.banner, uploads.banner.dbUrl)
+];
     ['screenshot1', 'screenshot2', 'screenshot3', 'screenshot4', 'screenshot5'].forEach(function(id){
       deletions.push(deleteAssetByUrl(BUCKETS.screenshot, uploads[id].dbUrl));
     });
