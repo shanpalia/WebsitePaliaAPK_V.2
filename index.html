@@ -973,7 +973,7 @@ if (appsSection) {
 
             return appCategory.includes(category.toLowerCase());
         });
-        // ===============================
+// ===============================
 // OPEN APP DETAILS
 // ===============================
 window.openAppDetails = function(appId) {
@@ -983,11 +983,8 @@ window.openAppDetails = function(appId) {
         return;
     }
 
-    window.location.href =
-        `app.html?id=${encodeURIComponent(appId)}`;
+    window.location.href = `app.html?id=${encodeURIComponent(appId)}`;
 };
-    }
-
     // Search filter
     if (query) {
         filtered = filtered.filter(function(app) {
@@ -1040,44 +1037,51 @@ window.openAppDetails = function(appId) {
         return;
     }
 
-    appsGrid.innerHTML = filtered.map(function(app) {
+   appsGrid.innerHTML = filtered.map(app => {
 
-        return `
-    <div
-        class="app-card p-3.5 flex flex-col justify-between cursor-pointer"
-        onclick="openAppDetails('${app.id}')"
-    >
+    let displayName = app.name || "Unknown App";
 
-        <div>
-            <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
-                <img
-                    src="${app.icon_url || ''}"
-                    alt="${app.name || 'App'}"
-                    class="w-full h-full hero-img-contain rounded-lg"
-                >
+    if (query && app.name) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        displayName = app.name.replace(
+            regex,
+            `<span class="bg-mint-200 dark:bg-mint-900/60 text-mint-800 dark:text-mint-200 px-0.5 rounded">$1</span>`
+        );
+    }
+
+    return `
+        <div
+            class="app-card p-3.5 flex flex-col justify-between cursor-pointer"
+            onclick="openAppDetails('${app.id}')"
+        >
+
+            <div>
+                <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                    <img
+                        src="${app.icon_url || ''}"
+                        alt="${app.name || 'App'}"
+                        class="w-full h-full hero-img-contain rounded-lg"
+                    >
+                </div>
+
+                <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">
+                    ${displayName}
+                </h5>
+
+                <p class="text-[10px] text-gray-400 mt-0.5">
+                    ${app.category || 'App'} • ⭐ ${app.rating || '4.9'}
+                </p>
             </div>
 
-            <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">
-                ${displayName}
-            </h5>
+            <button
+                onclick="event.stopPropagation(); handleDownloadClick('${app.id}')"
+                class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">
+                Install
+            </button>
 
-            <p class="text-[10px] text-gray-400 mt-0.5">
-                ${app.category || 'App'} • ⭐ ${app.rating || '4.9'}
-            </p>
         </div>
-
-        <button
-            onclick="event.stopPropagation(); handleDownloadClick('${app.id}')"
-            class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">
-            Install
-        </button>
-
-    </div>
-`;
-        
-    }).join('');
-};
-
+    `;
+}).join('');
         // Live Search & Autocomplete
         function setupLiveSearch() {
             const searchInput = document.getElementById('searchInput');
