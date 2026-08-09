@@ -1156,9 +1156,11 @@ img{ max-width: 100%; display: block; }
   var urlParams = new URLSearchParams(window.location.search);
   var appId = urlParams.get('id');
   var appLoaded = false;
-  var originalDownloads = 0;
-  var loadedApkSizeLabel = null;
+ var originalDownloads = 0;
+var loadedApkSizeLabel = null;
 
+// Telegram message ID of this app
+var telegramMessageId = null;
   /* ==========================================================
      2. SHARED DOM REFS / STATUS PILL
      ========================================================== */
@@ -1702,7 +1704,12 @@ img{ max-width: 100%; display: block; }
 
     originalDownloads = Number(data.downloads || 0);
     loadedApkSizeLabel = data.apk_size || null;
+telegramMessageId = data.telegram_message_id || null;
 
+console.log(
+    "Telegram Message ID:",
+    telegramMessageId
+);
     setUploaderExisting('icon', data.icon_url);
     setUploaderExisting('banner', data.banner_url);
     setUploaderExisting('apk', data.apk_url);
