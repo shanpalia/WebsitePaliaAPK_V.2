@@ -1307,9 +1307,6 @@ window.openAppDetails = function(appId) {
             });
         }
 
-       // ===============================
-// HOMEPAGE DOWNLOAD
-// ===============================
 window.handleDownloadClick = async function(appId) {
 
     if (!appId) {
@@ -1333,125 +1330,77 @@ window.handleDownloadClick = async function(appId) {
 
         let downloadUrl = "";
 
-        // Telegram APK
         if (app.telegram_message_id) {
-
             downloadUrl =
                 `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
-
         }
-
-        // Direct APK
         else if (app.apk_url) {
-
             downloadUrl = app.apk_url;
-
         }
-
         else {
-
             alert("APK download is currently unavailable.");
             return;
         }
 
-        // Firebase logged-in user
+        // CHECK LOGIN
         const user =
             typeof auth !== "undefined"
                 ? auth.currentUser
                 : null;
 
-        // Save download history
-        if (user) {
+        // NOT LOGGED IN
+        if (!user) {
 
-            const { error: historyError } =
-                await supabaseClient
-                    .from("downloads")
-                    .insert({
-                        user_id: user.uid,
-                        app_id: app.id,
-                        app_name: app.name || "Unknown App",
-                        version: app.version || "Unknown",
-                        icon_url: app.icon_url || null,
-                        download_url: downloadUrl
-                    });
+            localStorage.setItem(
+                "download_after_login",
+                downloadUrl
+            );
 
-            if (historyError) {
-                console.error(
-                    "Download history error:",
-                    historyError
-                );
-            }
+            localStorage.setItem(
+                "download_app_id",
+                String(app.id)
+            );
+
+            window.location.href =
+                "user.html?redirect=" +
+                encodeURIComponent(downloadUrl);
+
+            return;
         }
 
-        // Start APK download
+        // LOGGED IN → SAVE HISTORY
+        const { error: historyError } =
+            await supabaseClient
+                .from("downloads")
+                .insert({
+                    user_id: user.uid,
+                    app_id: app.id,
+                    app_name: app.name || "Unknown App",
+                    version: app.version || "Unknown",
+                    icon_url: app.icon_url || null,
+                    download_url: downloadUrl
+                });
+
+        if (historyError) {
+            console.error(
+                "Download history error:",
+                historyError
+            );
+        }
+
+        // DIRECT DOWNLOAD
         window.location.href = downloadUrl;
 
     } catch (error) {
 
-        console.error("Homepage download error:", error);
-        alert("Unable to start download.");
+        console.error(
+            "Homepage download error:",
+            error
+        );
 
+        alert("Unable to start download.");
     }
 };
-
-        // Share Website Feature (Native Android API, Desktop Clipboard, Fallback Dialog)
-        window.triggerShareWebsite = function() {
-            const shareData = {
-                title: 'PaliaAPK HUB',
-                text: 'Download Safe & Verified Android APKs from PaliaAPK HUB.',
-                url: 'https://shanpalia.github.io/WebsitePaliaAPK_V.2/'
-            };
-
-            if (navigator.share) {
-                navigator.share(shareData).catch(() => {});
-            } else if (navigator.clipboard) {
-                navigator.clipboard.writeText(shareData.url).then(() => {
-                    alert('Website link copied to clipboard!');
-                }).catch(() => {
-                    prompt('Copy link:', shareData.url);
-                });
-            } else {
-                prompt('Copy link:', shareData.url);
-            }
-        };
-
-        // Firebase Auth State UI & Avatar Management
-        auth.onAuthStateChanged((user) => {
-            const loginBtn = document.getElementById('loginBtn');
-            const profileBox = document.getElementById('profileBox');
-            const profileAvatar = document.getElementById('profileAvatar');
-            const logoutBtn = document.getElementById('logoutBtn');
-
-            if (user) {
-                loginBtn?.classList.add('hidden');
-                profileBox?.classList.remove('hidden');
-                const name = user.displayName || user.email.split('@')[0];
-                if (profileAvatar) profileAvatar.textContent = name.substring(0, 2).toUpperCase();
-                
-                if (logoutBtn) {
-                    logoutBtn.onclick = () => {
-                        auth.signOut().then(() => {
-                            window.location.href = 'index.html';
-                        });
-                    };
-                }
-
-                // Check if returning from login redirect
-                const redirectUrl = localStorage.getItem('redirect_after_login');
-                if (redirectUrl) {
-                    localStorage.removeItem('redirect_after_login');
-                    window.location.href = redirectUrl;
-                }
-            } else {
-                loginBtn?.classList.remove('hidden');
-                profileBox?.classList.add('hidden');
-                if (loginBtn) {
-                    loginBtn.onclick = () => {
-                        window.location.href = 'user.html';
-                    };
-                }
-            }
-        });
 // ============================================
 // MOBILE APP INSTALL PROMPT
 // ============================================
