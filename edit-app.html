@@ -908,7 +908,27 @@ img{ max-width: 100%; display: block; }
                   <input class="field-input" type="text" id="fVersion" name="version" placeholder="e.g. 2.4.1" autocomplete="off">
                   <span class="field-error">⚠ Version is required.</span>
                 </div>
+<div class="field field--full">
+  <label for="fReleaseNotes">
+    What's New / Release Notes
+    <span class="opt">Optional</span>
+  </label>
 
+  <textarea
+    class="field-input"
+    id="fReleaseNotes"
+    name="release_notes"
+    rows="5"
+    placeholder="Example:
+• New features added
+• Performance improved
+• Bugs fixed"
+  ></textarea>
+
+  <span class="field-hint">
+    Explain what changed in this update.
+  </span>
+</div>
                 <div class="field">
                   <label for="fDeveloper">Developer</label>
                   <input class="field-input" type="text" id="fDeveloper" name="developer" placeholder="e.g. Singularity 6" autocomplete="off">
@@ -1694,6 +1714,7 @@ var telegramMessageId = null;
   function populateForm(data){
     document.getElementById('fName').value = data.name || '';
     document.getElementById('fVersion').value = data.version || '';
+     document.getElementById('fReleaseNotes').value = data.release_notes || '';
     document.getElementById('fDeveloper').value = data.developer || '';
     document.getElementById('fPackage').value = data.package_name || '';
 
@@ -2109,7 +2130,24 @@ if (newApkFile) {
                 finalUrls,
                 finalApkSize
             );
+// ============================================
+// APP UPDATE DETECTION
+// ============================================
 
+const oldVersion = appData.version || '';
+const newVersion = document.getElementById('fVersion')?.value?.trim() || '';
+
+if (oldVersion && newVersion && oldVersion !== newVersion) {
+    payload.previous_version = oldVersion;
+    payload.update_available = true;
+    payload.updated_at = new Date().toISOString();
+
+    const releaseNotesField = document.getElementById('fReleaseNotes');
+
+    if (releaseNotesField) {
+        payload.release_notes = releaseNotesField.value.trim();
+    }
+}
 
         // ============================================
         // 3. TELEGRAM
