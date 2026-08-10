@@ -470,3 +470,35 @@ if (logoutBtn) {
     });
 
 });
+// ===============================
+// ANDROID BACK BUTTON - CAPACITOR
+// ===============================
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (!window.Capacitor) {
+        return;
+    }
+
+    const AppPlugin =
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.App;
+
+    if (!AppPlugin) {
+        console.warn("Capacitor App plugin not available.");
+        return;
+    }
+
+    AppPlugin.addListener("backButton", function () {
+
+        // अगर पिछला web page मौजूद है तो वापस जाएं
+        if (window.history.length > 1) {
+            window.history.back();
+            return;
+        }
+
+        // Home page पर हैं तो तुरंत exit न करें
+        console.log("Already on home page.");
+    });
+
+});
