@@ -39,9 +39,11 @@ workflows:
       - name: Create Android project
         script: |
           npx cap add android
-- name: Generate PaliaAPK HUB icon
-  script: |
-    npx @capacitor/assets generate --android
+
+      - name: Generate PaliaAPK HUB icon
+        script: |
+          npx @capacitor/assets generate --android
+
       - name: Sync Capacitor
         script: |
           npx cap sync android
@@ -54,7 +56,8 @@ workflows:
           gradle_file = Path("android/app/build.gradle")
           text = gradle_file.read_text()
 
-          signing_block = """
+          if "signingConfigs" not in text:
+              signing_block = """
               signingConfigs {
                   release {
                       storeFile file(System.getenv("CM_KEYSTORE_PATH"))
@@ -63,9 +66,8 @@ workflows:
                       keyPassword System.getenv("CM_KEY_PASSWORD")
                   }
               }
-          """
+              """
 
-          if "signingConfigs {" not in text:
               text = text.replace(
                   "android {",
                   "android {" + signing_block,
@@ -74,14 +76,10 @@ workflows:
 
           if "signingConfig signingConfigs.release" not in text:
               text = text.replace(
-                  "buildTypes {",
-                  """buildTypes {
-                  release {
+                  "release {",
+                  """release {
                       signingConfig signingConfigs.release
-                  }
-              }
-
-              buildTypes {""",
+                  """,
                   1
               )
 
