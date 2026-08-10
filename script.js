@@ -471,10 +471,10 @@ if (logoutBtn) {
 
 });
 // ==========================================
-// ANDROID NATIVE BACK NAVIGATION
+// PALIAAPK HUB - ANDROID BACK NAVIGATION
 // ==========================================
 
-document.addEventListener("DOMContentLoaded", async function () {
+document.addEventListener("DOMContentLoaded", function () {
 
     if (!window.Capacitor) return;
 
@@ -487,24 +487,25 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     let lastBackPress = 0;
 
-    await App.addListener("backButton", async function () {
+    App.addListener("backButton", async function () {
 
         const currentPage =
             window.location.pathname.split("/").pop() || "index.html";
 
-        // Go back through web navigation history
-        if (window.history.length > 1) {
-            window.history.back();
-            return;
-        }
-
-        // If not Home, go Home
+        // ------------------------------------------
+        // If current page is NOT Home
+        // always return to Home
+        // ------------------------------------------
         if (currentPage !== "index.html" && currentPage !== "") {
             window.location.href = "index.html";
             return;
         }
 
-        // On Home: double back to exit
+        // ------------------------------------------
+        // Home page
+        // Double Back to exit
+        // ------------------------------------------
+
         const now = Date.now();
 
         if (now - lastBackPress < 2000) {
@@ -513,7 +514,32 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         lastBackPress = now;
-        console.log("Press back again to exit");
+
+        // Simple visual feedback
+        const message = document.createElement("div");
+
+        message.textContent = "Press back again to exit";
+
+        message.style.cssText = `
+            position: fixed;
+            left: 50%;
+            bottom: 80px;
+            transform: translateX(-50%);
+            background: #222;
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 999999;
+            box-shadow: 0 4px 15px rgba(0,0,0,.2);
+        `;
+
+        document.body.appendChild(message);
+
+        setTimeout(() => {
+            message.remove();
+        }, 1500);
+
     });
 
 });
