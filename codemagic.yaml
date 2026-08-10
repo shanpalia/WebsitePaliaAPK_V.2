@@ -39,7 +39,9 @@ workflows:
       - name: Create Android project
         script: |
           npx cap add android
-
+- name: Generate PaliaAPK HUB icon
+  script: |
+    npx @capacitor/assets generate --android
       - name: Sync Capacitor
         script: |
           npx cap sync android
