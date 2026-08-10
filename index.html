@@ -1143,8 +1143,8 @@ window.openAppDetails = function(appId) {
             });
         }
 
-       // ===============================
-// HOMEPAGE DOWNLOAD
+ // ===============================
+// HOMEPAGE DOWNLOAD - LOGIN REQUIRED
 // ===============================
 window.handleDownloadClick = async function(appId) {
 
@@ -1167,66 +1167,81 @@ window.handleDownloadClick = async function(appId) {
             return;
         }
 
+        // Create APK URL
         let downloadUrl = "";
 
-        // Telegram APK
         if (app.telegram_message_id) {
 
             downloadUrl =
                 `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
 
-        }
-
-        // Direct APK
-        else if (app.apk_url) {
+        } else if (app.apk_url) {
 
             downloadUrl = app.apk_url;
 
-        }
-
-        else {
+        } else {
 
             alert("APK download is currently unavailable.");
             return;
         }
 
-        // Firebase logged-in user
+        // ===============================
+        // CHECK LOGIN
+        // ===============================
+
         const user =
             typeof auth !== "undefined"
                 ? auth.currentUser
                 : null;
 
-        // Save download history
-        if (user) {
+        // ===============================
+        // NOT LOGGED IN
+        // ===============================
 
-            const { error: historyError } =
-                await supabaseClient
-                    .from("downloads")
-                    .insert({
-                        user_id: user.uid,
-                        app_id: app.id,
-                        app_name: app.name || "Unknown App",
-                        version: app.version || "Unknown",
-                        icon_url: app.icon_url || null,
-                        download_url: downloadUrl
-                    });
+        if (!user) {
 
-            if (historyError) {
-                console.error(
-                    "Download history error:",
-                    historyError
-                );
-            }
+            // Open login page and remember APK URL
+            window.location.href =
+                "user.html?redirect=" +
+                encodeURIComponent(downloadUrl);
+
+            return;
         }
 
-        // Start APK download
+        // ===============================
+        // LOGGED IN
+        // ===============================
+
+        const { error: historyError } =
+            await supabaseClient
+                .from("downloads")
+                .insert({
+                    user_id: user.uid,
+                    app_id: app.id,
+                    app_name: app.name || "Unknown App",
+                    version: app.version || "Unknown",
+                    icon_url: app.icon_url || null,
+                    download_url: downloadUrl
+                });
+
+        if (historyError) {
+            console.error(
+                "Download history error:",
+                historyError
+            );
+        }
+
+        // Direct download
         window.location.href = downloadUrl;
 
     } catch (error) {
 
-        console.error("Homepage download error:", error);
-        alert("Unable to start download.");
+        console.error(
+            "Homepage download error:",
+            error
+        );
 
+        alert("Unable to start download.");
     }
 };
 
