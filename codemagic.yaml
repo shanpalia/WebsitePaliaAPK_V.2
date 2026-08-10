@@ -15,6 +15,7 @@ workflows:
       - name: Install dependencies
         script: |
           npm install
+          npm install @capacitor/push-notifications@8.1.2
 
       - name: Prepare web assets
         script: |
@@ -39,6 +40,17 @@ workflows:
       - name: Create Android project
         script: |
           npx cap add android
+
+      - name: Add Firebase configuration
+        script: |
+          mkdir -p android/app
+
+          printf '%s' "$FIREBASE_GOOGLE_SERVICES_JSON" \
+            > android/app/google-services.json
+
+          test -s android/app/google-services.json
+
+          echo "Firebase google-services.json added successfully."
 
       - name: Generate PaliaAPK HUB icon
         script: |
@@ -83,7 +95,7 @@ workflows:
                   1
               )
 
-          # Add release signing config specifically inside buildTypes.release
+          # Add release signing config
           if "signingConfig signingConfigs.release" not in text:
               pattern = r"(buildTypes\s*\{\s*release\s*\{)"
 
@@ -101,16 +113,22 @@ workflows:
 
               if count == 0:
                   raise SystemExit(
-                      "Could not find buildTypes.release in android/app/build.gradle"
+                      "Could not find buildTypes.release"
                   )
 
           gradle_file.write_text(text)
+
           print("Android release signing configured successfully.")
           PY
 
       - name: Check Java
         script: |
           java -version
+
+      - name: Check Firebase configuration
+        script: |
+          test -f android/app/google-services.json
+          echo "Firebase configuration found."
 
       - name: Check signing variables
         script: |
