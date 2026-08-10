@@ -172,6 +172,7 @@
             }
         }
     </style>
+<link rel="stylesheet" href="palia-mobile-app.css">
 </head>
 <body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
 
@@ -1290,5 +1291,27 @@ window.handleDownloadClick = async function(appId) {
 
         document.addEventListener('DOMContentLoaded', initData);
     </script>
+
+<nav id="mobileAppNav" aria-label="App navigation">
+  <a href="index.html" class="active"><i class="fa-solid fa-house"></i><span>Home</span></a>
+  <a href="index.html#categoriesSection"><i class="fa-solid fa-layer-group"></i><span>Categories</span></a>
+  <a href="index.html#topChartsSection"><i class="fa-solid fa-chart-line"></i><span>Top Charts</span></a>
+  <a href="downloads.html"><i class="fa-solid fa-download"></i><span>Downloads</span></a>
+  <a href="settings.html"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+</nav>
+
+
+<script>
+(function(){
+  function enableAppMode(){
+    if(window.Capacitor || location.protocol === 'capacitor:' || location.protocol === 'ionic:'){
+      document.body.classList.add('capacitor-app');
+    }
+  }
+  document.addEventListener('DOMContentLoaded', enableAppMode);
+  window.addEventListener('load', enableAppMode);
+})();
+</script>
+
 </body>
 </html>
