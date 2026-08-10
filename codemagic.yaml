@@ -7,6 +7,9 @@ workflows:
       node: latest
       java: 21
 
+      android_signing:
+        - paliaapk-release
+
     scripts:
 
       - name: Install dependencies
@@ -41,11 +44,59 @@ workflows:
         script: |
           npx cap sync android
 
+      - name: Configure Android signing
+        script: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          gradle_file = Path("android/app/build.gradle")
+          text = gradle_file.read_text()
+
+          signing_block = """
+              signingConfigs {
+                  release {
+                      storeFile file(System.getenv("CM_KEYSTORE_PATH"))
+                      storePassword System.getenv("CM_KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("CM_KEY_ALIAS")
+                      keyPassword System.getenv("CM_KEY_PASSWORD")
+                  }
+              }
+          """
+
+          if "signingConfigs {" not in text:
+              text = text.replace(
+                  "android {",
+                  "android {" + signing_block,
+                  1
+              )
+
+          if "signingConfig signingConfigs.release" not in text:
+              text = text.replace(
+                  "buildTypes {",
+                  """buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                  }
+              }
+
+              buildTypes {""",
+                  1
+              )
+
+          gradle_file.write_text(text)
+          PY
+
       - name: Check Java
         script: |
           java -version
 
-      - name: Build APK
+      - name: Check signing variables
+        script: |
+          test -f "$CM_KEYSTORE_PATH"
+          echo "Keystore found"
+          echo "Alias: $CM_KEY_ALIAS"
+
+      - name: Build signed APK
         script: |
           cd android
           chmod +x gradlew
