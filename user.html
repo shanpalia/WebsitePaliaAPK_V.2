@@ -267,9 +267,35 @@ async function syncUserToSupabase(user) {
         console.log("Firebase user synced to Supabase.");
     }
 }
-        // Parse URL Redirect parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        let redirectTarget = urlParams.get('redirect') || 'index.html';
+      // ===============================
+// LOGIN REDIRECT
+// ===============================
+
+const urlParams = new URLSearchParams(window.location.search);
+
+let redirectTarget = urlParams.get('redirect');
+
+// Slider / protected page redirect
+if (!redirectTarget) {
+    redirectTarget = localStorage.getItem('redirect_after_login');
+}
+
+// Default destination
+if (!redirectTarget) {
+    redirectTarget = 'index.html';
+}
+
+// Clean saved redirect after reading
+localStorage.removeItem('redirect_after_login');
+
+// Handle encoded redirect
+if (redirectTarget) {
+    try {
+        redirectTarget = decodeURIComponent(redirectTarget);
+    } catch (e) {
+        console.warn('Redirect decode failed:', e);
+    }
+}
         
         // Handle nested redirect query structures if any (e.g. download.html?id=XYZ)
         if (window.location.search.includes('redirect=')) {
