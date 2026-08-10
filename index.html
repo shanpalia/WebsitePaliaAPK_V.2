@@ -471,12 +471,168 @@
         };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+// ==========================================
+// PaliaAPK HUB - PUSH NOTIFICATION SETUP
+// ==========================================
 
+async function setupPushNotifications() {
+
+    // Only run inside Capacitor Android app
+    if (!window.Capacitor) {
+        return;
+    }
+
+    const isNative =
+        typeof window.Capacitor.isNativePlatform === "function"
+            ? window.Capacitor.isNativePlatform()
+            : false;
+
+    if (!isNative) {
+        return;
+    }
+
+    try {
+
+        const PushNotifications =
+            window.Capacitor?.Plugins?.PushNotifications;
+
+        if (!PushNotifications) {
+            console.warn("Push Notifications plugin not available.");
+            return;
+        }
+
+        // Request notification permission
+        let permission =
+            await PushNotifications.checkPermissions();
+
+        if (permission.receive !== "granted") {
+            permission =
+                await PushNotifications.requestPermissions();
+        }
+
+        if (permission.receive !== "granted") {
+            console.warn("Notification permission denied.");
+            return;
+        }
+
+        // Receive FCM token
+        await PushNotifications.addListener(
+            "registration",
+            async (token) => {
+
+                console.log(
+                    "PaliaAPK HUB FCM token:",
+                    token.value
+                );
+
+                await savePushToken(token.value);
+            }
+        );
+
+        // Notification received while app is open
+        await PushNotifications.addListener(
+            "pushNotificationReceived",
+            (notification) => {
+
+                console.log(
+                    "PaliaAPK HUB notification:",
+                    notification
+                );
+            }
+        );
+
+        // User taps notification
+        await PushNotifications.addListener(
+            "pushNotificationActionPerformed",
+            (action) => {
+
+                console.log(
+                    "Notification opened:",
+                    action
+                );
+
+                const data =
+                    action.notification?.data || {};
+
+                if (data.app_id) {
+                    window.location.href =
+                        `app.html?id=${data.app_id}`;
+                }
+            }
+        );
+
+        // Register device with FCM
+        await PushNotifications.register();
+
+        console.log(
+            "PaliaAPK HUB push notifications registered."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Push notification setup failed:",
+            error
+        );
+    }
+}
+
+
+// ==========================================
+// SAVE FCM TOKEN
+// ==========================================
+
+async function savePushToken(token) {
+
+    if (!token) return;
+
+    try {
+
+        const user =
+            typeof auth !== "undefined"
+                ? auth.currentUser
+                : null;
+
+        const { error } =
+            await supabaseClient
+                .from("push_tokens")
+                .upsert(
+                    {
+                        token: token,
+                        user_id: user ? user.uid : null,
+                        platform: "android",
+                        updated_at: new Date().toISOString()
+                    },
+                    {
+                        onConflict: "token"
+                    }
+                );
+
+        if (error) {
+            console.error(
+                "Push token save error:",
+                error
+            );
+            return;
+        }
+
+        console.log(
+            "PaliaAPK HUB push token saved."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Push token error:",
+            error
+        );
+    }
+}
         // Supabase Client
         const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
         const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-
+        setupPushNotifications();
         window.allAppsCache = [];
         window.currentCategory = 'All';
         window.currentSearchQuery = '';
