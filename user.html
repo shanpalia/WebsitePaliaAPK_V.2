@@ -267,17 +267,25 @@ async function syncUserToSupabase(user) {
         console.log("Firebase user synced to Supabase.");
     }
 }
-      // ===============================
-// LOGIN REDIRECT
+// ===============================
+// LOGIN REDIRECT / DOWNLOAD REDIRECT
 // ===============================
 
 const urlParams = new URLSearchParams(window.location.search);
 
-let redirectTarget = urlParams.get('redirect');
+// First priority: APK download saved before login
+let redirectTarget =
+    localStorage.getItem('download_after_login');
 
-// Slider / protected page redirect
+// Second priority: URL redirect
 if (!redirectTarget) {
-    redirectTarget = localStorage.getItem('redirect_after_login');
+    redirectTarget = urlParams.get('redirect');
+}
+
+// Third priority: normal slider/app redirect
+if (!redirectTarget) {
+    redirectTarget =
+        localStorage.getItem('redirect_after_login');
 }
 
 // Default destination
@@ -285,8 +293,18 @@ if (!redirectTarget) {
     redirectTarget = 'index.html';
 }
 
-// Clean saved redirect after reading
+// Clean old redirects
+localStorage.removeItem('download_after_login');
 localStorage.removeItem('redirect_after_login');
+
+// Decode redirect URL
+if (redirectTarget) {
+    try {
+        redirectTarget = decodeURIComponent(redirectTarget);
+    } catch (e) {
+        console.warn('Redirect decode failed:', e);
+    }
+}
 
 // Handle encoded redirect
 if (redirectTarget) {
