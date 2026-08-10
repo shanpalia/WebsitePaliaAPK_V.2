@@ -5,6 +5,7 @@ workflows:
 
     environment:
       node: latest
+      java: 21
 
     scripts:
 
@@ -30,9 +31,6 @@ workflows:
             ! -name "*.md" \
             -exec cp -r {} www/ \;
 
-          echo "Web assets:"
-          ls -la www
-
           test -f www/index.html
 
       - name: Create Android project
@@ -42,6 +40,10 @@ workflows:
       - name: Sync Capacitor
         script: |
           npx cap sync android
+
+      - name: Check Java
+        script: |
+          java -version
 
       - name: Build APK
         script: |
