@@ -470,35 +470,67 @@ if (logoutBtn) {
     });
 
 });
-// ===============================
-// ANDROID BACK BUTTON - CAPACITOR
-// ===============================
+// ==========================================
+// ANDROID NATIVE BACK NAVIGATION
+// ==========================================
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
 
-    if (!window.Capacitor) {
+    if (!window.Capacitor) return;
+
+    const App = window.Capacitor.Plugins?.App;
+
+    if (!App) {
+        console.warn("Capacitor App plugin not available");
         return;
     }
 
-    const AppPlugin =
-        window.Capacitor.Plugins &&
-        window.Capacitor.Plugins.App;
+    let lastBackPress = 0;
 
-    if (!AppPlugin) {
-        console.warn("Capacitor App plugin not available.");
-        return;
-    }
+    await App.addListener("backButton", async function () {
 
-    AppPlugin.addListener("backButton", function () {
+        const currentPage =
+            window.location.pathname.split("/").pop() || "index.html";
 
-        // अगर पिछला web page मौजूद है तो वापस जाएं
+        // Go back through web navigation history
         if (window.history.length > 1) {
             window.history.back();
             return;
         }
 
-        // Home page पर हैं तो तुरंत exit न करें
-        console.log("Already on home page.");
+        // If not Home, go Home
+        if (currentPage !== "index.html" && currentPage !== "") {
+            window.location.href = "index.html";
+            return;
+        }
+
+        // On Home: double back to exit
+        const now = Date.now();
+
+        if (now - lastBackPress < 2000) {
+            await App.exitApp();
+            return;
+        }
+
+        lastBackPress = now;
+        console.log("Press back again to exit");
     });
 
+});
+// ==========================================
+// PALIAAPK HUB - GLOBAL HOME NAVIGATION
+// ==========================================
+
+document.addEventListener("click", function (e) {
+
+    const homeButton = e.target.closest(
+        'a[href="index.html"], a[href="./index.html"], [data-home]'
+    );
+
+    if (!homeButton) return;
+
+    e.preventDefault();
+
+    // Always open the main PaliaAPK HUB Home
+    window.location.href = "index.html";
 });
