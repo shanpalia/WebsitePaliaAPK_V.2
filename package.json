@@ -9,8 +9,8 @@
     "android:build": "cd android && ./gradlew assembleRelease"
   },
   "dependencies": {
-    "@capacitor/core": "^8.4.2"
-     "@capacitor/app": "^8.0.0"
+    "@capacitor/core": "^8.4.2",
+    "@capacitor/app": "^8.0.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.4.2",
