@@ -52,11 +52,13 @@ workflows:
         script: |
           python3 <<'PY'
           from pathlib import Path
+          import re
 
           gradle_file = Path("android/app/build.gradle")
           text = gradle_file.read_text()
 
-          if "signingConfigs" not in text:
+          # Add release signing configuration before buildTypes
+          if "signingConfigs {" not in text:
               signing_block = """
               signingConfigs {
                   release {
@@ -68,22 +70,42 @@ workflows:
               }
               """
 
+              marker = "    buildTypes {"
+
+              if marker not in text:
+                  raise SystemExit(
+                      "Could not find buildTypes in android/app/build.gradle"
+                  )
+
               text = text.replace(
-                  "android {",
-                  "android {" + signing_block,
+                  marker,
+                  signing_block + "\n" + marker,
                   1
               )
 
+          # Add release signing config specifically inside buildTypes.release
           if "signingConfig signingConfigs.release" not in text:
-              text = text.replace(
-                  "release {",
-                  """release {
-                      signingConfig signingConfigs.release
-                  """,
-                  1
+              pattern = r"(buildTypes\s*\{\s*release\s*\{)"
+
+              replacement = (
+                  r"\1\n"
+                  r"        signingConfig signingConfigs.release"
               )
+
+              text, count = re.subn(
+                  pattern,
+                  replacement,
+                  text,
+                  count=1
+              )
+
+              if count == 0:
+                  raise SystemExit(
+                      "Could not find buildTypes.release in android/app/build.gradle"
+                  )
 
           gradle_file.write_text(text)
+          print("Android release signing configured successfully.")
           PY
 
       - name: Check Java
