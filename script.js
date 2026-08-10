@@ -518,19 +518,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 });
 // ==========================================
-// PALIAAPK HUB - GLOBAL HOME NAVIGATION
+// PALIAAPK HUB - HOME NAVIGATION
 // ==========================================
 
 document.addEventListener("click", function (e) {
 
-    const homeButton = e.target.closest(
-        'a[href="index.html"], a[href="./index.html"], [data-home]'
-    );
+    const homeButton = e.target.closest('a[href="index.html"]');
 
     if (!homeButton) return;
 
     e.preventDefault();
 
-    // Always open the main PaliaAPK HUB Home
     window.location.href = "index.html";
 });
