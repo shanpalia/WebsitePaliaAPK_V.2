@@ -174,7 +174,73 @@
     </style>
 </head>
 <body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
+<!-- PaliaAPK HUB Mobile App Install Prompt -->
+<div id="installAppPrompt"
+     class="hidden fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm items-center justify-center p-4">
 
+    <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
+
+        <div class="p-6 text-center">
+
+            <!-- App Icon -->
+            <div class="mx-auto w-20 h-20 rounded-2xl bg-mint-50 border border-mint-100 p-2 flex items-center justify-center shadow-sm">
+                <img
+                    src="assets/icon.png"
+                    alt="PaliaAPK HUB"
+                    class="w-full h-full object-contain rounded-xl"
+                    onerror="this.style.display='none';"
+                >
+            </div>
+
+            <h2 class="text-xl font-black text-gray-900 mt-4">
+                Get PaliaAPK HUB App
+            </h2>
+
+            <p class="text-sm text-gray-500 mt-2 leading-relaxed">
+                Get a faster and better experience with the PaliaAPK HUB Android app.
+            </p>
+
+            <div class="mt-5 space-y-2 text-left">
+
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <div class="w-8 h-8 rounded-lg bg-mint-50 text-mint-600 flex items-center justify-center">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <span>Fast access to your apps</span>
+                </div>
+
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <div class="w-8 h-8 rounded-lg bg-mint-50 text-mint-600 flex items-center justify-center">
+                        <i class="fa-solid fa-download"></i>
+                    </div>
+                    <span>Easy APK downloads</span>
+                </div>
+
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <div class="w-8 h-8 rounded-lg bg-mint-50 text-mint-600 flex items-center justify-center">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <span>Get update notifications</span>
+                </div>
+
+            </div>
+
+            <button
+                id="installAppBtn"
+                class="w-full mt-6 bg-mint-600 hover:bg-mint-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-mint-600/20">
+                <i class="fa-solid fa-mobile-screen-button mr-2"></i>
+                Install PaliaAPK HUB
+            </button>
+
+            <button
+                id="installLaterBtn"
+                class="w-full mt-2 py-3 text-sm font-semibold text-gray-500 hover:text-gray-800 transition">
+                Continue in Browser
+            </button>
+
+        </div>
+    </div>
+</div>
     <!-- Header & Navigation -->
     <nav class="glass sticky top-0 z-50 border-b border-gray-200/80 py-3 transition-all duration-300">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
@@ -1287,7 +1353,87 @@ window.handleDownloadClick = async function(appId) {
                 }
             }
         });
+// ============================================
+// MOBILE APP INSTALL PROMPT
+// ============================================
 
+function showPaliaAPKInstallPrompt() {
+
+    // Only show on mobile devices
+    const isMobile =
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (!isMobile) {
+        return;
+    }
+
+    // Don't show again if user already dismissed it recently
+    const dismissedUntil =
+        localStorage.getItem("paliaapk_install_dismissed_until");
+
+    if (dismissedUntil &&
+        Date.now() < Number(dismissedUntil)) {
+        return;
+    }
+
+    const prompt =
+        document.getElementById("installAppPrompt");
+
+    if (!prompt) {
+        return;
+    }
+
+    prompt.classList.remove("hidden");
+    prompt.classList.add("flex");
+}
+
+
+// Install button
+document.getElementById("installAppBtn")?.addEventListener("click", function () {
+
+    /*
+     * IMPORTANT:
+     * Replace this URL with your actual PaliaAPK HUB APK download URL.
+     */
+ document.getElementById("installAppBtn")?.addEventListener("click", function () {
+
+    const apkUrl =
+        "https://paliaapk-telegram-api.onrender.com/download-apk/17";
+
+    window.location.href = apkUrl;
+});
+    if (!apkUrl || apkUrl === "YOUR_PALIAAPK_HUB_APK_URL") {
+        alert("PaliaAPK HUB APK download link is not configured yet.");
+        return;
+    }
+
+    window.location.href = apkUrl;
+});
+
+
+// Continue in browser
+document.getElementById("installLaterBtn")?.addEventListener("click", function () {
+
+    const prompt =
+        document.getElementById("installAppPrompt");
+
+    if (prompt) {
+        prompt.classList.add("hidden");
+        prompt.classList.remove("flex");
+    }
+
+    // Don't show again for 7 days
+    localStorage.setItem(
+        "paliaapk_install_dismissed_until",
+        Date.now() + (7 * 24 * 60 * 60 * 1000)
+    );
+});
+
+
+// Show after 2 seconds
+setTimeout(() => {
+    showPaliaAPKInstallPrompt();
+}, 2000);
         document.addEventListener('DOMContentLoaded', initData);
     </script>
 </body>
