@@ -822,7 +822,7 @@ window.toggleAllCategories = function () {
 
                 return `
                    <div class="swiper-slide relative overflow-hidden p-6 sm:p-10 flex items-center cursor-pointer"
-     onclick="openAppDetails('${app.id}')">
+   onclick="handleSliderClick('${app.id}')"
                         <div class="absolute inset-0 z-0 opacity-10 bg-cover bg-center" style="background-image: url('${app.banner_url || app.icon_url}')"></div>
                         <div class="relative z-10 flex flex-wrap lg:flex-nowrap justify-between items-center w-full gap-6">
                             <div class="flex items-start gap-4 max-w-lg">
@@ -1158,6 +1158,29 @@ if (appsSection) {
         </div>
     `;
 }).join('');
+};
+        window.handleSliderClick = function(appId) {
+
+    if (!appId) {
+        console.error("Slider App ID missing");
+        return;
+    }
+
+    const user = auth.currentUser;
+
+    if (user) {
+        // User already logged in
+        window.location.href = `app.html?id=${encodeURIComponent(appId)}`;
+    } else {
+        // Save slider destination
+        localStorage.setItem(
+            'redirect_after_login',
+            `app.html?id=${encodeURIComponent(appId)}`
+        );
+
+        // Send user to login
+        window.location.href = 'user.html';
+    }
 };
         // ===============================
 // OPEN APP DETAILS
