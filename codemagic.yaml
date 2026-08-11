@@ -25,22 +25,36 @@ workflows:
           rm -rf www
           mkdir -p www
 
-          find . -maxdepth 1 -mindepth 1 \
-            ! -name "www" \
-            ! -name "android" \
-            ! -name "node_modules" \
-            ! -name ".git" \
-            ! -name "server" \
-            ! -name "package.json" \
-            ! -name "package-lock.json" \
-            ! -name "capacitor.config.ts" \
-            ! -name "codemagic.yaml" \
-            ! -name "*.md" \
-            -exec cp -r {} www/ \;
+          if [ ! -f index.html ]; then
+            echo "ERROR: Root index.html not found"
+            pwd
+            ls -la
+            exit 1
+          fi
+
+          cp index.html www/index.html
+
+          for file in *.html *.js *.css; do
+            if [ -f "$file" ] && [ "$file" != "index.html" ]; then
+              cp "$file" www/
+            fi
+          done
+
+          if [ -d "assets" ]; then
+            cp -r assets www/
+          fi
+
+          if [ -d "images" ]; then
+            cp -r images www/
+          fi
+
+          echo "===== WWW CONTENT ====="
+          ls -la www
 
           test -f www/index.html
+          echo "www/index.html found successfully."
 
-           - name: Create Firebase Auth bridge
+      - name: Create Firebase Auth bridge
         script: |
           cat > capacitor-auth-entry.js <<'EOF'
           import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
@@ -60,6 +74,7 @@ workflows:
 
       - name: Create Android project
         script: |
+          rm -rf android
           npx cap add android
 
       - name: Configure Firebase Google Sign-In
