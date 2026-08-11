@@ -40,17 +40,17 @@ workflows:
 
           test -f www/index.html
 
-      - name: Create Firebase Auth bridge
+           - name: Create Firebase Auth bridge
         script: |
           cat > capacitor-auth-entry.js <<'EOF'
           import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
-          export { FirebaseAuthentication };
+          window.FirebaseAuthentication = FirebaseAuthentication;
           EOF
 
           npx esbuild capacitor-auth-entry.js \
             --bundle \
-            --format=esm \
+            --format=iife \
             --platform=browser \
             --outfile=www/capacitor-auth.js
 
