@@ -30,7 +30,7 @@
    <!-- Firebase App & Auth Compat CDN -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="capacitor-auth.js"></script>
+
 
 
     <style>
@@ -470,41 +470,25 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
 
             console.log("PaliaAPK HUB Android detected.");
 
-          const FirebaseAuthentication =
-    window.FirebaseAuthentication;
+   const FirebaseAuthentication =
+    window.Capacitor?.Plugins?.FirebaseAuthentication;
 
 if (!FirebaseAuthentication) {
     throw new Error(
-        "Firebase Authentication plugin is not available in this APK."
+        "Firebase Authentication native plugin is not available."
     );
 }
 
-            console.log(
-                "Starting native Google Sign-In..."
-            );
+const result =
+    await FirebaseAuthentication.signInWithGoogle();
 
-            const result =
-                await FirebaseAuthentication.signInWithGoogle();
+console.log("Google result:", result);
 
-            console.log(
-                "Native Google Sign-In result:",
-                result
-            );
+const nativeUser = result?.user;
 
-            // Plugin returns the authenticated user.
-            const nativeUser = result?.user;
-
-            if (!nativeUser) {
-                throw new Error(
-                    "Google Sign-In completed, but no user information was returned."
-                );
-            }
-
-            console.log(
-                "Google user:",
-                nativeUser
-            );
-
+if (!nativeUser) {
+    throw new Error("Google account was selected but user was not returned.");
+}
             // Sync directly using native Google user.
             await syncUserToSupabase({
                 uid: nativeUser.uid,
