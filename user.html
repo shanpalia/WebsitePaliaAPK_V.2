@@ -30,7 +30,16 @@
     <!-- Firebase App & Auth Compat CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-   <script type="module" src="capacitor-auth.js"></script>
+  <script type="module">
+    import { FirebaseAuthentication } from './capacitor-auth.js';
+
+    window.FirebaseAuthentication = FirebaseAuthentication;
+
+    console.log(
+        "FirebaseAuthentication module loaded:",
+        FirebaseAuthentication
+    );
+</script>
     <style>
         /* Smooth transition styles */
         .tab-content {
