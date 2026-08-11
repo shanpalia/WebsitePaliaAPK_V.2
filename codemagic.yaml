@@ -17,6 +17,7 @@ workflows:
           npm install
           npm install @capacitor/push-notifications@8.1.2
           npm install @capacitor-firebase/authentication@8.3.0
+          npm install -D esbuild
 
       - name: Prepare web assets
         script: |
@@ -78,6 +79,24 @@ workflows:
           test -s android/app/google-services.json
 
           echo "Firebase google-services.json added successfully."
+
+      - name: Create Firebase Auth bridge
+        script: |
+          cat > capacitor-auth-entry.js <<'EOF'
+          import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+
+          window.FirebaseAuthentication = FirebaseAuthentication;
+          EOF
+
+          npx esbuild capacitor-auth-entry.js \
+            --bundle \
+            --format=esm \
+            --platform=browser \
+            --outfile=www/capacitor-auth.js
+
+          test -s www/capacitor-auth.js
+
+          echo "Firebase Authentication JS bridge created."
 
       - name: Generate PaliaAPK HUB icon
         script: |
