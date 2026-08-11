@@ -18,7 +18,7 @@ workflows:
           npm install firebase
           npm install @capacitor/push-notifications@8.1.2
           npm install @capacitor-firebase/authentication@8.3.0
-          npm install -D esbuild
+          
 
       - name: Prepare web assets
         script: |
