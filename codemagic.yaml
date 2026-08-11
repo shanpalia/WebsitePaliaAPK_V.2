@@ -15,6 +15,7 @@ workflows:
       - name: Install dependencies
         script: |
           npm install
+          npm install firebase
           npm install @capacitor/push-notifications@8.1.2
           npm install @capacitor-firebase/authentication@8.3.0
           npm install -D esbuild
@@ -55,19 +56,21 @@ workflows:
 
           text = gradle_file.read_text()
 
+          # Add Google Sign-In variables inside the existing ext block
           if "rgcfaIncludeGoogle" not in text:
-              text += """
-
-          ext {
-              rgcfaIncludeGoogle = true
-              androidxCredentialsVersion = '1.3.0'
-          }
-          """
+              text = text.replace(
+                  "ext {",
+                  "ext {\n    rgcfaIncludeGoogle = true\n    androidxCredentialsVersion = '1.3.0'",
+                  1
+              )
 
           gradle_file.write_text(text)
 
-          print("Firebase Google Sign-In native dependencies configured.")
+          print("Firebase Google Sign-In configuration added.")
           PY
+
+          echo "----- variables.gradle -----"
+          cat android/variables.gradle
 
       - name: Add Firebase configuration
         script: |
@@ -85,7 +88,7 @@ workflows:
           cat > capacitor-auth-entry.js <<'EOF'
           import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
-          window.FirebaseAuthentication = FirebaseAuthentication;
+          export { FirebaseAuthentication };
           EOF
 
           npx esbuild capacitor-auth-entry.js \
@@ -96,16 +99,35 @@ workflows:
 
           test -s www/capacitor-auth.js
 
-          echo "Firebase Authentication JS bridge created."
+          echo "Firebase Authentication bridge created."
+
+          echo "----- bridge check -----"
+          grep -o "FirebaseAuthentication" www/capacitor-auth.js | head
 
       - name: Generate PaliaAPK HUB icon
         script: |
           npx @capacitor/assets generate --android
 
-      - name: Sync Capacitor
+      - name: Update and Sync Capacitor
         script: |
           npx cap update android
           npx cap sync android
+
+      - name: Verify Firebase Authentication plugin
+        script: |
+          echo "===== Installed Firebase Authentication ====="
+          npm list @capacitor-firebase/authentication firebase || true
+
+          echo "===== Capacitor plugins ====="
+          npx cap ls
+
+          echo "===== Native plugin registration ====="
+          if grep -Rq "@capacitor-firebase/authentication" android/app/src android/capacitor.settings.gradle android/app/capacitor.build.gradle 2>/dev/null; then
+            echo "Firebase Authentication native plugin detected."
+          else
+            echo "ERROR: Firebase Authentication native plugin NOT detected."
+            exit 1
+          fi
 
       - name: Configure Android signing
         script: |
