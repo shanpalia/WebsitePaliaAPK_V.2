@@ -470,14 +470,14 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
 
             console.log("PaliaAPK HUB Android detected.");
 
-            const FirebaseAuthentication =
-                window.FirebaseAuthentication;
+          const FirebaseAuthentication =
+    window.FirebaseAuthentication;
 
-            if (!FirebaseAuthentication) {
-                throw new Error(
-                    "Firebase Authentication plugin is not available in this APK."
-                );
-            }
+if (!FirebaseAuthentication) {
+    throw new Error(
+        "Firebase Authentication plugin is not available in this APK."
+    );
+}
 
             console.log(
                 "Starting native Google Sign-In..."
