@@ -40,6 +40,24 @@ workflows:
 
           test -f www/index.html
 
+      - name: Create Firebase Auth bridge
+        script: |
+          cat > capacitor-auth-entry.js <<'EOF'
+          import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+
+          export { FirebaseAuthentication };
+          EOF
+
+          npx esbuild capacitor-auth-entry.js \
+            --bundle \
+            --format=esm \
+            --platform=browser \
+            --outfile=www/capacitor-auth.js
+
+          test -s www/capacitor-auth.js
+
+          echo "Firebase Authentication bridge created."
+
       - name: Create Android project
         script: |
           npx cap add android
@@ -67,7 +85,7 @@ workflows:
                   )
               else:
                   text += """
-          
+
           ext {
               rgcfaIncludeGoogle = true
               androidxCredentialsVersion = '1.3.0'
