@@ -441,6 +441,115 @@ async function syncUserToSupabase(user) {
             }
         }
         // ===============================
+// GOOGLE LOGIN
+// ===============================
+
+document.getElementById("googleLoginBtn").addEventListener("click", async () => {
+
+    const btn = document.getElementById("googleLoginBtn");
+
+    btn.disabled = true;
+
+    btn.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin"></i> Signing in...';
+
+    try {
+
+        // Android Capacitor APK
+        if (
+            window.Capacitor &&
+            typeof window.Capacitor.isNativePlatform === "function" &&
+            window.Capacitor.isNativePlatform()
+        ) {
+
+            const FirebaseAuthentication =
+                window.Capacitor.Plugins?.FirebaseAuthentication;
+
+            if (!FirebaseAuthentication) {
+                throw new Error(
+                    "Firebase Authentication plugin is not available in this APK."
+                );
+            }
+
+            console.log("Starting native Google Sign-In...");
+
+            await FirebaseAuthentication.signInWithGoogle();
+
+            // Native login is configured with skipNativeAuth=false,
+            // so Firebase JS authentication should receive the session.
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            const user = auth.currentUser;
+
+            if (!user) {
+                throw new Error(
+                    "Google login completed, but Firebase user was not detected."
+                );
+            }
+
+            await syncUserToSupabase(user);
+
+            showToast(
+                "Google login successful! Redirecting...",
+                "success"
+            );
+
+            setTimeout(() => {
+                window.location.href = redirectTarget;
+            }, 500);
+
+            return;
+        }
+
+
+        // ===============================
+        // NORMAL WEBSITE
+        // ===============================
+
+        const provider =
+            new firebase.auth.GoogleAuthProvider();
+
+        provider.setCustomParameters({
+            prompt: "select_account"
+        });
+
+        const result =
+            await auth.signInWithPopup(provider);
+
+        const user = result.user;
+
+        await syncUserToSupabase(user);
+
+        showToast(
+            "Google login successful! Redirecting...",
+            "success"
+        );
+
+        setTimeout(() => {
+            window.location.href = redirectTarget;
+        }, 500);
+
+
+    } catch (error) {
+
+        console.error(
+            "Google Login Error:",
+            error
+        );
+
+        showToast(
+            error.message ||
+            "Google login failed. Please try again."
+        );
+
+        btn.disabled = false;
+
+        btn.innerHTML =
+            '<i class="fa-brands fa-google text-red-500 text-sm"></i> Continue with Google';
+    }
+
+});
+        // ===============================
 // CLEAR LOGIN FIELDS
 // ===============================
 window.addEventListener("pageshow", function () {
