@@ -30,7 +30,8 @@
    <!-- Firebase App & Auth Compat CDN -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
+<!-- Capacitor Firebase Authentication -->
+<script src="capacitor-auth.js"></script>
 
 
     <style>
@@ -471,7 +472,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
             console.log("PaliaAPK HUB Android detected.");
 
    const FirebaseAuthentication =
-    window.Capacitor?.Plugins?.FirebaseAuthentication;
+    window.FirebaseAuthentication;
 
 if (!FirebaseAuthentication) {
     throw new Error(
