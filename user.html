@@ -30,7 +30,7 @@
     <!-- Firebase App & Auth Compat CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script type="module" src="capacitor-auth.js"></script>
+   <script type="module" src="capacitor-auth.js"></script>
     <style>
         /* Smooth transition styles */
         .tab-content {
@@ -441,7 +441,7 @@ async function syncUserToSupabase(user) {
                 showToast(error.message);
             }
         }
-        // ===============================
+    // ===============================
 // GOOGLE LOGIN
 // ===============================
 
@@ -450,21 +450,30 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     const btn = document.getElementById("googleLoginBtn");
 
     btn.disabled = true;
-
     btn.innerHTML =
         '<i class="fa-solid fa-spinner fa-spin"></i> Signing in...';
 
     try {
 
-        // Android Capacitor APK
+        // =====================================
+        // ANDROID APK - NATIVE GOOGLE LOGIN
+        // =====================================
+
         if (
             window.Capacitor &&
             typeof window.Capacitor.isNativePlatform === "function" &&
             window.Capacitor.isNativePlatform()
         ) {
 
+            console.log("PaliaAPK HUB Android detected.");
+
             const FirebaseAuthentication =
-               window.FirebaseAuthentication;
+                window.FirebaseAuthentication;
+
+            console.log(
+                "FirebaseAuthentication:",
+                FirebaseAuthentication
+            );
 
             if (!FirebaseAuthentication) {
                 throw new Error(
@@ -472,13 +481,18 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
                 );
             }
 
-            console.log("Starting native Google Sign-In...");
+            const result =
+                await FirebaseAuthentication.signInWithGoogle();
 
-            await FirebaseAuthentication.signInWithGoogle();
+            console.log(
+                "Google Sign-In result:",
+                result
+            );
 
-            // Native login is configured with skipNativeAuth=false,
-            // so Firebase JS authentication should receive the session.
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Firebase JS SDK receives native auth
+            await new Promise(resolve =>
+                setTimeout(resolve, 1000)
+            );
 
             const user = auth.currentUser;
 
@@ -503,9 +517,9 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
         }
 
 
-        // ===============================
-        // NORMAL WEBSITE
-        // ===============================
+        // =====================================
+        // NORMAL WEBSITE - FIREBASE POPUP
+        // =====================================
 
         const provider =
             new firebase.auth.GoogleAuthProvider();
