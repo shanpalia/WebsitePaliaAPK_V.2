@@ -450,7 +450,8 @@ async function syncUserToSupabase(user) {
                 showToast(error.message);
             }
         }
-    // ===============================
+  
+// ===============================
 // GOOGLE LOGIN
 // ===============================
 
@@ -465,7 +466,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     try {
 
         // =====================================
-        // ANDROID APK - NATIVE GOOGLE LOGIN
+        // ANDROID APK
         // =====================================
 
         if (
@@ -479,47 +480,54 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
             const FirebaseAuthentication =
                 window.FirebaseAuthentication;
 
-            console.log(
-                "FirebaseAuthentication:",
-                FirebaseAuthentication
-            );
-
             if (!FirebaseAuthentication) {
                 throw new Error(
                     "Firebase Authentication plugin is not available in this APK."
                 );
             }
 
+            console.log(
+                "Starting native Google Sign-In..."
+            );
+
             const result =
                 await FirebaseAuthentication.signInWithGoogle();
 
             console.log(
-                "Google Sign-In result:",
+                "Native Google Sign-In result:",
                 result
             );
 
-            // Firebase JS SDK receives native auth
-            await new Promise(resolve =>
-                setTimeout(resolve, 1000)
-            );
+            // Plugin returns the authenticated user.
+            const nativeUser = result?.user;
 
-            const user = auth.currentUser;
-
-            if (!user) {
+            if (!nativeUser) {
                 throw new Error(
-                    "Google login completed, but Firebase user was not detected."
+                    "Google Sign-In completed, but no user information was returned."
                 );
             }
 
-            await syncUserToSupabase(user);
+            console.log(
+                "Google user:",
+                nativeUser
+            );
+
+            // Sync directly using native Google user.
+            await syncUserToSupabase({
+                uid: nativeUser.uid,
+                email: nativeUser.email || null,
+                displayName: nativeUser.displayName || null
+            });
 
             showToast(
-                "Google login successful! Redirecting...",
+                "Google login successful!",
                 "success"
             );
 
+            // Do NOT wait for Firebase Web auth.currentUser.
+            // Go directly to the requested page.
             setTimeout(() => {
-                window.location.href = redirectTarget;
+                window.location.replace(redirectTarget);
             }, 500);
 
             return;
@@ -527,7 +535,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
 
 
         // =====================================
-        // NORMAL WEBSITE - FIREBASE POPUP
+        // NORMAL WEBSITE
         // =====================================
 
         const provider =
@@ -545,12 +553,12 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
         await syncUserToSupabase(user);
 
         showToast(
-            "Google login successful! Redirecting...",
+            "Google login successful!",
             "success"
         );
 
         setTimeout(() => {
-            window.location.href = redirectTarget;
+            window.location.replace(redirectTarget);
         }, 500);
 
 
@@ -562,7 +570,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
         );
 
         showToast(
-            error.message ||
+            error?.message ||
             "Google login failed. Please try again."
         );
 
