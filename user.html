@@ -459,59 +459,49 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
 
     try {
 
-        // =====================================
-        // ANDROID APK
-        // =====================================
+    if (
+    window.Capacitor &&
+    typeof window.Capacitor.isNativePlatform === "function" &&
+    window.Capacitor.isNativePlatform()
+) {
 
-        if (
-            window.Capacitor &&
-            typeof window.Capacitor.isNativePlatform === "function" &&
-            window.Capacitor.isNativePlatform()
-        ) {
+    const FirebaseAuthentication =
+        window.FirebaseAuthentication;
 
-            console.log("PaliaAPK HUB Android detected.");
+    if (!FirebaseAuthentication) {
+        throw new Error(
+            "Firebase Authentication native plugin is not available."
+        );
+    }
+    console.log("Starting native Google Sign-In...");
 
-   const FirebaseAuthentication =
-    window.FirebaseAuthentication;
+    const result =
+        await FirebaseAuthentication.signInWithGoogle();
 
-if (!FirebaseAuthentication) {
-    throw new Error(
-        "Firebase Authentication native plugin is not available."
-    );
+    console.log("Google Sign-In result:", result);
+
+    const nativeUser = result?.user;
+
+    if (!nativeUser) {
+        throw new Error(
+            "Google account was selected but no user was returned."
+        );
+    }
+
+    await syncUserToSupabase({
+        uid: nativeUser.uid,
+        email: nativeUser.email || null,
+        displayName: nativeUser.displayName || null
+    });
+
+    showToast("Google login successful!", "success");
+
+    setTimeout(() => {
+        window.location.replace(redirectTarget);
+    }, 500);
+
+    return;
 }
-
-const result =
-    await FirebaseAuthentication.signInWithGoogle();
-
-console.log("Google result:", result);
-
-const nativeUser = result?.user;
-
-if (!nativeUser) {
-    throw new Error("Google account was selected but user was not returned.");
-}
-            // Sync directly using native Google user.
-            await syncUserToSupabase({
-                uid: nativeUser.uid,
-                email: nativeUser.email || null,
-                displayName: nativeUser.displayName || null
-            });
-
-            showToast(
-                "Google login successful!",
-                "success"
-            );
-
-            // Do NOT wait for Firebase Web auth.currentUser.
-            // Go directly to the requested page.
-            setTimeout(() => {
-                window.location.replace(redirectTarget);
-            }, 500);
-
-            return;
-        }
-
-
         // =====================================
         // NORMAL WEBSITE
         // =====================================
