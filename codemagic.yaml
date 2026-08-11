@@ -16,6 +16,7 @@ workflows:
         script: |
           npm install
           npm install @capacitor/push-notifications@8.1.2
+          npm install @capacitor-firebase/authentication@8.3.0
 
       - name: Prepare web assets
         script: |
@@ -69,7 +70,6 @@ workflows:
           gradle_file = Path("android/app/build.gradle")
           text = gradle_file.read_text()
 
-          # Add release signing configuration before buildTypes
           if "signingConfigs {" not in text:
               signing_block = """
               signingConfigs {
@@ -95,7 +95,6 @@ workflows:
                   1
               )
 
-          # Add release signing config
           if "signingConfig signingConfigs.release" not in text:
               pattern = r"(buildTypes\s*\{\s*release\s*\{)"
 
