@@ -104,6 +104,7 @@ workflows:
 
       - name: Sync Capacitor
         script: |
+          npx cap update android
           npx cap sync android
 
       - name: Configure Android signing
