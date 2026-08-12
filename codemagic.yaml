@@ -17,7 +17,6 @@ workflows:
           npm install firebase
           npm install @capacitor/push-notifications@8.1.2
           npm install @capacitor-firebase/authentication@8.3.0
-          npm install -D esbuild
 
       - name: Prepare web assets
         script: |
@@ -54,21 +53,33 @@ workflows:
 
       - name: Create Firebase Auth bridge
         script: |
-          cat > capacitor-auth-entry.js <<'EOF'
-          import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+          cat > www/capacitor-auth.js <<'EOF'
+          (function () {
+            'use strict';
 
-          window.FirebaseAuthentication = FirebaseAuthentication;
+            if (!window.Capacitor) {
+              console.error('Capacitor native bridge is not available.');
+              return;
+            }
+
+            if (typeof window.Capacitor.registerPlugin !== 'function') {
+              console.error('Capacitor.registerPlugin is not available.');
+              return;
+            }
+
+            window.FirebaseAuthentication =
+              window.Capacitor.registerPlugin('FirebaseAuthentication');
+
+            console.log(
+              'FirebaseAuthentication native plugin registered:',
+              window.FirebaseAuthentication
+            );
+          })();
           EOF
-
-          npx esbuild capacitor-auth-entry.js \
-            --bundle \
-            --format=iife \
-            --platform=browser \
-            --outfile=www/capacitor-auth.js
 
           test -s www/capacitor-auth.js
 
-          echo "Firebase Authentication bridge created."
+          echo "Firebase Authentication native bridge created."
 
       - name: Create Android project
         script: |
