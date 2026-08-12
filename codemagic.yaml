@@ -25,8 +25,13 @@ scripts:
         fi
       done
 
-      if [ -d "assets" ]; then cp -r assets www/; fi
-      if [ -d "images" ]; then cp -r images www/; fi
+      if [ -d "assets" ]; then
+        cp -r assets www/
+      fi
+
+      if [ -d "images" ]; then
+        cp -r images www/
+      fi
 
       test -f www/index.html
 
@@ -103,6 +108,7 @@ scripts:
       npx cap ls
 
       echo "===== 3. PLUGIN JSON ====="
+      test -f android/app/src/main/assets/capacitor.plugins.json
       cat android/app/src/main/assets/capacitor.plugins.json
 
       echo "===== 4. FIREBASE NATIVE CLASS ====="
