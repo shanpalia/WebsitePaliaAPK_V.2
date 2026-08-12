@@ -32,8 +32,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <!-- Capacitor Firebase Authentication -->
 <script src="capacitor-auth.js"></script>
-
-
     <style>
         /* Smooth transition styles */
         .tab-content {
@@ -468,11 +466,28 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     const FirebaseAuthentication =
         window.FirebaseAuthentication;
 
-    if (!FirebaseAuthentication) {
+    if (!window.Capacitor) {
         throw new Error(
-            "Firebase Authentication native plugin is not available."
+            "Capacitor native bridge is not available."
         );
     }
+
+    if (!FirebaseAuthentication) {
+        throw new Error(
+            "Firebase Authentication native plugin is not registered."
+        );
+    }
+
+    console.log(
+        "Native platform:",
+        window.Capacitor.isNativePlatform?.()
+    );
+
+    console.log(
+        "FirebaseAuthentication plugin:",
+        FirebaseAuthentication
+    );
+
     console.log("Starting native Google Sign-In...");
 
     const result =
