@@ -65,16 +65,19 @@ scripts:
       text = file.read_text()
 
       if "rgcfaIncludeGoogle" not in text:
-          text = text.replace(
-              "ext {",
-              """ext {
+          if "ext {" in text:
+              text = text.replace(
+                  "ext {",
+                  """ext {
           rgcfaIncludeGoogle = true
           androidxCredentialsVersion = '1.3.0'""",
-              1
-          )
+                  1
+              )
 
       file.write_text(text)
       PY
+
+      cat android/variables.gradle
 
   - name: Add Firebase configuration
     script: |
@@ -116,7 +119,7 @@ scripts:
         \( -iname "*FirebaseAuthentication*" -o -iname "*FirebaseAuthenticationPlugin*" \) \
         -print
 
-      echo "===== 5. CAPACITOR PLUGIN REGISTRATION ====="
+      echo "===== 5. NATIVE REGISTRATION ====="
       grep -R "FirebaseAuthenticationPlugin" android \
         --exclude-dir=build \
         --exclude-dir=.gradle \
