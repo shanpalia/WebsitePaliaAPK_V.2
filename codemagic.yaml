@@ -136,36 +136,44 @@ workflows:
         script: |
           npx cap sync android
 
-      - name: Verify Firebase Native Plugin
-        script: |
-          set -e
+       - name: Verify Firebase Native Plugin
+    script: |
+      set -e
 
-          echo "===== NPM PACKAGE ====="
-          npm list @capacitor-firebase/authentication
+      echo "===== 1. NPM PACKAGE ====="
+      npm list @capacitor-firebase/authentication
 
-          echo "===== CAPACITOR PLUGINS ====="
-          npx cap ls
+      echo "===== 2. CAPACITOR PLUGINS ====="
+      npx cap ls
 
-          echo "===== CAPACITOR PLUGIN JSON ====="
-          test -f android/app/src/main/assets/capacitor.plugins.json
-          cat android/app/src/main/assets/capacitor.plugins.json
+      echo "===== 3. PLUGIN JSON ====="
+      cat android/app/src/main/assets/capacitor.plugins.json
 
-          echo "===== FIREBASE AUTH CLASS ====="
-          find android -type f \
-            \( -iname "*FirebaseAuthentication*" -o -iname "*FirebaseAuthenticationPlugin*" \) \
-            -print
+      echo "===== 4. FIREBASE NATIVE CLASS ====="
+      find android -type f \
+        \( -iname "*FirebaseAuthentication*" -o -iname "*FirebaseAuthenticationPlugin*" \) \
+        -print
 
-          echo "===== NATIVE REGISTRATION ====="
-          grep -R "FirebaseAuthenticationPlugin" android \
-            --exclude-dir=build \
-            --exclude-dir=.gradle \
-            || true
+      echo "===== 5. CAPACITOR PLUGIN REGISTRATION ====="
+      grep -R "FirebaseAuthenticationPlugin" android \
+        --exclude-dir=build \
+        --exclude-dir=.gradle \
+        || true
 
-          echo "===== JS BRIDGE ====="
-          test -s www/capacitor-auth.js
-          grep -q "FirebaseAuthentication" www/capacitor-auth.js
+      echo "===== 6. CAPACITOR FIREBASE GRADLE ====="
+      grep -R "capacitor-firebase" android \
+        --exclude-dir=build \
+        --exclude-dir=.gradle \
+        || true
 
-          echo "===== ALL CHECKS PASSED ====="
+      echo "===== 7. JS BRIDGE ====="
+      test -f www/capacitor-auth.js
+      grep -q "FirebaseAuthentication" www/capacitor-auth.js
+
+      echo "===== 8. ANDROID ASSETS ====="
+      ls -la android/app/src/main/assets/
+
+      echo "===== DIAGNOSTIC COMPLETE ====="
 
       - name: Configure Android signing
         script: |
