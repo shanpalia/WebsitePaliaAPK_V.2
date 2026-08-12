@@ -138,19 +138,35 @@ workflows:
         script: |
           npx cap sync android
 
-      - name: Verify Firebase Native Plugin
-        script: |
-          echo "===== Firebase Authentication package ====="
-          npm list @capacitor-firebase/authentication firebase
+       - name: Verify Firebase Native Plugin
+    script: |
+      set -e
 
-          echo "===== Capacitor plugins ====="
-          npx cap ls
+      echo "===== NPM PACKAGE ====="
+      npm list @capacitor-firebase/authentication
 
-          echo "===== Firebase Authentication references ====="
-          grep -R "FirebaseAuthentication" android \
-            --exclude-dir=build \
-            --exclude-dir=.gradle \
-            || true
+      echo "===== CAPACITOR PLUGINS ====="
+      npx cap ls
+
+      echo "===== CAPACITOR PLUGIN JSON ====="
+      cat android/app/src/main/assets/capacitor.plugins.json
+
+      echo "===== FIREBASE AUTH CLASS ====="
+      find android -type f \
+        \( -iname "*FirebaseAuthentication*" -o -iname "*FirebaseAuthenticationPlugin*" \) \
+        -print
+
+      echo "===== NATIVE REGISTRATION ====="
+      grep -R "FirebaseAuthenticationPlugin" android \
+        --exclude-dir=build \
+        --exclude-dir=.gradle \
+        || true
+
+      echo "===== JS BRIDGE ====="
+      test -s www/capacitor-auth.js
+      grep -q "FirebaseAuthentication" www/capacitor-auth.js
+
+      echo "===== ALL CHECKS PASSED ====="
 
       - name: Configure Android signing
         script: |
