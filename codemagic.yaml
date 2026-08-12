@@ -51,46 +51,27 @@ workflows:
           echo "===== WWW CONTENT ====="
           ls -la www
 
-      - name: Create Firebase Auth bridge
+      - name: Create Capacitor Firebase native bridge
         script: |
-          cat > www/capacitor-auth.js <<'EOF'
-          (function () {
-            'use strict';
+          cat > capacitor-auth-entry.js <<'EOF'
+          import { Capacitor } from '@capacitor/core';
+          import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
-            window.firebaseAuthenticationReady = new Promise((resolve, reject) => {
-              let attempts = 0;
-
-              function register() {
-                attempts++;
-
-                if (window.Capacitor && typeof window.Capacitor.registerPlugin === 'function') {
-                  try {
-                    window.FirebaseAuthentication = window.Capacitor.registerPlugin('FirebaseAuthentication');
-                    console.log('FirebaseAuthentication plugin proxy registered.');
-                    resolve(window.FirebaseAuthentication);
-                    return;
-                  } catch (error) {
-                    console.error('FirebaseAuthentication registration failed:', error);
-                    reject(error);
-                    return;
-                  }
-                }
-
-                if (attempts >= 100) {
-                  reject(new Error('Capacitor native bridge was not available.'));
-                  return;
-                }
-
-                setTimeout(register, 50);
-              }
-
-              register();
-            });
-          })();
+          window.Capacitor = Capacitor;
+          window.FirebaseAuthentication = FirebaseAuthentication;
           EOF
 
+          npx esbuild capacitor-auth-entry.js \
+            --bundle \
+            --format=iife \
+            --platform=browser \
+            --outfile=www/capacitor-auth.js
+
           test -s www/capacitor-auth.js
-          echo "Firebase Authentication native bridge created."
+          grep -q 'FirebaseAuthentication' www/capacitor-auth.js
+          grep -q 'registerPlugin' www/capacitor-auth.js
+
+          echo "Capacitor core + Firebase Authentication bridge created."
 
       - name: Create Android project
         script: |
@@ -213,10 +194,10 @@ workflows:
 
           test -f www/capacitor-auth.js
           test -s www/capacitor-auth.js
-
           grep -q "FirebaseAuthentication" www/capacitor-auth.js
+          grep -q "registerPlugin" www/capacitor-auth.js
 
-          echo "Firebase JS bridge OK."
+          echo "Capacitor + Firebase JS bridge OK."
 
           echo "========================================"
           echo "8. ANDROID ASSETS"

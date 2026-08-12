@@ -463,12 +463,10 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     window.Capacitor.isNativePlatform()
 ) {
 
-    const FirebaseAuthentication =
-        window.firebaseAuthenticationReady
-            ? await window.firebaseAuthenticationReady
-            : window.FirebaseAuthentication;
+    const FirebaseAuthentication = window.FirebaseAuthentication;
 
-    if (!window.Capacitor) {
+    if (!window.Capacitor ||
+        typeof window.Capacitor.isNativePlatform !== "function") {
         throw new Error(
             "Capacitor native bridge is not available."
         );
