@@ -1,142 +1,98 @@
-workflows:
-  android-apk:
-    name: PaliaAPK HUB Android
-    max_build_duration: 120
+scripts:
+  - name: Install dependencies
+    script: |
+      npm install
+      npm install firebase
+      npm install @capacitor/push-notifications@8.1.2
+      npm install @capacitor-firebase/authentication@8.3.0
+      npm install -D esbuild
 
-    environment:
-      node: latest
-      java: 21
+  - name: Prepare web assets
+    script: |
+      rm -rf www
+      mkdir -p www
 
-      android_signing:
-        - paliaapk-release
+      if [ ! -f index.html ]; then
+        echo "ERROR: Root index.html not found"
+        exit 1
+      fi
 
-    scripts:
-      - name: Install dependencies
-        script: |
-          npm install
-          npm install firebase
-          npm install @capacitor/push-notifications@8.1.2
-          npm install @capacitor-firebase/authentication@8.3.0
-          npm install -D esbuild
+      cp index.html www/index.html
 
-      - name: Prepare web assets
-        script: |
-          rm -rf www
-          mkdir -p www
+      for file in *.html *.js *.css; do
+        if [ -f "$file" ] && [ "$file" != "index.html" ]; then
+          cp "$file" www/
+        fi
+      done
 
-          if [ ! -f index.html ]; then
-            echo "ERROR: Root index.html not found"
-            pwd
-            ls -la
-            exit 1
-          fi
+      if [ -d "assets" ]; then cp -r assets www/; fi
+      if [ -d "images" ]; then cp -r images www/; fi
 
-          cp index.html www/index.html
+      test -f www/index.html
 
-          for file in *.html *.js *.css; do
-            if [ -f "$file" ] && [ "$file" != "index.html" ]; then
-              cp "$file" www/
-            fi
-          done
+  - name: Create Firebase Auth bridge
+    script: |
+      cat > capacitor-auth-entry.js <<'EOF'
+      import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 
-          if [ -d "assets" ]; then
-            cp -r assets www/
-          fi
+      window.FirebaseAuthentication = FirebaseAuthentication;
+      EOF
 
-          if [ -d "images" ]; then
-            cp -r images www/
-          fi
+      npx esbuild capacitor-auth-entry.js \
+        --bundle \
+        --format=iife \
+        --platform=browser \
+        --outfile=www/capacitor-auth.js
 
-          test -f www/index.html
+      test -s www/capacitor-auth.js
 
-          echo "===== WWW CONTENT ====="
-          ls -la www
+  - name: Create Android project
+    script: |
+      rm -rf android
+      npx cap add android
 
-      - name: Create Firebase Auth bridge
-        script: |
-          cat > capacitor-auth-entry.js <<'EOF'
-          import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+  - name: Configure Firebase Google Sign-In
+    script: |
+      python3 <<'PY'
+      from pathlib import Path
 
-          window.FirebaseAuthentication = FirebaseAuthentication;
-          EOF
+      file = Path("android/variables.gradle")
+      text = file.read_text()
 
-          npx esbuild capacitor-auth-entry.js \
-            --bundle \
-            --format=iife \
-            --platform=browser \
-            --outfile=www/capacitor-auth.js
+      if "rgcfaIncludeGoogle" not in text:
+          text = text.replace(
+              "ext {",
+              """ext {
+          rgcfaIncludeGoogle = true
+          androidxCredentialsVersion = '1.3.0'""",
+              1
+          )
 
-          test -s www/capacitor-auth.js
+      file.write_text(text)
+      PY
 
-          echo "Firebase Authentication bridge created."
+  - name: Add Firebase configuration
+    script: |
+      mkdir -p android/app
 
-      - name: Create Android project
-        script: |
-          rm -rf android
-          npx cap add android
+      printf '%s' "$FIREBASE_GOOGLE_SERVICES_JSON" \
+        > android/app/google-services.json
 
-      - name: Configure Firebase Google Sign-In
-        script: |
-          python3 <<'PY'
-          from pathlib import Path
+      test -s android/app/google-services.json
 
-          gradle_file = Path("android/variables.gradle")
+  - name: Generate PaliaAPK HUB icon
+    script: |
+      npx @capacitor/assets generate --android
 
-          if not gradle_file.exists():
-              raise SystemExit("android/variables.gradle not found")
+  - name: Update Capacitor Native Plugins
+    script: |
+      npx cap update android
 
-          text = gradle_file.read_text()
+  - name: Sync Capacitor
+    script: |
+      npx cap sync android
 
-          if "rgcfaIncludeGoogle" not in text:
-              if "ext {" in text:
-                  text = text.replace(
-                      "ext {",
-                      """ext {
-              rgcfaIncludeGoogle = true
-              androidxCredentialsVersion = '1.3.0'""",
-                      1
-                  )
-              else:
-                  text += """
-
-          ext {
-              rgcfaIncludeGoogle = true
-              androidxCredentialsVersion = '1.3.0'
-          }
-          """
-
-          gradle_file.write_text(text)
-
-          print("Firebase Google Sign-In configured.")
-          PY
-
-          echo "===== variables.gradle ====="
-          cat android/variables.gradle
-
-      - name: Add Firebase configuration
-        script: |
-          mkdir -p android/app
-
-          printf '%s' "$FIREBASE_GOOGLE_SERVICES_JSON" \
-            > android/app/google-services.json
-
-          test -s android/app/google-services.json
-
-          echo "Firebase google-services.json added successfully."
-
-      - name: Generate PaliaAPK HUB icon
-        script: |
-          npx @capacitor/assets generate --android
-
-      - name: Update Capacitor Native Plugins
-        script: |
-          npx cap update android
-
-      - name: Sync Capacitor
-        script: |
-          npx cap sync android
-
-       - name: Verify Firebase Native Plugin
+  - name: Verify Firebase Native Plugin
     script: |
       set -e
 
@@ -175,93 +131,72 @@ workflows:
 
       echo "===== DIAGNOSTIC COMPLETE ====="
 
-      - name: Configure Android signing
-        script: |
-          python3 <<'PY'
-          from pathlib import Path
-          import re
+  - name: Configure Android signing
+    script: |
+      python3 <<'PY'
+      from pathlib import Path
+      import re
 
-          gradle_file = Path("android/app/build.gradle")
-          text = gradle_file.read_text()
+      file = Path("android/app/build.gradle")
+      text = file.read_text()
 
-          if "signingConfigs {" not in text:
-              signing_block = """
-              signingConfigs {
-                  release {
-                      storeFile file(System.getenv("CM_KEYSTORE_PATH"))
-                      storePassword System.getenv("CM_KEYSTORE_PASSWORD")
-                      keyAlias System.getenv("CM_KEY_ALIAS")
-                      keyPassword System.getenv("CM_KEY_PASSWORD")
-                  }
+      if "signingConfigs {" not in text:
+          signing_block = """
+          signingConfigs {
+              release {
+                  storeFile file(System.getenv("CM_KEYSTORE_PATH"))
+                  storePassword System.getenv("CM_KEYSTORE_PASSWORD")
+                  keyAlias System.getenv("CM_KEY_ALIAS")
+                  keyPassword System.getenv("CM_KEY_PASSWORD")
               }
-              """
+          }
+          """
 
-              marker = "    buildTypes {"
+          text = text.replace(
+              "    buildTypes {",
+              signing_block + "\n    buildTypes {",
+              1
+          )
 
-              if marker not in text:
-                  raise SystemExit(
-                      "Could not find buildTypes in android/app/build.gradle"
-                  )
+      if "signingConfig signingConfigs.release" not in text:
+          text = re.sub(
+              r"(buildTypes\s*\{\s*release\s*\{)",
+              r"\1\n        signingConfig signingConfigs.release",
+              text,
+              count=1
+          )
 
-              text = text.replace(
-                  marker,
-                  signing_block + "\n" + marker,
-                  1
-              )
+      file.write_text(text)
+      PY
 
-          if "signingConfig signingConfigs.release" not in text:
-              pattern = r"(buildTypes\s*\{\s*release\s*\{)"
+  - name: Check Java
+    script: |
+      java -version
 
-              replacement = (
-                  r"\1\n"
-                  r"        signingConfig signingConfigs.release"
-              )
+  - name: Check signing variables
+    script: |
+      test -f "$CM_KEYSTORE_PATH"
+      echo "Keystore found"
+      echo "Alias: $CM_KEY_ALIAS"
 
-              text, count = re.subn(
-                  pattern,
-                  replacement,
-                  text,
-                  count=1
-              )
+  - name: Get signing SHA-1
+    script: |
+      keytool -list -v \
+        -keystore "$CM_KEYSTORE_PATH" \
+        -alias "$CM_KEY_ALIAS" \
+        -storepass "$CM_KEYSTORE_PASSWORD" \
+        | grep -E "SHA1:|SHA-1:"
 
-              if count == 0:
-                  raise SystemExit(
-                      "Could not find buildTypes.release"
-                  )
+  - name: Check Firebase configuration
+    script: |
+      test -f android/app/google-services.json
+      echo "Firebase configuration found."
 
-          gradle_file.write_text(text)
+  - name: Build signed APK
+    script: |
+      cd android
+      chmod +x gradlew
+      ./gradlew assembleRelease
 
-          print("Android release signing configured successfully.")
-          PY
-
-      - name: Check Java
-        script: |
-          java -version
-
-      - name: Check signing variables
-        script: |
-          test -f "$CM_KEYSTORE_PATH"
-          echo "Keystore found"
-          echo "Alias: $CM_KEY_ALIAS"
-
-      - name: Get signing SHA-1
-        script: |
-          keytool -list -v \
-            -keystore "$CM_KEYSTORE_PATH" \
-            -alias "$CM_KEY_ALIAS" \
-            -storepass "$CM_KEYSTORE_PASSWORD" \
-            | grep -E "SHA1:|SHA-1:"
-
-      - name: Check Firebase configuration
-        script: |
-          test -f android/app/google-services.json
-          echo "Firebase configuration found."
-
-      - name: Build signed APK
-        script: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease
-
-    artifacts:
-      - android/app/build/outputs/apk/release/*.apk
+artifacts:
+  - android/app/build/outputs/apk/release/*.apk
