@@ -464,7 +464,9 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
 ) {
 
     const FirebaseAuthentication =
-        window.FirebaseAuthentication;
+        window.firebaseAuthenticationReady
+            ? await window.firebaseAuthenticationReady
+            : window.FirebaseAuthentication;
 
     if (!window.Capacitor) {
         throw new Error(

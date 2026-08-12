@@ -57,28 +57,39 @@ workflows:
           (function () {
             'use strict';
 
-            if (!window.Capacitor) {
-              console.error('Capacitor native bridge is not available.');
-              return;
-            }
+            window.firebaseAuthenticationReady = new Promise((resolve, reject) => {
+              let attempts = 0;
 
-            if (typeof window.Capacitor.registerPlugin !== 'function') {
-              console.error('Capacitor.registerPlugin is not available.');
-              return;
-            }
+              function register() {
+                attempts++;
 
-            window.FirebaseAuthentication =
-              window.Capacitor.registerPlugin('FirebaseAuthentication');
+                if (window.Capacitor && typeof window.Capacitor.registerPlugin === 'function') {
+                  try {
+                    window.FirebaseAuthentication = window.Capacitor.registerPlugin('FirebaseAuthentication');
+                    console.log('FirebaseAuthentication plugin proxy registered.');
+                    resolve(window.FirebaseAuthentication);
+                    return;
+                  } catch (error) {
+                    console.error('FirebaseAuthentication registration failed:', error);
+                    reject(error);
+                    return;
+                  }
+                }
 
-            console.log(
-              'FirebaseAuthentication native plugin registered:',
-              window.FirebaseAuthentication
-            );
+                if (attempts >= 100) {
+                  reject(new Error('Capacitor native bridge was not available.'));
+                  return;
+                }
+
+                setTimeout(register, 50);
+              }
+
+              register();
+            });
           })();
           EOF
 
           test -s www/capacitor-auth.js
-
           echo "Firebase Authentication native bridge created."
 
       - name: Create Android project
