@@ -11,14 +11,13 @@ workflows:
         - paliaapk-release
 
     scripts:
-
       - name: Install dependencies
         script: |
           npm install
           npm install firebase
           npm install @capacitor/push-notifications@8.1.2
           npm install @capacitor-firebase/authentication@8.3.0
-          
+          npm install -D esbuild
 
       - name: Prepare web assets
         script: |
@@ -48,11 +47,10 @@ workflows:
             cp -r images www/
           fi
 
+          test -f www/index.html
+
           echo "===== WWW CONTENT ====="
           ls -la www
-
-          test -f www/index.html
-          echo "www/index.html found successfully."
 
       - name: Create Firebase Auth bridge
         script: |
@@ -138,35 +136,36 @@ workflows:
         script: |
           npx cap sync android
 
-       - name: Verify Firebase Native Plugin
-    script: |
-      set -e
+      - name: Verify Firebase Native Plugin
+        script: |
+          set -e
 
-      echo "===== NPM PACKAGE ====="
-      npm list @capacitor-firebase/authentication
+          echo "===== NPM PACKAGE ====="
+          npm list @capacitor-firebase/authentication
 
-      echo "===== CAPACITOR PLUGINS ====="
-      npx cap ls
+          echo "===== CAPACITOR PLUGINS ====="
+          npx cap ls
 
-      echo "===== CAPACITOR PLUGIN JSON ====="
-      cat android/app/src/main/assets/capacitor.plugins.json
+          echo "===== CAPACITOR PLUGIN JSON ====="
+          test -f android/app/src/main/assets/capacitor.plugins.json
+          cat android/app/src/main/assets/capacitor.plugins.json
 
-      echo "===== FIREBASE AUTH CLASS ====="
-      find android -type f \
-        \( -iname "*FirebaseAuthentication*" -o -iname "*FirebaseAuthenticationPlugin*" \) \
-        -print
+          echo "===== FIREBASE AUTH CLASS ====="
+          find android -type f \
+            \( -iname "*FirebaseAuthentication*" -o -iname "*FirebaseAuthenticationPlugin*" \) \
+            -print
 
-      echo "===== NATIVE REGISTRATION ====="
-      grep -R "FirebaseAuthenticationPlugin" android \
-        --exclude-dir=build \
-        --exclude-dir=.gradle \
-        || true
+          echo "===== NATIVE REGISTRATION ====="
+          grep -R "FirebaseAuthenticationPlugin" android \
+            --exclude-dir=build \
+            --exclude-dir=.gradle \
+            || true
 
-      echo "===== JS BRIDGE ====="
-      test -s www/capacitor-auth.js
-      grep -q "FirebaseAuthentication" www/capacitor-auth.js
+          echo "===== JS BRIDGE ====="
+          test -s www/capacitor-auth.js
+          grep -q "FirebaseAuthentication" www/capacitor-auth.js
 
-      echo "===== ALL CHECKS PASSED ====="
+          echo "===== ALL CHECKS PASSED ====="
 
       - name: Configure Android signing
         script: |
