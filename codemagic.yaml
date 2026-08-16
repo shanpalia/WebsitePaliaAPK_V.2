@@ -242,7 +242,10 @@ workflows:
         script: |
           set -e
           echo "Checking FirebaseAuthentication registration before Gradle build..."
-          grep -R "FirebaseAuthenticationPlugin" android/app/src/main/java android/app/src/main/kotlin android/capacitor-cordova-android-plugins 2>/dev/null
+          grep -R "FirebaseAuthenticationPlugin" \
+            android/app/src/main/java \
+            android/app/src/main/kotlin \
+            2>/dev/null || true
           test -f android/app/src/main/java/com/shanpalia/paliaapkhub/MainActivity.java
           grep -q "registerPlugin(FirebaseAuthenticationPlugin.class)" android/app/src/main/java/com/shanpalia/paliaapkhub/MainActivity.java
           echo "FirebaseAuthentication native registration verified."
