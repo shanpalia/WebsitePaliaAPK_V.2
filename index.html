@@ -1304,39 +1304,92 @@ window.openAppDetails = function(appId) {
     window.location.href = `app.html?id=${encodeURIComponent(appId)}`;
 };
         // Live Search & Autocomplete
+        // One-time setup: search both the full app list and the compact search panel.
+        let liveSearchReady = false;
+        function normalizeSearch(value) {
+            return String(value ?? '').trim().toLowerCase();
+        }
+
+        function getSearchMatches(query, limit = 8) {
+            const q = normalizeSearch(query);
+            const apps = Array.isArray(window.allAppsCache) ? window.allAppsCache : [];
+            if (!q) return [];
+            return apps.filter(app => {
+                const name = normalizeSearch(app?.name);
+                const category = normalizeSearch(app?.category);
+                const description = normalizeSearch(app?.description);
+                return name.includes(q) || category.includes(q) || description.includes(q);
+            }).slice(0, limit);
+        }
+
         function setupLiveSearch() {
+            if (liveSearchReady) return;
+
             const searchInput = document.getElementById('searchInput');
             const autocomplete = document.getElementById('searchAutocomplete');
             if (!searchInput || !autocomplete) return;
 
-            searchInput.addEventListener('input', (e) => {
-                const q = e.target.value;
-                window.currentSearchQuery = q;
-                filterAndRenderApps();
+            liveSearchReady = true;
 
-                if (!q.trim()) {
+            const updateSearch = () => {
+                const q = searchInput.value;
+                window.currentSearchQuery = q;
+                window.filterAndRenderApps?.();
+
+                const trimmed = normalizeSearch(q);
+                if (!trimmed) {
+                    autocomplete.innerHTML = '';
                     autocomplete.classList.add('hidden');
                     return;
                 }
 
-                const matches = (window.allAppsCache || []).filter(app => app.name.toLowerCase().includes(q.toLowerCase()) || app.category.toLowerCase().includes(q.toLowerCase())).slice(0, 5);
-
-                if (matches.length === 0) {
-                    autocomplete.classList.add('hidden');
+                const matches = getSearchMatches(trimmed, 8);
+                if (!matches.length) {
+                    autocomplete.innerHTML = `
+                        <div class="p-4 text-center text-xs text-gray-500">
+                            No apps found for <strong>${escapeHTML(q)}</strong>
+                        </div>`;
+                    autocomplete.classList.remove('hidden');
                     return;
                 }
 
                 autocomplete.innerHTML = matches.map(app => `
-                    <div onclick="window.location.href='app.html?id=${app.id}'" class="p-3 flex items-center gap-3 hover:bg-mint-50 dark:hover:bg-gray-700/50 cursor-pointer transition">
-                        <img src="${app.icon_url}" class="w-9 h-9 rounded-lg hero-img-contain bg-gray-100 dark:bg-gray-700 p-1">
-                        <div>
-                            <h5 class="font-bold text-xs text-gray-900 dark:text-white">${app.name}</h5>
-                            <p class="text-[10px] text-gray-400">${app.category} • ⭐ ${app.rating || '4.9'}</p>
-                        </div>
-                    </div>
+                    <button type="button"
+                            data-search-app-id="${escapeHTML(app.id)}"
+                            class="w-full p-3 flex items-center gap-3 text-left hover:bg-mint-50 dark:hover:bg-gray-700/50 cursor-pointer transition">
+                        <img src="${escapeHTML(app.icon_url || '')}"
+                             class="w-9 h-9 rounded-lg hero-img-contain bg-gray-100 dark:bg-gray-700 p-1"
+                             alt="${escapeHTML(app.name || 'App')}">
+                        <span class="min-w-0">
+                            <span class="block font-bold text-xs text-gray-900 dark:text-white truncate">${escapeHTML(app.name || 'Unknown App')}</span>
+                            <span class="block text-[10px] text-gray-400 truncate">${escapeHTML(app.category || 'App')} • ⭐ ${escapeHTML(app.rating || '4.9')}</span>
+                        </span>
+                    </button>
                 `).join('');
-
                 autocomplete.classList.remove('hidden');
+            };
+
+            searchInput.addEventListener('input', updateSearch);
+            searchInput.addEventListener('search', updateSearch);
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    updateSearch();
+                    const first = autocomplete.querySelector('[data-search-app-id]');
+                    if (first) first.click();
+                }
+                if (e.key === 'Escape') {
+                    autocomplete.classList.add('hidden');
+                    searchInput.blur();
+                }
+            });
+
+            autocomplete.addEventListener('click', (e) => {
+                const item = e.target.closest('[data-search-app-id]');
+                if (!item) return;
+                const appId = item.getAttribute('data-search-app-id');
+                if (appId) window.openAppDetails?.(appId);
+                autocomplete.classList.add('hidden');
             });
         }
 

@@ -290,6 +290,27 @@ async function syncUserToSupabase(user) {
             auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
         }
 
+        // Safe redirect after authentication. Only allow local pages and preserve the full query.
+        function safeRedirect() {
+            const fallback = 'index.html';
+            let target = redirectTarget || fallback;
+
+            try {
+                target = decodeURIComponent(target);
+            } catch (_) {}
+
+            // Never allow external URLs or javascript/data schemes.
+            if (/^(https?:|javascript:|data:|\/\/)/i.test(target)) {
+                target = fallback;
+            }
+
+            // Keep redirects inside this app.
+            if (target.startsWith('/')) target = target.slice(1);
+            if (target.includes('\\')) target = fallback;
+
+            window.location.replace(target || fallback);
+        }
+
         // Auto-redirect if already logged in
         auth.onAuthStateChanged(async (user) => {
 
@@ -482,18 +503,19 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     window.Capacitor.isNativePlatform()
 ) {
 
-    const FirebaseAuthentication = window.FirebaseAuthentication || window.Capacitor?.Plugins?.FirebaseAuthentication;
+    const FirebaseAuthentication =
+        window.FirebaseAuthentication ||
+        window.Capacitor?.Plugins?.FirebaseAuthentication;
 
     if (!window.Capacitor ||
         typeof window.Capacitor.isNativePlatform !== "function") {
-        throw new Error(
-            "Capacitor native bridge is not available."
-        );
+        throw new Error("Capacitor native bridge is not available.");
     }
 
-    if (!FirebaseAuthentication) {
+    if (!FirebaseAuthentication ||
+        typeof FirebaseAuthentication.signInWithGoogle !== "function") {
         throw new Error(
-            "Firebase Authentication native plugin is not registered."
+            "Google Login is not available in this APK. Please install the latest PaliaAPK HUB APK."
         );
     }
 
@@ -571,7 +593,15 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
             error
         );
 
-        showToast(friendlyAuthError(error));
+        const code = error?.code || "";
+        const message = String(error?.message || "");
+        if (code === "UNIMPLEMENTED" || /not implemented/i.test(message)) {
+            showToast("Google Login is not enabled in this APK. Please install the latest APK or use Email Login.");
+        } else if (/no credentials|credential manager/i.test(message)) {
+            showToast("No Google account is available on this device. Add a Google account and try again.");
+        } else {
+            showToast(friendlyAuthError(error));
+        }
 
         btn.disabled = false;
 
