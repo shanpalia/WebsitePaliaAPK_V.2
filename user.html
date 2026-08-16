@@ -324,33 +324,7 @@ if (redirectTarget) {
             }
         }
 
-        // Secure redirect after login.
-// If the destination is the Render APK endpoint, attach a fresh Firebase ID token.
-// Direct unauthenticated access to the Render download endpoint is rejected server-side.
-async function redirectAfterLogin() {
-    let target = redirectTarget || "index.html";
-
-    try {
-        const currentUser = auth.currentUser;
-
-        if (
-            currentUser &&
-            target.includes("paliaapk-telegram-api.onrender.com/download-apk/")
-        ) {
-            const idToken = await currentUser.getIdToken(true);
-            const url = new URL(target);
-            url.searchParams.set("token", idToken);
-            target = url.toString();
-        }
-    } catch (error) {
-        console.error("Secure redirect error:", error);
-        target = "index.html";
-    }
-
-    window.location.href = target;
-}
-
-// Persistent / Remember Login Configuration & Auto-Redirect
+        // Persistent / Remember Login Configuration & Auto-Redirect
         const rememberPreference = localStorage.getItem('palia_remember_me') === 'true';
         if (rememberPreference) {
             auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
@@ -365,7 +339,7 @@ async function redirectAfterLogin() {
 
         await syncUserToSupabase(user);
 
-        await redirectAfterLogin();
+        window.location.href = redirectTarget;
     }
 
 });
@@ -445,7 +419,7 @@ async function redirectAfterLogin() {
                 await auth.signInWithEmailAndPassword(email, password);
                 showToast('Login successful! Redirecting...', 'success');
                 setTimeout(() => {
-                    redirectAfterLogin();
+                    window.location.href = redirectTarget;
                 }, 800);
             } catch (error) {
                 showToast(error.message);
@@ -483,7 +457,7 @@ async function redirectAfterLogin() {
                 }
                 showToast('Account created successfully! Redirecting...', 'success');
                 setTimeout(() => {
-                    redirectAfterLogin();
+                    window.location.href = redirectTarget;
                 }, 800);
             } catch (error) {
                 showToast(error.message);
@@ -499,7 +473,7 @@ async function redirectAfterLogin() {
                 await auth.signInWithPopup(provider);
                 showToast('Google login successful! Redirecting...', 'success');
                 setTimeout(() => {
-                    redirectAfterLogin();
+                    window.location.href = redirectTarget;
                 }, 800);
             } catch (error) {
                 showToast(error.message);

@@ -1,0 +1,13 @@
+{
+  "name": "PaliaAPK HUB",
+  "short_name": "PaliaAPK HUB",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "description": "PaliaAPK HUB Android app store",
+  "icons": [
+    {"src":"https://via.placeholder.com/192x192.png?text=PLK","sizes":"192x192","type":"image/png"},
+    {"src":"https://via.placeholder.com/512x512.png?text=PLK","sizes":"512x512","type":"image/png"}
+  ]
+}

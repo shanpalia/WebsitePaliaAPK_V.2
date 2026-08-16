@@ -1155,6 +1155,9 @@ img{ max-width: 100%; display: block; }
   var urlParams = new URLSearchParams(window.location.search);
   var appId = urlParams.get('id');
   var appLoaded = false;
+  var originalVersion = '';
+  var originalUpdateAvailable = false;
+  var originalPreviousVersion = null;
  var originalDownloads = 0;
 var loadedApkSizeLabel = null;
 
@@ -1691,6 +1694,9 @@ var telegramMessageId = null;
   var btnCancel = document.getElementById('btnCancel');
 
   function populateForm(data){
+    originalVersion = data.version || '';
+    originalUpdateAvailable = Boolean(data.update_available);
+    originalPreviousVersion = data.previous_version || null;
     document.getElementById('fName').value = data.name || '';
     document.getElementById('fVersion').value = data.version || '';
     document.getElementById('fDeveloper').value = data.developer || '';
@@ -1947,9 +1953,11 @@ async function replaceTelegramApk(
       banner_url: finalUrls.banner,
       apk_url: finalUrls.apk,
       screenshots: finalUrls.screenshots,
-     downloads: originalDownloads,
-telegram_message_id: telegramMessageId || null,
-updated_at: new Date().toISOString()
+      downloads: originalDownloads,
+      telegram_message_id: telegramMessageId || null,
+      updated_at: new Date().toISOString(),
+      previous_version: currentFieldValue('fVersion') !== originalVersion ? originalVersion : originalPreviousVersion,
+      update_available: currentFieldValue('fVersion') !== originalVersion ? true : originalUpdateAvailable
     };
   }
 
@@ -2195,6 +2203,9 @@ if (newApkFile) {
         );
 
 
+        // The database trigger is the source of truth for version changes.
+        // It automatically stores the previous version, sets update_available=true,
+        // and creates a real app_notifications row when the version changes.
         const {
             data: updatedApp,
             error: updateError

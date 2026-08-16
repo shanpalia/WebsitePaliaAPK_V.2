@@ -467,7 +467,7 @@ function checkForAppUpdate(app) {
             return;
         }
 
-        startAuthenticatedDownload(downloadUrl);
+        window.location.href = downloadUrl;
     };
 
     // Later button
@@ -480,36 +480,6 @@ function checkForAppUpdate(app) {
     updateModal.classList.remove("hidden");
     updateModal.classList.add("flex");
 }
-// ===============================
-// AUTHENTICATED APK DOWNLOAD
-// ===============================
-async function startAuthenticatedDownload(downloadUrl) {
-    const user = auth.currentUser;
-
-    if (!user) {
-        const returnUrl = window.location.href;
-        window.location.href =
-            "user.html?redirect=" + encodeURIComponent(returnUrl);
-        return;
-    }
-
-    try {
-        const idToken = await user.getIdToken(true);
-
-        // Render download API accepts the Firebase ID token and rejects
-        // direct unauthenticated requests.
-        const url = new URL(downloadUrl);
-        if (url.hostname === "paliaapk-telegram-api.onrender.com") {
-            url.searchParams.set("token", idToken);
-        }
-
-        window.location.href = url.toString();
-    } catch (error) {
-        console.error("Authenticated download error:", error);
-        alert("Please login again before downloading.");
-    }
-}
-
 // ===============================
 // DOWNLOAD APK
 // ===============================
@@ -562,8 +532,8 @@ if (downloadBtn) {
             }
         }
 
-        // Start authenticated APK download
-        await startAuthenticatedDownload(downloadUrl);
+        // Start APK download
+        window.location.href = downloadUrl;
     };
 }
                 // Description
