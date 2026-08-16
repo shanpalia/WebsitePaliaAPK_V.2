@@ -1388,8 +1388,20 @@ window.handleDownloadClick = async function(appId) {
             );
         }
 
-        // DIRECT DOWNLOAD
-        window.location.href = downloadUrl;
+        // DIRECT DOWNLOAD (requires Firebase login)
+        try {
+            const idToken = await user.getIdToken(true);
+            const url = new URL(downloadUrl);
+
+            if (url.hostname === "paliaapk-telegram-api.onrender.com") {
+                url.searchParams.set("token", idToken);
+            }
+
+            window.location.href = url.toString();
+        } catch (tokenError) {
+            console.error("Download authentication error:", tokenError);
+            alert("Please login again before downloading.");
+        }
 
     } catch (error) {
 
@@ -1437,27 +1449,27 @@ function showPaliaAPKInstallPrompt() {
 
 
 // Install button
-document.getElementById("installAppBtn")?.addEventListener("click", function () {
+document.getElementById("installAppBtn")?.addEventListener("click", async function () {
+    const user = typeof auth !== "undefined" ? auth.currentUser : null;
 
-    /*
-     * IMPORTANT:
-     * Replace this URL with your actual PaliaAPK HUB APK download URL.
-     */
- document.getElementById("installAppBtn")?.addEventListener("click", function () {
-
-    const apkUrl =
-        "https://paliaapk-telegram-api.onrender.com/download-apk/17";
-
-    window.location.href = apkUrl;
-});
-    if (!apkUrl || apkUrl === "YOUR_PALIAAPK_HUB_APK_URL") {
-        alert("PaliaAPK HUB APK download link is not configured yet.");
+    if (!user) {
+        window.location.href =
+            "user.html?redirect=" + encodeURIComponent("index.html");
         return;
     }
 
-    window.location.href = apkUrl;
+    try {
+        const idToken = await user.getIdToken(true);
+        const url = new URL(
+            "https://paliaapk-telegram-api.onrender.com/download-apk/17"
+        );
+        url.searchParams.set("token", idToken);
+        window.location.href = url.toString();
+    } catch (error) {
+        console.error("Install download authentication error:", error);
+        alert("Please login again before installing.");
+    }
 });
-
 
 // Continue in browser
 document.getElementById("installLaterBtn")?.addEventListener("click", function () {

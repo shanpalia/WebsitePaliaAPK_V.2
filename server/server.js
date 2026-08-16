@@ -11,6 +11,66 @@ import { StringSession } from "telegram/sessions/index.js";
 import { CustomFile } from "telegram/client/uploads.js";
 
 dotenv.config();
+
+const FIREBASE_WEB_API_KEY = process.env.FIREBASE_WEB_API_KEY || "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10";
+
+async function verifyFirebaseIdToken(idToken) {
+    if (!idToken) {
+        return { valid: false, error: "Login required." };
+    }
+
+    if (!FIREBASE_WEB_API_KEY) {
+        console.error("FIREBASE_WEB_API_KEY is missing.");
+        return { valid: false, error: "Download authentication is not configured." };
+    }
+
+    try {
+        const response = await fetch(
+            `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(FIREBASE_WEB_API_KEY)}`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ idToken })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.users || !data.users.length) {
+            return { valid: false, error: "Your login session is invalid or expired." };
+        }
+
+        return { valid: true, user: data.users[0] };
+    } catch (error) {
+        console.error("Firebase token verification error:", error);
+        return { valid: false, error: "Unable to verify login." };
+    }
+}
+
+async function requireDownloadAuth(req, res, next) {
+    const authHeader = req.headers.authorization || "";
+    const bearerToken = authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7).trim()
+        : "";
+
+    // Browser downloads use a short-lived Firebase ID token in the URL.
+    // Authorization header is also supported for API clients.
+    const idToken = bearerToken || req.query.token;
+
+    const result = await verifyFirebaseIdToken(idToken);
+
+    if (!result.valid) {
+        return res.status(401).json({
+            success: false,
+            error: result.error,
+            login_required: true
+        });
+    }
+
+    req.firebaseUser = result.user;
+    next();
+}
+
 console.log({
   API_ID: process.env.API_ID,
   API_HASH: process.env.API_HASH ? "FOUND" : "MISSING",
@@ -102,7 +162,7 @@ app.get("/health", (req, res) => {
 // ============================================
 // DIRECT APK DOWNLOAD FROM TELEGRAM
 // ============================================
-app.get("/download-apk/:messageId", async (req, res) => {
+app.get("/download-apk/:messageId", requireDownloadAuth, async (req, res) => {
     try {
         const messageId = parseInt(req.params.messageId, 10);
 
