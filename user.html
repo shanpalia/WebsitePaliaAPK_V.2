@@ -28,7 +28,7 @@
    <!-- Firebase App & Auth Compat CDN -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<!-- Capacitor Firebase Authentication -->
+<!-- Capacitor runtime is loaded first; Firebase Authentication bridge comes after it. -->
 <script src="capacitor-auth.js"></script>
     <style>
         .ui-icon {
@@ -540,8 +540,8 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
 ) {
 
     const FirebaseAuthentication =
-        window.Capacitor?.Plugins?.FirebaseAuthentication ||
-        window.FirebaseAuthentication;
+        window.FirebaseAuthentication ||
+        window.Capacitor?.Plugins?.FirebaseAuthentication;
 
     if (!window.Capacitor ||
         typeof window.Capacitor.isNativePlatform !== "function") {
@@ -551,7 +551,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     if (!FirebaseAuthentication ||
         typeof FirebaseAuthentication.signInWithGoogle !== "function") {
         throw new Error(
-            "Google Login is not available in this APK. Please install the latest PaliaAPK HUB APK."
+            "Google Sign-In native plugin is not loaded. Please use the latest APK built from the current project."
         );
     }
 

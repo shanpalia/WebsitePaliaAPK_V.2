@@ -46,20 +46,45 @@ workflows:
             cp -r images www/
           fi
 
+          # This project uses plain HTML instead of a module bundler.
+          # Capacitor's runtime must be present before the Firebase plugin bridge.
+          test -f node_modules/@capacitor/core/dist/capacitor.js
+          cp node_modules/@capacitor/core/dist/capacitor.js www/capacitor.js
+          test -s www/capacitor.js
+
+          # Load the Capacitor runtime before native plugin scripts on every page.
+          python3 <<'PY2'
+from pathlib import Path
+for p in Path("www").glob("*.html"):
+    text = p.read_text()
+    if 'src="capacitor.js"' not in text:
+        marker = '<head>'
+        if marker in text:
+            text = text.replace(marker, marker + '\n    <script src="capacitor.js"></script>', 1)
+        else:
+            text = '<script src="capacitor.js"></script>\n' + text
+        p.write_text(text)
+PY2
+
           test -f www/index.html
 
           echo "===== WWW CONTENT ====="
           ls -la www
 
-      - name: Build official Capacitor Firebase Authentication bridge
+      - name: Build Firebase Authentication bridge
         script: |
           set -e
           cat > capacitor-core-shim.js <<'EOF'
-          // Bridge the official Capacitor Firebase JS package to the native
-          // Capacitor runtime injected by Android. This shim intentionally
-          // does not create a second @capacitor/core instance.
-          export const registerPlugin = (name, implementations) =>
-            window.Capacitor.registerPlugin(name, implementations);
+          // The Capacitor runtime is loaded from www/capacitor.js BEFORE this bundle.
+          // Never create a second Capacitor core instance.
+          export const registerPlugin = (name, implementations) => {
+            if (!window.Capacitor || typeof window.Capacitor.registerPlugin !== 'function') {
+              throw new Error('Capacitor runtime is not loaded before FirebaseAuthentication.');
+            }
+            return window.Capacitor.registerPlugin(name, implementations);
+          };
+
+          export const Capacitor = window.Capacitor;
 
           export class WebPlugin {
             notifyListeners() {}
@@ -161,6 +186,8 @@ workflows:
         script: |
           set -e
           echo "Checking Capacitor native plugin registration..."
+          test -f www/capacitor.js
+          test -s www/capacitor.js
           test -f android/app/src/main/assets/capacitor.plugins.json
           grep -q 'FirebaseAuthentication' android/app/src/main/assets/capacitor.plugins.json
           echo "FirebaseAuthentication is registered in Capacitor plugin metadata."

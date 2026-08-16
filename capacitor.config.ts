@@ -4,6 +4,7 @@ const config: CapacitorConfig = {
   appId: 'com.shanpalia.paliaapkhub',
   appName: 'PaliaAPK HUB',
   webDir: 'www',
+  bundledWebRuntime: true,
 
   server: {
     androidScheme: 'https'
