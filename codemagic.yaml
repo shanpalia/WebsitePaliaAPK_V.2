@@ -54,17 +54,23 @@ workflows:
       - name: Create Capacitor Firebase native bridge
         script: |
           cat > capacitor-auth-entry.js <<'EOF'
-          // IMPORTANT: Do not overwrite window.Capacitor.
-          // Capacitor's native bridge is injected by the Android runtime.
-          // Replacing it with the JS Capacitor object makes native plugins
-          // appear as "not implemented".
-          import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+          // Register the native Capacitor plugin against the Capacitor bridge
+          // that is injected by the Android runtime. Do NOT bundle a second
+          // copy of @capacitor/core here: that creates a separate bridge and
+          // causes FirebaseAuthentication to report "not implemented".
+          (function () {
+            if (!window.Capacitor || typeof window.Capacitor.registerPlugin !== 'function') {
+              console.error('Capacitor native bridge is not available.');
+              return;
+            }
 
-          window.FirebaseAuthentication = FirebaseAuthentication;
+            window.FirebaseAuthentication = window.Capacitor.registerPlugin(
+              'FirebaseAuthentication'
+            );
+          })();
           EOF
 
           npx esbuild capacitor-auth-entry.js \
-            --bundle \
             --format=iife \
             --platform=browser \
             --outfile=www/capacitor-auth.js
@@ -73,7 +79,7 @@ workflows:
           grep -q 'FirebaseAuthentication' www/capacitor-auth.js
           grep -q 'registerPlugin' www/capacitor-auth.js
 
-          echo "Capacitor core + Firebase Authentication bridge created."
+          echo "Native Capacitor Firebase Authentication bridge created."
 
       - name: Create Android project
         script: |
@@ -243,7 +249,9 @@ workflows:
           test -f android/app/src/main/assets/capacitor.plugins.json
           grep -q 'FirebaseAuthentication' android/app/src/main/assets/capacitor.plugins.json
           test -s www/capacitor-auth.js
-          echo "FirebaseAuthentication plugin and JS bridge verified."
+          grep -q 'google.com' capacitor.config.ts
+          grep -q 'googleWebClientId' capacitor.config.ts
+          echo "FirebaseAuthentication plugin, Google provider, and JS bridge verified."
 
       - name: Configure Android signing
         script: |
