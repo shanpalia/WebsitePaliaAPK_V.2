@@ -202,45 +202,16 @@
                 </div>
             </div>
 
-            <!-- Right Actions & Controls: Notifications, Dark Mode, Profile/Login -->
+            <!-- Right Actions: Search + Profile/Login -->
             <div class="flex items-center gap-3">
-                
-                <!-- Notification Dropdown -->
-                <div class="relative">
-                    <button id="notificationToggleBtn" class="relative w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
-                        <i class="fa-solid fa-bell text-sm"></i>
-                        <span id="notificationBadge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow">2</span>
-                    </button>
-                    <div id="notificationDropdown" class="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-3">
-                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 dark:border-gray-700">
-                            <h4 class="font-bold text-xs text-gray-900 dark:text-white uppercase tracking-wider">Notifications</h4>
-                            <span class="text-[10px] text-mint-600 dark:text-mint-400 font-bold cursor-pointer hover:underline" onclick="markNotificationsRead()">Mark read</span>
-                        </div>
-                        <div class="space-y-2 text-xs" id="notificationList">
-                            <div class="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 flex items-start gap-2.5">
-                                <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-shield-check text-xs"></i></div>
-                                <div>
-                                    <p class="font-bold text-gray-800 dark:text-gray-200">Security Update</p>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">All APK files scanned with zero malware guarantee.</p>
-                                </div>
-                            </div>
-                            <div class="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 flex items-start gap-2.5">
-                                <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-rocket text-xs"></i></div>
-                                <div>
-                                    <p class="font-bold text-gray-800 dark:text-gray-200">New Apps Added</p>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Nova AI and PaliaCraft Launcher updated.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dark Mode Toggle -->
-                <button id="darkModeToggle" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
-                    <i class="fa-solid fa-moon dark:hidden"></i>
-                    <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                <button id="mobileSearchToggle"
+                        type="button"
+                        class="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 hover:bg-mint-50 hover:text-mint-600 transition flex items-center justify-center border border-gray-200"
+                        aria-label="Search apps"
+                        title="Search apps">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </button>
-                
+
                 <!-- Authentication & Profile Avatar Dropdown -->
                 <div class="relative" id="userArea">
                     <button id="loginBtn" class="px-4 h-10 rounded-xl bg-mint-600 hover:bg-mint-700 text-white font-bold text-xs transition shadow-md shadow-mint-600/20 flex items-center gap-2">
@@ -277,6 +248,24 @@
             </div>
         </div>
     </nav>
+
+    <!-- Compact App Search -->
+    <div id="appSearchPanel" class="hidden fixed inset-x-0 top-[73px] z-[60] px-4 sm:px-6">
+        <div class="max-w-2xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-2xl p-3">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                <input id="compactSearchInput" type="search" autocomplete="off"
+                       placeholder="Search apps, games, tools..."
+                       class="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400">
+                <button id="closeSearchPanel" type="button"
+                        class="w-8 h-8 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200"
+                        aria-label="Close search">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="compactSearchResults" class="mt-2 max-h-80 overflow-y-auto"></div>
+        </div>
+    </div>
 
     <!-- Main Content Area -->
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow">
@@ -749,19 +738,71 @@ recordSiteVisit();
             }
         });
 
-        // Notifications Dropdown Toggle & Marking Read
-        const notificationToggleBtn = document.getElementById('notificationToggleBtn');
-        const notificationDropdown = document.getElementById('notificationDropdown');
-        const notificationBadge = document.getElementById('notificationBadge');
+        // Compact app search
+        const mobileSearchToggle = document.getElementById('mobileSearchToggle');
+        const appSearchPanel = document.getElementById('appSearchPanel');
+        const compactSearchInput = document.getElementById('compactSearchInput');
+        const compactSearchResults = document.getElementById('compactSearchResults');
+        const closeSearchPanel = document.getElementById('closeSearchPanel');
 
-        notificationToggleBtn?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            notificationDropdown?.classList.toggle('hidden');
+        function closeCompactSearch() {
+            appSearchPanel?.classList.add('hidden');
+            if (compactSearchInput) compactSearchInput.value = '';
+            if (compactSearchResults) compactSearchResults.innerHTML = '';
+        }
+
+        function renderCompactSearchResults(query) {
+            if (!compactSearchResults) return;
+            const q = String(query || '').trim().toLowerCase();
+
+            if (!q) {
+                compactSearchResults.innerHTML =
+                    '<p class="text-xs text-gray-400 text-center py-5">Search by app name or category.</p>';
+                return;
+            }
+
+            const matches = (window.allAppsCache || []).filter(app => {
+                const name = String(app?.name || '').toLowerCase();
+                const category = String(app?.category || '').toLowerCase();
+                return name.includes(q) || category.includes(q);
+            }).slice(0, 10);
+
+            if (!matches.length) {
+                compactSearchResults.innerHTML =
+                    '<p class="text-xs text-gray-500 text-center py-5">No apps found.</p>';
+                return;
+            }
+
+            compactSearchResults.innerHTML = matches.map(app => `
+                <button type="button" onclick="openAppDetails('${app.id}')"
+                        class="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-mint-50 text-left transition">
+                    <img src="${app.icon_url || ''}" alt="${escapeHTML(app.name || 'App')}"
+                         class="w-10 h-10 rounded-xl object-cover bg-gray-100">
+                    <span class="min-w-0">
+                        <span class="block text-sm font-bold text-gray-900 truncate">${escapeHTML(app.name || 'Unknown App')}</span>
+                        <span class="block text-[11px] text-gray-400 truncate">${escapeHTML(app.category || 'App')} • v${escapeHTML(app.version || '1.0')}</span>
+                    </span>
+                </button>
+            `).join('');
+        }
+
+        mobileSearchToggle?.addEventListener('click', () => {
+            appSearchPanel?.classList.remove('hidden');
+            setTimeout(() => compactSearchInput?.focus(), 50);
+            renderCompactSearchResults('');
         });
 
-        window.markNotificationsRead = function() {
-            if (notificationBadge) notificationBadge.style.display = 'none';
-        };
+        closeSearchPanel?.addEventListener('click', closeCompactSearch);
+        compactSearchInput?.addEventListener('input', e => renderCompactSearchResults(e.target.value));
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeCompactSearch();
+        });
+
+        document.addEventListener('click', e => {
+            if (!appSearchPanel || appSearchPanel.classList.contains('hidden')) return;
+            if (!appSearchPanel.contains(e.target) && e.target !== mobileSearchToggle) closeCompactSearch();
+        });
 
         // Profile Avatar Dropdown Toggle
         const profileAvatarBtn = document.getElementById('profileAvatarBtn');
@@ -1355,11 +1396,13 @@ window.handleDownloadClick = async function(appId) {
         // ===============================
 
         if (!user) {
+            // Never send an unauthenticated user directly to the APK URL.
+            // After login, return to the app details page.
+            const returnUrl =
+                "app.html?id=" + encodeURIComponent(app.id) + "&download=1";
 
-            // Open login page and remember APK URL
             window.location.href =
-                "user.html?redirect=" +
-                encodeURIComponent(downloadUrl);
+                "user.html?redirect=" + encodeURIComponent(returnUrl);
 
             return;
         }

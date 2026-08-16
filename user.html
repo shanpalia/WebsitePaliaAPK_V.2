@@ -297,7 +297,7 @@ async function syncUserToSupabase(user) {
 
         await syncUserToSupabase(user);
 
-        window.location.href = redirectTarget;
+        safeRedirect();
     }
 
 });
@@ -309,6 +309,7 @@ async function syncUserToSupabase(user) {
             const toastIcon = document.getElementById('toastIcon');
 
             toastMsg.textContent = message;
+            toast.classList.remove('hidden');
             toast.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'border-red-200', 'bg-mint-50', 'text-mint-700', 'border-mint-200');
 
             if (type === 'success') {
@@ -355,6 +356,24 @@ async function syncUserToSupabase(user) {
             }
         }
 
+        function friendlyAuthError(error) {
+            const code = error?.code || '';
+            const messages = {
+                'auth/invalid-credential': 'Email or password is incorrect.',
+                'auth/invalid-login-credentials': 'Email or password is incorrect.',
+                'auth/wrong-password': 'Email or password is incorrect.',
+                'auth/user-not-found': 'No account found with this email.',
+                'auth/email-already-in-use': 'An account already exists with this email.',
+                'auth/invalid-email': 'Please enter a valid email address.',
+                'auth/weak-password': 'Password must be at least 6 characters long.',
+                'auth/too-many-requests': 'Too many attempts. Please try again later.',
+                'auth/popup-closed-by-user': 'Google login was cancelled.',
+                'auth/network-request-failed': 'Network error. Check your internet connection.',
+                'auth/operation-not-allowed': 'This login method is not enabled in Firebase.'
+            };
+            return messages[code] || error?.message || 'Login failed. Please try again.';
+        }
+
         // Email Login Handler
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -377,10 +396,10 @@ async function syncUserToSupabase(user) {
                 await auth.signInWithEmailAndPassword(email, password);
                 showToast('Login successful! Redirecting...', 'success');
                 setTimeout(() => {
-                    window.location.href = redirectTarget;
+                    safeRedirect();
                 }, 800);
             } catch (error) {
-                showToast(error.message);
+                showToast(friendlyAuthError(error));
                 btn.disabled = false;
                 btn.innerHTML = '<span>Login</span><i class="fa-solid fa-arrow-right"></i>';
             }
@@ -415,10 +434,10 @@ async function syncUserToSupabase(user) {
                 }
                 showToast('Account created successfully! Redirecting...', 'success');
                 setTimeout(() => {
-                    window.location.href = redirectTarget;
+                    safeRedirect();
                 }, 800);
             } catch (error) {
-                showToast(error.message);
+                showToast(friendlyAuthError(error));
                 btn.disabled = false;
                 btn.innerHTML = '<span>Create Account</span><i class="fa-solid fa-user-plus"></i>';
             }
@@ -439,7 +458,7 @@ async function syncUserToSupabase(user) {
                 await auth.sendPasswordResetEmail(email);
                 showToast('Password reset link sent to your email.', 'success');
             } catch (error) {
-                showToast(error.message);
+                showToast(friendlyAuthError(error));
             }
         }
   
@@ -463,7 +482,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     window.Capacitor.isNativePlatform()
 ) {
 
-    const FirebaseAuthentication = window.FirebaseAuthentication;
+    const FirebaseAuthentication = window.FirebaseAuthentication || window.Capacitor?.Plugins?.FirebaseAuthentication;
 
     if (!window.Capacitor ||
         typeof window.Capacitor.isNativePlatform !== "function") {
@@ -512,7 +531,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     showToast("Google login successful!", "success");
 
     setTimeout(() => {
-        window.location.replace(redirectTarget);
+        safeRedirect();
     }, 500);
 
     return;
@@ -541,7 +560,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
         );
 
         setTimeout(() => {
-            window.location.replace(redirectTarget);
+            safeRedirect();
         }, 500);
 
 
@@ -552,10 +571,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
             error
         );
 
-        showToast(
-            error?.message ||
-            "Google login failed. Please try again."
-        );
+        showToast(friendlyAuthError(error));
 
         btn.disabled = false;
 
