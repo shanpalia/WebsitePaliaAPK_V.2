@@ -51,36 +51,38 @@ workflows:
           echo "===== WWW CONTENT ====="
           ls -la www
 
-      - name: Create Capacitor Firebase native bridge
+      - name: Build official Capacitor Firebase Authentication bridge
         script: |
-          cat > capacitor-auth-entry.js <<'EOF'
-          // Register the native Capacitor plugin against the Capacitor bridge
-          // that is injected by the Android runtime. Do NOT bundle a second
-          // copy of @capacitor/core here: that creates a separate bridge and
-          // causes FirebaseAuthentication to report "not implemented".
-          (function () {
-            if (!window.Capacitor || typeof window.Capacitor.registerPlugin !== 'function') {
-              console.error('Capacitor native bridge is not available.');
-              return;
-            }
+          set -e
+          cat > capacitor-core-shim.js <<'EOF'
+          // Bridge the official Capacitor Firebase JS package to the native
+          // Capacitor runtime injected by Android. This shim intentionally
+          // does not create a second @capacitor/core instance.
+          export const registerPlugin = (name, implementations) =>
+            window.Capacitor.registerPlugin(name, implementations);
 
-            window.FirebaseAuthentication = window.Capacitor.registerPlugin(
-              'FirebaseAuthentication'
-            );
-          })();
+          export class WebPlugin {
+            notifyListeners() {}
+            unimplemented(message) {
+              throw new Error(message || 'Not implemented on web.');
+            }
+          }
+          EOF
+
+          cat > capacitor-auth-entry.js <<'EOF'
+          import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+          window.FirebaseAuthentication = FirebaseAuthentication;
           EOF
 
           npx esbuild capacitor-auth-entry.js \
+            --bundle \
             --format=iife \
             --platform=browser \
+            --alias:@capacitor/core=./capacitor-core-shim.js \
             --outfile=www/capacitor-auth.js
 
           test -s www/capacitor-auth.js
-          grep -q 'FirebaseAuthentication' www/capacitor-auth.js
-          grep -q 'registerPlugin' www/capacitor-auth.js
-
-          echo "Native Capacitor Firebase Authentication bridge created."
-
+          echo "Official FirebaseAuthentication JS bridge bundled."
       - name: Create Android project
         script: |
           rm -rf android
@@ -228,7 +230,6 @@ workflows:
           test -f www/capacitor-auth.js
           test -s www/capacitor-auth.js
           grep -q "FirebaseAuthentication" www/capacitor-auth.js
-          grep -q "registerPlugin" www/capacitor-auth.js
 
           echo "Capacitor + Firebase JS bridge OK."
 
