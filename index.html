@@ -1594,14 +1594,14 @@ if ('serviceWorker' in navigator) {
     <!-- PaliaAPK HUB app install choice -->
     <div id="hubInstallModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/45 backdrop-blur-sm p-4">
         <div class="w-full max-w-sm rounded-3xl bg-white shadow-2xl border border-gray-100 p-6 text-center">
-            <div class="mx-auto w-16 h-16 rounded-2xl bg-mint-50 flex items-center justify-center mb-4">
-                <i class="fa-solid fa-mobile-screen-button text-2xl text-mint-600"></i>
+            <div class="mx-auto w-24 h-24 rounded-3xl bg-white border border-mint-100 p-1.5 flex items-center justify-center mb-4 shadow-md overflow-hidden">
+                <img src="assets/icon.png" alt="PaliaAPK HUB" class="w-full h-full object-cover rounded-2xl" loading="eager" decoding="async" onerror="this.src='./assets/icon.png'">
             </div>
-            <h3 class="text-xl font-black text-gray-900">Open PaliaAPK HUB</h3>
-            <p class="text-sm text-gray-500 mt-2 leading-relaxed">Use PaliaAPK HUB as an app for a faster experience, or continue using the website.</p>
+            <h3 class="text-xl font-black text-gray-900">Download PaliaAPK HUB</h3>
+            <p class="text-sm text-gray-500 mt-2 leading-relaxed">Install the PaliaAPK HUB Android app for a faster experience, or continue using the website.</p>
             <div class="grid grid-cols-1 gap-2.5 mt-6">
                 <button id="hubInstallBtn" type="button" class="w-full rounded-2xl bg-mint-600 hover:bg-mint-700 text-white font-bold py-3.5 transition">
-                    <i class="fa-solid fa-download mr-2"></i> Download / Install App
+                    <i class="fa-solid fa-download mr-2"></i> Download PaliaAPK HUB
                 </button>
                 <button id="hubContinueWebBtn" type="button" class="w-full rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3.5 transition">
                     Continue to Website
@@ -1650,11 +1650,16 @@ if ('serviceWorker' in navigator) {
             return;
         }
 
-        // If the browser does not expose the install prompt, give the user the
-        // real browser installation path instead of pretending a download happened.
-        closeHubInstallChoice(false);
+        // If native PWA installation is unavailable, download the real Android APK.
+        closeHubInstallChoice(true);
         if (window.matchMedia('(display-mode: standalone)').matches) return;
-        alert('PaliaAPK HUB app installation is not available in this browser yet. On Android Chrome, open the browser menu and choose "Install app" or "Add to Home screen".');
+        const apkLink = document.createElement('a');
+        apkLink.href = './PaliaAPK-HUB.apk';
+        apkLink.download = 'PaliaAPK-HUB.apk';
+        apkLink.rel = 'noopener';
+        document.body.appendChild(apkLink);
+        apkLink.click();
+        apkLink.remove();
     });
 
     // Only ask once per browser/device. It appears after the page is usable.
