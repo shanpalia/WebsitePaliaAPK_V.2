@@ -118,30 +118,13 @@ workflows:
           echo "===== variables.gradle ====="
           cat android/variables.gradle
 
-      - name: Explicitly register Firebase Authentication native plugin
+      - name: Verify Capacitor Firebase Authentication plugin
         script: |
           set -e
-          APP_DIR="android/app/src/main/java/com/shanpalia/paliaapkhub"
-          mkdir -p "$APP_DIR"
-          cat > "$APP_DIR/MainActivity.java" <<'EOF'
-          package com.shanpalia.paliaapkhub;
-
-          import android.os.Bundle;
-          import com.getcapacitor.BridgeActivity;
-          import io.capawesome.capacitorjs.plugins.firebase.authentication.FirebaseAuthenticationPlugin;
-
-          public class MainActivity extends BridgeActivity {
-              @Override
-              public void onCreate(Bundle savedInstanceState) {
-                  registerPlugin(FirebaseAuthenticationPlugin.class);
-                  super.onCreate(savedInstanceState);
-              }
-          }
-          EOF
-
-          rm -f android/app/src/main/java/com/shanpalia/paliaapkhub/MainActivity.kt
-          echo "FirebaseAuthenticationPlugin explicitly registered in MainActivity."
-          grep -n "FirebaseAuthenticationPlugin" "$APP_DIR/MainActivity.java"
+          echo "Verifying Firebase Authentication plugin package before native project generation..."
+          npm list @capacitor-firebase/authentication
+          test -d node_modules/@capacitor-firebase/authentication
+          echo "Firebase Authentication plugin package is installed."
 
       - name: Add Firebase configuration
         script: |
@@ -165,6 +148,21 @@ workflows:
       - name: Sync Capacitor
         script: |
           npx cap sync android
+
+      - name: Verify native Firebase Authentication registration
+        script: |
+          set -e
+          echo "Checking Capacitor native plugin registration..."
+          test -f android/app/src/main/assets/capacitor.plugins.json
+          grep -q 'FirebaseAuthentication' android/app/src/main/assets/capacitor.plugins.json
+          echo "FirebaseAuthentication is registered in Capacitor plugin metadata."
+          echo "Checking generated Android Firebase Authentication sources..."
+          find android -type f \
+            \( -iname "*FirebaseAuthentication*" -o -iname "*FirebaseAuthenticationPlugin*" \) \
+            -not -path '*/build/*' \
+            -not -path '*/.gradle/*' \
+            -print | head -50
+          echo "Native Firebase Authentication plugin verification passed."
 
       - name: Verify Firebase Native Plugin
         script: |
@@ -241,17 +239,11 @@ workflows:
       - name: Final Firebase Authentication plugin check
         script: |
           set -e
-          echo "Checking FirebaseAuthentication registration before Gradle build..."
-          grep -R "FirebaseAuthenticationPlugin" \
-            android/app/src/main/java \
-            android/app/src/main/kotlin \
-            2>/dev/null || true
-          test -f android/app/src/main/java/com/shanpalia/paliaapkhub/MainActivity.java
-          grep -q "registerPlugin(FirebaseAuthenticationPlugin.class)" android/app/src/main/java/com/shanpalia/paliaapkhub/MainActivity.java
-          echo "FirebaseAuthentication native registration verified."
+          echo "Final Firebase Authentication checks..."
+          test -f android/app/src/main/assets/capacitor.plugins.json
           grep -q 'FirebaseAuthentication' android/app/src/main/assets/capacitor.plugins.json
           test -s www/capacitor-auth.js
-          echo "FirebaseAuthentication checks passed."
+          echo "FirebaseAuthentication plugin and JS bridge verified."
 
       - name: Configure Android signing
         script: |
