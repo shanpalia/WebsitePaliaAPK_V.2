@@ -10,14 +10,13 @@ import androidx.credentials.CustomCredential;
 import androidx.credentials.GetCredentialRequest;
 import androidx.credentials.GetCredentialResponse;
 import androidx.credentials.exceptions.GetCredentialException;
-import androidx.credentials.exceptions.NoCredentialException;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 
 @CapacitorPlugin(name = "PaliaGoogleAuth")
@@ -35,85 +34,69 @@ public class PaliaGoogleAuthPlugin extends Plugin {
 
         try {
             CredentialManager credentialManager = CredentialManager.create(activity);
-            // First try returning/previously authorized accounts. If none exist,
-            // automatically retry with all Google accounts on the device.
-            requestCredential(call, activity, credentialManager, true);
+
+            // Explicit Sign in with Google button flow. Unlike GetGoogleIdOption,
+            // this does not depend on the account being previously authorized
+            // for this app, so it avoids the 28433/no-matching-credential path.
+            GetSignInWithGoogleOption googleOption =
+                    new GetSignInWithGoogleOption.Builder(WEB_CLIENT_ID)
+                            .build();
+
+            GetCredentialRequest request = new GetCredentialRequest.Builder()
+                    .addCredentialOption(googleOption)
+                    .build();
+
+            credentialManager.getCredentialAsync(
+                    activity,
+                    request,
+                    new CancellationSignal(),
+                    activity.getMainExecutor(),
+                    new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                        @Override
+                        public void onResult(GetCredentialResponse response) {
+                            try {
+                                Credential credential = response.getCredential();
+                                if (!(credential instanceof CustomCredential)) {
+                                    call.reject("Google credential was not returned.");
+                                    return;
+                                }
+
+                                CustomCredential customCredential = (CustomCredential) credential;
+                                if (!GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                                        .equals(customCredential.getType())) {
+                                    call.reject("The selected credential is not a Google ID token.");
+                                    return;
+                                }
+
+                                GoogleIdTokenCredential googleCredential =
+                                        GoogleIdTokenCredential.createFrom(customCredential.getData());
+
+                                JSObject result = new JSObject();
+                                result.put("idToken", googleCredential.getIdToken());
+                                result.put("displayName", googleCredential.getDisplayName());
+                                result.put("email", googleCredential.getId());
+                                result.put("profilePictureUri",
+                                        googleCredential.getProfilePictureUri() == null
+                                                ? null
+                                                : googleCredential.getProfilePictureUri().toString());
+                                call.resolve(result);
+                            } catch (Exception e) {
+                                call.reject("Unable to read Google credential: " + e.getMessage(), e);
+                            }
+                        }
+
+                        @Override
+                        public void onError(GetCredentialException e) {
+                            String message = e.getMessage();
+                            if (message == null || message.trim().isEmpty()) {
+                                message = "Google account selection was cancelled or unavailable.";
+                            }
+                            call.reject(message, e);
+                        }
+                    }
+            );
         } catch (Exception e) {
             call.reject("Unable to start Google account chooser: " + e.getMessage(), e);
         }
-    }
-
-    private void requestCredential(
-            PluginCall call,
-            Activity activity,
-            CredentialManager credentialManager,
-            boolean authorizedOnly) {
-
-        GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
-                .setServerClientId(WEB_CLIENT_ID)
-                .setFilterByAuthorizedAccounts(authorizedOnly)
-                .setAutoSelectEnabled(authorizedOnly)
-                .build();
-
-        GetCredentialRequest request = new GetCredentialRequest.Builder()
-                .addCredentialOption(googleIdOption)
-                .build();
-
-        credentialManager.getCredentialAsync(
-                activity,
-                request,
-                new CancellationSignal(),
-                activity.getMainExecutor(),
-                new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
-                    @Override
-                    public void onResult(GetCredentialResponse response) {
-                        try {
-                            Credential credential = response.getCredential();
-                            if (!(credential instanceof CustomCredential)) {
-                                call.reject("Google credential was not returned.");
-                                return;
-                            }
-
-                            CustomCredential customCredential = (CustomCredential) credential;
-                            if (!GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
-                                    .equals(customCredential.getType())) {
-                                call.reject("The selected credential is not a Google ID token.");
-                                return;
-                            }
-
-                            GoogleIdTokenCredential googleCredential =
-                                    GoogleIdTokenCredential.createFrom(customCredential.getData());
-
-                            JSObject result = new JSObject();
-                            result.put("idToken", googleCredential.getIdToken());
-                            result.put("displayName", googleCredential.getDisplayName());
-                            result.put("email", googleCredential.getId());
-                            result.put("profilePictureUri",
-                                    googleCredential.getProfilePictureUri() == null
-                                            ? null
-                                            : googleCredential.getProfilePictureUri().toString());
-                            call.resolve(result);
-                        } catch (Exception e) {
-                            call.reject("Unable to read Google credential: " + e.getMessage(), e);
-                        }
-                    }
-
-                    @Override
-                    public void onError(GetCredentialException e) {
-                        // Android's documented fallback: when no authorized
-                        // account exists, retry with authorized-account filtering off.
-                        if (authorizedOnly && e instanceof NoCredentialException) {
-                            requestCredential(call, activity, credentialManager, false);
-                            return;
-                        }
-
-                        String message = e.getMessage();
-                        if (message == null || message.trim().isEmpty()) {
-                            message = "Google account selection was cancelled or unavailable.";
-                        }
-                        call.reject(message, e);
-                    }
-                }
-        );
     }
 }
