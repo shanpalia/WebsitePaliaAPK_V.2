@@ -25,6 +25,12 @@ for folder in ('assets', 'images'):
         import shutil
         shutil.copytree(src, www / folder, dirs_exist_ok=True)
 
+# Native Google bridge used by the Android Credential Manager implementation.
+bridge = root / 'native-google-auth.js'
+if not bridge.is_file():
+    raise SystemExit(f'Missing native Google bridge: {bridge}')
+(www / 'native-google-auth.js').write_bytes(bridge.read_bytes())
+
 # Capacitor's runtime is needed by the plain HTML pages.
 cap = root / 'node_modules' / '@capacitor' / 'core' / 'dist' / 'capacitor.js'
 if not cap.is_file():

@@ -30,6 +30,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <!-- Capacitor runtime is loaded first; Firebase Authentication bridge comes after it. -->
 <script src="capacitor.js"></script>
+<script src="native-google-auth.js"></script>
     <style>
         .ui-icon {
             display: inline-flex;
@@ -560,18 +561,31 @@ function restoreGoogleRedirectTarget() {
 document.getElementById('googleLoginBtn').addEventListener('click', async () => {
     const btn = document.getElementById('googleLoginBtn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="ui-spinner" aria-hidden="true"></span> Redirecting to Google...';
+    btn.innerHTML = '<span class="ui-spinner" aria-hidden="true"></span> Opening Google...';
 
     try {
-        saveGoogleRedirectTarget();
+        const isAndroidApp = !!window.Capacitor &&
+            typeof window.Capacitor.getPlatform === 'function' &&
+            window.Capacitor.getPlatform() === 'android';
 
-        // Firebase Web Authentication: redirect to Google account selection.
-        // No native FirebaseAuthentication Capacitor plugin is required.
+        if (isAndroidApp && window.PaliaNativeGoogle) {
+            // Android: native Credential Manager account chooser; no browser redirect.
+            const nativeResult = await window.PaliaNativeGoogle.signIn();
+            const credential = firebase.auth.GoogleAuthProvider.credential(nativeResult.idToken);
+            const result = await auth.signInWithCredential(credential);
+            await syncUserToSupabase(result.user);
+            showToast('Google login successful! Redirecting...', 'success');
+            setTimeout(() => safeRedirect(), 500);
+            return;
+        }
+
+        // Website/PWA fallback: Firebase Web redirect.
+        saveGoogleRedirectTarget();
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
         await auth.signInWithRedirect(provider);
     } catch (error) {
-        console.error('Google Redirect Login Error:', error);
+        console.error('Google Login Error:', error);
         showToast(friendlyAuthError(error));
         btn.disabled = false;
         btn.innerHTML = '<span class="google-glyph" aria-hidden="true">G</span> Continue with Google';

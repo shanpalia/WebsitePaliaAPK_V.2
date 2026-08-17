@@ -1,0 +1,10 @@
+{
+  "name": "palia-google-auth-native",
+  "version": "1.0.0",
+  "private": true,
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  }
+}
