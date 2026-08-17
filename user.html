@@ -539,9 +539,16 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     window.Capacitor.isNativePlatform()
 ) {
 
-    const FirebaseAuthentication =
-        window.FirebaseAuthentication ||
-        window.Capacitor?.Plugins?.FirebaseAuthentication;
+    const FirebaseAuthentication = (() => {
+        try {
+            if (window.Capacitor && typeof window.Capacitor.registerPlugin === "function") {
+                return window.Capacitor.registerPlugin("FirebaseAuthentication");
+            }
+        } catch (e) {
+            console.error("FirebaseAuthentication native registration failed:", e);
+        }
+        return window.FirebaseAuthentication || window.Capacitor?.Plugins?.FirebaseAuthentication || null;
+    })();
 
     if (!window.Capacitor ||
         typeof window.Capacitor.isNativePlatform !== "function") {
@@ -635,7 +642,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
         const code = error?.code || "";
         const message = String(error?.message || "");
         if (code === "UNIMPLEMENTED" || /not implemented/i.test(message)) {
-            showToast("Google Login is not enabled in this APK. Please install the latest APK or use Email Login.");
+            showToast("Google Login could not start: " + (error?.message || "native authentication plugin unavailable") + ". Please try again or use Email Login.");
         } else if (/no credentials|credential manager/i.test(message)) {
             showToast("No Google account is available on this device. Add a Google account and try again.");
         } else {
