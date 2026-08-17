@@ -36,11 +36,17 @@ const grid=document.getElementById('updatesGrid'), status=document.getElementByI
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 async function loadUpdates(){
  status.textContent='Loading updates...'; grid.innerHTML='';
- const {data,error}=await sb.from('apps').select('*').or('update_available.eq.true,and(previous_version.not.is.null,version.neq.previous_version)').order('updated_at',{ascending:false});
- if(error){console.error(error);status.innerHTML='<span class="text-red-600 font-bold">Unable to load updates.</span><br><span class="text-xs">Check that update_available exists in the apps table.</span>';return;}
- if(!data?.length){status.textContent='No updates available right now.';return;}
- status.textContent=`${data.length} app${data.length===1?'':'s'} with updates`;
- grid.innerHTML=data.map(app=>`
+ const {data,error}=await sb.from('apps').select('id,name,developer,icon_url,version,previous_version,update_available,updated_at').eq('update_available',true).order('updated_at',{ascending:false});
+ if(error){
+   console.error('Updates query failed:', error);
+   status.innerHTML='<span class="text-red-600 font-bold">Unable to load updates.</span><br><span class="text-xs">Supabase error: '+esc(error.message||'Unknown error')+'</span>';
+   return;
+ }
+ // Only show genuine table-marked updates. Never create a fake update list.
+ const updates=(data||[]).filter(app=>app.update_available===true);
+ if(!updates.length){status.textContent='No updates available right now.';return;}
+ status.textContent=`${updates.length} app${updates.length===1?'':'s'} with updates`;
+ grid.innerHTML=updates.map(app=>`
  <article class="card p-4 flex flex-col relative overflow-hidden">
    <div class="absolute top-3 right-3 px-2 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-black border border-green-100">UPDATE AVAILABLE</div>
    <div class="flex items-center gap-3 pr-20">
