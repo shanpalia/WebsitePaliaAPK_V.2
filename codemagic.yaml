@@ -158,6 +158,32 @@ workflows:
         script: |
           npx cap sync android
 
+      - name: Force Firebase Authentication native module registration
+        script: |
+          set -e
+          PLUGIN_DIR="node_modules/@capacitor-firebase/authentication/android"
+          test -d "$PLUGIN_DIR"
+          test -f "$PLUGIN_DIR/build.gradle"
+
+          SETTINGS="android/capacitor.settings.gradle"
+          if ! grep -q "capacitor-firebase-authentication" "$SETTINGS"; then
+            printf "\ninclude ':capacitor-firebase-authentication'\nproject(':capacitor-firebase-authentication').projectDir = new File('../node_modules/@capacitor-firebase/authentication/android')\n" >> "$SETTINGS"
+          fi
+
+          APP_GRADLE="android/app/capacitor.build.gradle"
+          if ! grep -q "project(':capacitor-firebase-authentication')" "$APP_GRADLE"; then
+            sed -i "/dependencies {/a\    implementation project(':capacitor-firebase-authentication')" "$APP_GRADLE"
+          fi
+
+          PLUGINS="android/app/src/main/assets/capacitor.plugins.json"
+          python3 -c "import json; from pathlib import Path; f=Path('android/app/src/main/assets/capacitor.plugins.json'); d=json.loads(f.read_text()); e={'pkg':'@capacitor-firebase/authentication','classpath':'io.capawesome.capacitorjs.plugins.firebase.authentication.FirebaseAuthenticationPlugin'}; d=[x for x in d if x.get('pkg') != e['pkg']]; d.insert(0,e); f.write_text(json.dumps(d,indent=2)+'\n')"
+
+          echo "===== Forced native Firebase plugin wiring ====="
+          grep -n "capacitor-firebase-authentication" "$SETTINGS" "$APP_GRADLE"
+          grep -n -A2 -B1 "@capacitor-firebase/authentication" "$PLUGINS"
+          test -d "$PLUGIN_DIR/src/main"
+          echo "Native Firebase Authentication module is wired into the Android app."
+
       - name: Verify native Firebase Authentication registration
         script: |
           set -e

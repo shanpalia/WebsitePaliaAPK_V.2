@@ -524,138 +524,36 @@ async function syncUserToSupabase(user) {
 // ===============================
 
 document.getElementById("googleLoginBtn").addEventListener("click", async () => {
-
     const btn = document.getElementById("googleLoginBtn");
-
     btn.disabled = true;
-    btn.innerHTML =
-        '<span class="ui-spinner" aria-hidden="true"></span> Signing in...';
-
+    btn.innerHTML = '<span class="ui-spinner" aria-hidden="true"></span> Signing in...';
     try {
-
-    if (
-    window.Capacitor &&
-    typeof window.Capacitor.isNativePlatform === "function" &&
-    window.Capacitor.isNativePlatform()
-) {
-
-    const FirebaseAuthentication = (() => {
-        try {
-            if (window.Capacitor && typeof window.Capacitor.registerPlugin === "function") {
-                return window.Capacitor.registerPlugin("FirebaseAuthentication");
+        const isNative = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
+        if (isNative) {
+            const FirebaseAuthentication = window.FirebaseAuthentication;
+            if (!FirebaseAuthentication || typeof FirebaseAuthentication.signInWithGoogle !== "function") {
+                throw new Error("FirebaseAuthentication native plugin is missing from this APK. Rebuild with the updated Android plugin wiring.");
             }
-        } catch (e) {
-            console.error("FirebaseAuthentication native registration failed:", e);
+            const result = await FirebaseAuthentication.signInWithGoogle({ useCredentialManager: true });
+            const tokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: true });
+            const idToken = tokenResult?.token;
+            if (!idToken) throw new Error("Google Sign-In completed, but Firebase did not return an ID token.");
+            const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
+            await auth.signInWithCredential(credential);
+            window.location.href = safeRedirect();
+            return;
         }
-        return window.FirebaseAuthentication || window.Capacitor?.Plugins?.FirebaseAuthentication || null;
-    })();
-
-    if (!window.Capacitor ||
-        typeof window.Capacitor.isNativePlatform !== "function") {
-        throw new Error("Capacitor native bridge is not available.");
-    }
-
-    if (!FirebaseAuthentication ||
-        typeof FirebaseAuthentication.signInWithGoogle !== "function") {
-        throw new Error(
-            "Google Sign-In native plugin is not available in this APK. Rebuild the APK after running npx cap sync android."
-        );
-    }
-
-    console.log(
-        "Native platform:",
-        window.Capacitor.isNativePlatform?.()
-    );
-
-    console.log(
-        "FirebaseAuthentication plugin:",
-        FirebaseAuthentication
-    );
-
-    console.log("Starting native Google Sign-In...");
-
-    const result = await FirebaseAuthentication.signInWithGoogle();
-    console.log("Native Google Sign-In result:", result);
-
-    // Native authentication and the Firebase JS SDK have separate sessions.
-    // Bridge the native ID token into the JS Firebase Auth session so the
-    // rest of this plain-HTML app sees the user as logged in as well.
-    const tokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: true });
-    const idToken = tokenResult?.token;
-
-    if (!idToken) {
-        throw new Error("Google login succeeded, but Firebase did not return an ID token.");
-    }
-
-    const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
-    const jsResult = await auth.signInWithCredential(credential);
-    const nativeUser = jsResult?.user || auth.currentUser;
-
-    if (!nativeUser) {
-        throw new Error("Google login succeeded, but the Firebase web session could not be created.");
-    }
-
-    await syncUserToSupabase(nativeUser);
-    showToast("Google login successful!", "success");
-
-    setTimeout(() => {
-        safeRedirect();
-    }, 500);
-
-    return;
-}
-        // =====================================
-        // NORMAL WEBSITE
-        // =====================================
-
-        const provider =
-            new firebase.auth.GoogleAuthProvider();
-
-        provider.setCustomParameters({
-            prompt: "select_account"
-        });
-
-        const result =
-            await auth.signInWithPopup(provider);
-
-        const user = result.user;
-
-        await syncUserToSupabase(user);
-
-        showToast(
-            "Google login successful!",
-            "success"
-        );
-
-        setTimeout(() => {
-            safeRedirect();
-        }, 500);
-
-
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        if (result?.user) window.location.href = safeRedirect();
     } catch (error) {
-
-        console.error(
-            "Google Login Error:",
-            error
-        );
-
-        const code = error?.code || "";
-        const message = String(error?.message || "");
-        if (code === "UNIMPLEMENTED" || /not implemented/i.test(message)) {
-            showToast("Google Login could not start: " + (error?.message || "native authentication plugin unavailable") + ". Please try again or use Email Login.");
-        } else if (/no credentials|credential manager/i.test(message)) {
-            showToast("No Google account is available on this device. Add a Google account and try again.");
-        } else {
-            showToast(friendlyAuthError(error));
-        }
-
+        console.error("Google Login Error:", error);
+        showToast(friendlyAuthError(error));
         btn.disabled = false;
-
-        btn.innerHTML =
-            '<span class="google-glyph" aria-hidden="true">G</span> Continue with Google';
+        btn.innerHTML = '<span class="google-glyph" aria-hidden="true">G</span> Continue with Google';
     }
-
 });
+
         // ===============================
 // CLEAR LOGIN FIELDS
 // ===============================

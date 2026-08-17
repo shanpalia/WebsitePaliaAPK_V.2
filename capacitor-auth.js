@@ -1,17 +1,13 @@
-// Native Firebase Authentication bridge for the Capacitor WebView.
-// Do not depend on Capacitor.Plugins being pre-populated; registerPlugin creates
-// the native proxy and routes calls to the Android plugin registered by Capacitor.
+// Capacitor native Firebase Authentication bridge.
 (function () {
   try {
-    if (window.Capacitor && typeof window.Capacitor.registerPlugin === 'function') {
-      window.FirebaseAuthentication = window.Capacitor.registerPlugin('FirebaseAuthentication');
-      console.log('FirebaseAuthentication native proxy registered.');
-    } else {
-      console.error('Capacitor registerPlugin is unavailable.');
-      window.FirebaseAuthentication = null;
+    if (!window.Capacitor || typeof window.Capacitor.registerPlugin !== 'function') {
+      throw new Error('Capacitor runtime is unavailable.');
     }
+    window.FirebaseAuthentication = window.Capacitor.registerPlugin('FirebaseAuthentication');
+    console.log('FirebaseAuthentication native proxy ready.');
   } catch (error) {
-    console.error('FirebaseAuthentication registration failed:', error);
+    console.error('FirebaseAuthentication proxy setup failed:', error);
     window.FirebaseAuthentication = null;
   }
 })();
