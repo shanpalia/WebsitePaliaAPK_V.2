@@ -842,53 +842,7 @@ recordSiteVisit();
         });
 
         function renderCompactSearchResults(query) {
-            if (!compactSearchResults) return;
-            const q = String(query || '').trim().toLowerCase();
-            const apps = Array.isArray(window.allAppsCache) ? window.allAppsCache : [];
-
-            // Show real store apps immediately when search opens.
-            if (!q) {
-                if (!apps.length) {
-                    compactSearchResults.innerHTML = '<p class="text-xs text-gray-400 text-center py-5">Loading apps...</p>';
-                    return;
-                }
-                compactSearchResults.innerHTML = '<div class="px-1 pb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Apps in PaliaAPK HUB</div>' +
-                    apps.slice(0, 8).map(renderCompactSearchApp).join('');
-                return;
-            }
-
-            const matches = apps.filter(app => {
-                const haystack = [app?.name, app?.category, app?.description, app?.developer, app?.package_name, app?.version]
-                    .map(v => String(v || '').toLowerCase()).join(' ');
-                return haystack.includes(q);
-            }).slice(0, 20);
-
-            if (!matches.length) {
-                compactSearchResults.innerHTML = `
-                    <div class="py-6 text-center">
-                        <i class="fa-solid fa-magnifying-glass text-gray-300 text-xl mb-2"></i>
-                        <p class="text-sm font-bold text-gray-600">No app found</p>
-                        <p class="text-xs text-gray-400 mt-1">No result for “${escapeHTML(query)}”</p>
-                    </div>`;
-                return;
-            }
-
-            compactSearchResults.innerHTML = `<div class="px-1 pb-2 text-[11px] font-bold text-mint-600">${matches.length} app${matches.length === 1 ? '' : 's'} found</div>` +
-                matches.map(renderCompactSearchApp).join('');
-        }
-
-        function renderCompactSearchApp(app) {
-            return `
-                <button type="button" data-compact-app-id="${escapeHTML(app.id)}"
-                        class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-mint-50 active:bg-mint-100 text-left transition border-b border-gray-50 last:border-0">
-                    <img src="${escapeHTML(app.icon_url || '')}" alt="${escapeHTML(app.name || 'App')}"
-                         class="w-12 h-12 rounded-xl object-contain bg-gray-100 p-1" onerror="this.style.visibility='hidden'">
-                    <span class="min-w-0 flex-1">
-                        <span class="block text-sm font-bold text-gray-900 truncate">${escapeHTML(app.name || 'Unknown App')}</span>
-                        <span class="block text-[11px] text-gray-500 truncate">${escapeHTML(app.category || 'App')} • v${escapeHTML(app.version || '1.0')}</span>
-                    </span>
-                    <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
-                </button>`;
+            window.runStoreSearch(query);
         }
 
         mobileSearchToggle?.addEventListener('click', () => {
@@ -898,16 +852,7 @@ recordSiteVisit();
         });
 
         closeSearchPanel?.addEventListener('click', closeCompactSearch);
-        const runCompactSearch = e => renderCompactSearchResults(e.target.value);
-        compactSearchInput?.addEventListener('input', runCompactSearch);
-        compactSearchInput?.addEventListener('keyup', runCompactSearch);
-        compactSearchInput?.addEventListener('search', runCompactSearch);
-        compactSearchResults?.addEventListener('click', e => {
-            const item = e.target.closest('[data-compact-app-id]');
-            if (!item) return;
-            const appId = item.getAttribute('data-compact-app-id');
-            if (appId) window.openAppDetails(appId);
-        });
+        compactSearchInput?.addEventListener('input', e => renderCompactSearchResults(e.target.value));
 
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') closeCompactSearch();
@@ -982,9 +927,6 @@ async function initData() {
 
         window.allAppsCache = apps || [];
         updateUpdateBadges(window.allAppsCache);
-        if (compactSearchInput && appSearchPanel && !appSearchPanel.classList.contains('hidden')) {
-            renderCompactSearchResults(compactSearchInput.value);
-        }
 
         renderPageData(window.allAppsCache);
 

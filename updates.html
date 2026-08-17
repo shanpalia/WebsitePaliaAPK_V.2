@@ -36,22 +36,27 @@ const grid=document.getElementById('updatesGrid'), status=document.getElementByI
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 async function loadUpdates(){
  status.textContent='Loading updates...'; grid.innerHTML='';
- const {data,error}=await sb.from('apps').select('*').eq('update_available',true).order('updated_at',{ascending:false});
+ const {data,error}=await sb.from('apps').select('*').or('update_available.eq.true,and(previous_version.not.is.null,version.neq.previous_version)').order('updated_at',{ascending:false});
  if(error){console.error(error);status.innerHTML='<span class="text-red-600 font-bold">Unable to load updates.</span><br><span class="text-xs">Check that update_available exists in the apps table.</span>';return;}
  if(!data?.length){status.textContent='No updates available right now.';return;}
  status.textContent=`${data.length} app${data.length===1?'':'s'} with updates`;
  grid.innerHTML=data.map(app=>`
- <article class="card p-4 flex flex-col">
-   <div class="flex items-center gap-3">
+ <article class="card p-4 flex flex-col relative overflow-hidden">
+   <div class="absolute top-3 right-3 px-2 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-black border border-green-100">UPDATE AVAILABLE</div>
+   <div class="flex items-center gap-3 pr-20">
      <img src="${esc(app.icon_url||'')}" class="w-14 h-14 rounded-xl object-contain bg-gray-50 p-1" alt="${esc(app.name)}">
      <div class="min-w-0"><h2 class="font-black text-sm truncate">${esc(app.name)}</h2><p class="text-xs text-gray-500 truncate">${esc(app.developer||'ShanPalia')}</p></div>
    </div>
-   <div class="mt-4 flex items-center gap-2 text-xs font-bold">
-     <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-600">v${esc(app.previous_version||'—')}</span>
-     <i class="fa-solid fa-arrow-right text-green-600"></i>
-     <span class="px-2 py-1 rounded-full bg-green-50 text-green-700">v${esc(app.version||'—')}</span>
+   <div class="mt-4 rounded-xl bg-gray-50 border border-gray-100 p-3">
+     <div class="text-[10px] uppercase tracking-wider font-black text-gray-400 mb-2">Version update</div>
+     <div class="flex items-center justify-between gap-2 text-xs font-black">
+       <span class="px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-500">v${esc(app.previous_version||'—')}</span>
+       <i class="fa-solid fa-arrow-right text-green-600"></i>
+       <span class="px-2.5 py-1.5 rounded-lg bg-green-50 border border-green-100 text-green-700">v${esc(app.version||'—')}</span>
+     </div>
    </div>
-   <a href="app.html?id=${encodeURIComponent(app.id)}" class="mt-4 w-full text-center rounded-xl bg-green-600 hover:bg-green-700 text-white py-2.5 text-xs font-black"><i class="fa-solid fa-download mr-1"></i> Update</a>
+   ${app.updated_at ? `<p class="mt-2 text-[10px] text-gray-400"><i class="fa-regular fa-clock mr-1"></i>Updated ${esc(new Date(app.updated_at).toLocaleDateString())}</p>` : ''}
+   <a href="app.html?id=${encodeURIComponent(app.id)}" class="mt-4 w-full text-center rounded-xl bg-green-600 hover:bg-green-700 text-white py-2.5 text-xs font-black"><i class="fa-solid fa-arrow-up mr-1"></i> Update Now</a>
  </article>`).join('');
 }
 document.getElementById('refreshBtn').addEventListener('click',loadUpdates);

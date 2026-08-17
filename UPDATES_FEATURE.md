@@ -1,6 +1,7 @@
 # PaliaAPK HUB Updates Feature
 
 - New apps start with `previous_version = null` and `update_available = false`.
-- Editing an existing app and changing its version records the old version in `previous_version` and sets `update_available = true`.
-- `updates.html` lists all rows where `update_available = true`, newest first.
-- Home page search uses the full Supabase app cache and supports name/category/description/developer/package searches.
+- An existing app is considered updated when `update_available = true`, or when `previous_version` is present and differs from the current `version`.
+- `updates.html` reads the live `apps` table from Supabase and shows only rows matching the update condition.
+- Each update card shows old version → new version, update date, and an Update Now button.
+- No fake/hard-coded update list is used.
