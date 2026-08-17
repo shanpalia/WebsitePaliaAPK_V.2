@@ -25,10 +25,7 @@ workflows:
           done
           [ ! -d assets ] || cp -r assets www/
           [ ! -d images ] || cp -r images www/
-          test -f node_modules/@capacitor/core/dist/capacitor.js
-          cp node_modules/@capacitor/core/dist/capacitor.js www/capacitor.js
-          python3 -c 'from pathlib import Path; import re; files=list(Path("www").glob("*.html")); [p.write_text((lambda s: (re.sub(r"\\s*<script[^>]+src=[\"\\\']capacitor-auth\\.js[\"\\\'][^>]*></script>", "", re.sub(r"\\s*<script[^>]+src=[\"\\\']firebase-authentication-plugin\\.js[\"\\\'][^>]*></script>", "", re.sub(r"\\s*<script[^>]+src=[\"\\\']capacitor\\.js[\"\\\'][^>]*></script>", "", s, flags=re.I), flags=re.I), flags=re.I)).replace("<head>", "<head>\\n    <script src=\\"capacitor.js\\"></script>", 1) if "<head>" in s else "<script src=\\"capacitor.js\\"></script>\\n"+s)) for p in files]'
-          test -s www/capacitor.js
+          python3 prepare_web_assets.py
 
       - name: Create Android project and sync Capacitor
         script: |
