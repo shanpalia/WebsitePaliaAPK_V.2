@@ -1,1 +1,1 @@
-// Legacy compatibility file. The official dist/plugin.js is loaded by Codemagic.
+// Legacy file retained for compatibility; not loaded by the Android build.
