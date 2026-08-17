@@ -158,7 +158,7 @@ workflows:
         script: |
           npx cap sync android
 
-      - name: Force Firebase Authentication native module registration
+      - name: Force Firebase Authentication native module and MainActivity registration
         script: |
           set -e
           PLUGIN_DIR="node_modules/@capacitor-firebase/authentication/android"
@@ -166,23 +166,61 @@ workflows:
           test -f "$PLUGIN_DIR/build.gradle"
 
           SETTINGS="android/capacitor.settings.gradle"
-          if ! grep -q "capacitor-firebase-authentication" "$SETTINGS"; then
+          if ! grep -q "include ':capacitor-firebase-authentication'" "$SETTINGS"; then
             printf "\ninclude ':capacitor-firebase-authentication'\nproject(':capacitor-firebase-authentication').projectDir = new File('../node_modules/@capacitor-firebase/authentication/android')\n" >> "$SETTINGS"
           fi
 
-          APP_GRADLE="android/app/capacitor.build.gradle"
+          APP_GRADLE="android/app/build.gradle"
           if ! grep -q "project(':capacitor-firebase-authentication')" "$APP_GRADLE"; then
-            sed -i "/dependencies {/a\    implementation project(':capacitor-firebase-authentication')" "$APP_GRADLE"
+            python3 - <<'PY2'
+          from pathlib import Path
+          p = Path("android/app/build.gradle")
+          s = p.read_text()
+          marker = "dependencies {"
+          if marker not in s:
+              raise SystemExit("dependencies block not found in android/app/build.gradle")
+          s = s.replace(marker, marker + "\n    implementation project(':capacitor-firebase-authentication')", 1)
+          p.write_text(s)
+          PY2
           fi
 
           PLUGINS="android/app/src/main/assets/capacitor.plugins.json"
-          python3 -c "import json; from pathlib import Path; f=Path('android/app/src/main/assets/capacitor.plugins.json'); d=json.loads(f.read_text()); e={'pkg':'@capacitor-firebase/authentication','classpath':'io.capawesome.capacitorjs.plugins.firebase.authentication.FirebaseAuthenticationPlugin'}; d=[x for x in d if x.get('pkg') != e['pkg']]; d.insert(0,e); f.write_text(json.dumps(d,indent=2)+'\n')"
+          python3 - <<'PY3'
+          import json
+          from pathlib import Path
+          f = Path("android/app/src/main/assets/capacitor.plugins.json")
+          d = json.loads(f.read_text()) if f.exists() else []
+          e = {"pkg":"@capacitor-firebase/authentication","classpath":"io.capawesome.capacitorjs.plugins.firebase.authentication.FirebaseAuthenticationPlugin"}
+          d = [x for x in d if x.get("pkg") != e["pkg"]]
+          d.insert(0, e)
+          f.write_text(json.dumps(d, indent=2) + "\n")
+          PY3
 
-          echo "===== Forced native Firebase plugin wiring ====="
+          MAIN="android/app/src/main/java/com/shanpalia/paliaapkhub/MainActivity.java"
+          test -f "$MAIN"
+          python3 - <<'PY4'
+          from pathlib import Path
+          p = Path("android/app/src/main/java/com/shanpalia/paliaapkhub/MainActivity.java")
+          s = p.read_text()
+          imp = "import io.capawesome.capacitorjs.plugins.firebase.authentication.FirebaseAuthenticationPlugin;"
+          if imp not in s:
+              s = s.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\n" + imp)
+          if "registerPlugin(FirebaseAuthenticationPlugin.class);" not in s:
+              if "public void onCreate(Bundle savedInstanceState)" in s:
+                  s = s.replace("public void onCreate(Bundle savedInstanceState) {", "public void onCreate(Bundle savedInstanceState) {\n        registerPlugin(FirebaseAuthenticationPlugin.class);", 1)
+              else:
+                  s = s.replace("public class MainActivity extends BridgeActivity {", "public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(android.os.Bundle savedInstanceState) {\n        registerPlugin(FirebaseAuthenticationPlugin.class);\n        super.onCreate(savedInstanceState);\n    }")
+          p.write_text(s)
+          PY4
+
+          echo "===== Native Firebase module ====="
           grep -n "capacitor-firebase-authentication" "$SETTINGS" "$APP_GRADLE"
+          echo "===== MainActivity ====="
+          grep -n -A2 -B2 "FirebaseAuthenticationPlugin" "$MAIN"
+          echo "===== Plugin metadata ====="
           grep -n -A2 -B1 "@capacitor-firebase/authentication" "$PLUGINS"
           test -d "$PLUGIN_DIR/src/main"
-          echo "Native Firebase Authentication module is wired into the Android app."
+          echo "Native Firebase Authentication module and explicit MainActivity registration are configured."
 
       - name: Verify native Firebase Authentication registration
         script: |

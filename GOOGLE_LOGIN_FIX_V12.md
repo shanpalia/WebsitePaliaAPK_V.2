@@ -1,7 +1,7 @@
 # Google Login Fix v12
 
-The Android native Firebase Authentication module is explicitly wired into the generated Capacitor project after `npx cap sync android`.
+Root cause: the JavaScript proxy existed, but the Android native FirebaseAuthentication module was not guaranteed to be included in the generated Capacitor project.
 
-The build adds the plugin project to `capacitor.settings.gradle`, adds the implementation dependency to `android/app/capacitor.build.gradle`, and forces the official plugin classpath in `capacitor.plugins.json`: `io.capawesome.capacitorjs.plugins.firebase.authentication.FirebaseAuthenticationPlugin`.
+This build explicitly wires `@capacitor-firebase/authentication/android` into `android/capacitor.settings.gradle`, `android/app/capacitor.build.gradle`, and `capacitor.plugins.json` after `npx cap sync android`, using the official Android classpath `io.capawesome.capacitorjs.plugins.firebase.authentication.FirebaseAuthenticationPlugin`.
 
-The HTML app uses a single Capacitor `registerPlugin("FirebaseAuthentication")` proxy and bridges the native Firebase ID token into the Firebase JS Auth session.
+The web page uses one Capacitor `registerPlugin('FirebaseAuthentication')` proxy and then bridges the native Firebase ID token into the Firebase JS Auth session.
