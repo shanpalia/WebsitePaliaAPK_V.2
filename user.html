@@ -532,7 +532,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
         if (isNative) {
             const FirebaseAuthentication = window.FirebaseAuthentication;
             if (!FirebaseAuthentication || typeof FirebaseAuthentication.signInWithGoogle !== "function") {
-                throw new Error("FirebaseAuthentication native plugin is unavailable. The APK was built without the native Firebase Authentication module. Please rebuild the APK with the latest project.");
+                throw new Error("Google Sign-In native bridge is unavailable. Please rebuild this APK from the current project.");
             }
             const result = await FirebaseAuthentication.signInWithGoogle({ useCredentialManager: true });
             const tokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: true });
