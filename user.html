@@ -551,7 +551,7 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
     if (!FirebaseAuthentication ||
         typeof FirebaseAuthentication.signInWithGoogle !== "function") {
         throw new Error(
-            "Google Sign-In native plugin is not loaded. Please use the latest APK built from the current project."
+            "Google Sign-In native plugin is not available in this APK. Rebuild the APK after running npx cap sync android."
         );
     }
 
@@ -567,25 +567,28 @@ document.getElementById("googleLoginBtn").addEventListener("click", async () => 
 
     console.log("Starting native Google Sign-In...");
 
-    const result =
-        await FirebaseAuthentication.signInWithGoogle();
+    const result = await FirebaseAuthentication.signInWithGoogle();
+    console.log("Native Google Sign-In result:", result);
 
-    console.log("Google Sign-In result:", result);
+    // Native authentication and the Firebase JS SDK have separate sessions.
+    // Bridge the native ID token into the JS Firebase Auth session so the
+    // rest of this plain-HTML app sees the user as logged in as well.
+    const tokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: true });
+    const idToken = tokenResult?.token;
 
-    const nativeUser = result?.user;
-
-    if (!nativeUser) {
-        throw new Error(
-            "Google account was selected but no user was returned."
-        );
+    if (!idToken) {
+        throw new Error("Google login succeeded, but Firebase did not return an ID token.");
     }
 
-    await syncUserToSupabase({
-        uid: nativeUser.uid,
-        email: nativeUser.email || null,
-        displayName: nativeUser.displayName || null
-    });
+    const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
+    const jsResult = await auth.signInWithCredential(credential);
+    const nativeUser = jsResult?.user || auth.currentUser;
 
+    if (!nativeUser) {
+        throw new Error("Google login succeeded, but the Firebase web session could not be created.");
+    }
+
+    await syncUserToSupabase(nativeUser);
     showToast("Google login successful!", "success");
 
     setTimeout(() => {

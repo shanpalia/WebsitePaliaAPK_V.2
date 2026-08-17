@@ -71,43 +71,19 @@ workflows:
           echo "===== WWW CONTENT ====="
           ls -la www
 
-      - name: Build Firebase Authentication bridge
+      - name: Prepare Firebase Authentication web bridge
         script: |
           set -e
-          cat > capacitor-core-shim.js <<'EOF'
-          // The Capacitor runtime is loaded from www/capacitor.js BEFORE this bundle.
-          // Never create a second Capacitor core instance.
-          export const registerPlugin = (name, implementations) => {
-            if (!window.Capacitor || typeof window.Capacitor.registerPlugin !== 'function') {
-              throw new Error('Capacitor runtime is not loaded before FirebaseAuthentication.');
-            }
-            return window.Capacitor.registerPlugin(name, implementations);
-          };
-
-          export const Capacitor = window.Capacitor;
-
-          export class WebPlugin {
-            notifyListeners() {}
-            unimplemented(message) {
-              throw new Error(message || 'Not implemented on web.');
-            }
-          }
+          cat > www/capacitor-auth.js <<'EOF'
+          // Do not bundle another copy of Capacitor.
+          // The native FirebaseAuthentication plugin is registered by Capacitor
+          // from android/app/src/main/assets/capacitor.plugins.json.
+          window.FirebaseAuthentication =
+            window.Capacitor?.Plugins?.FirebaseAuthentication || null;
           EOF
-
-          cat > capacitor-auth-entry.js <<'EOF'
-          import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
-          window.FirebaseAuthentication = FirebaseAuthentication;
-          EOF
-
-          npx esbuild capacitor-auth-entry.js \
-            --bundle \
-            --format=iife \
-            --platform=browser \
-            --alias:@capacitor/core=./capacitor-core-shim.js \
-            --outfile=www/capacitor-auth.js
-
           test -s www/capacitor-auth.js
-          echo "Official FirebaseAuthentication JS bridge bundled."
+          echo "FirebaseAuthentication bridge will use the native Capacitor plugin."
+
       - name: Create Android project
         script: |
           rm -rf android
