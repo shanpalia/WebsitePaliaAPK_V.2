@@ -212,11 +212,6 @@
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </button>
 
-                <a href="updates.html" id="updatesNavBtn" class="hidden sm:flex items-center gap-2 px-3.5 h-10 rounded-xl bg-mint-50 text-mint-700 hover:bg-mint-600 hover:text-white font-bold text-xs transition border border-mint-200" title="App Updates">
-                    <i class="fa-solid fa-arrows-rotate"></i> Updates
-                    <span id="updatesNavCount" class="hidden min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] items-center justify-center">0</span>
-                </a>
-
                 <!-- Authentication & Profile Avatar Dropdown -->
                 <div class="relative" id="userArea">
                     <button id="loginBtn" class="px-4 h-10 rounded-xl bg-mint-600 hover:bg-mint-700 text-white font-bold text-xs transition shadow-md shadow-mint-600/20 flex items-center gap-2">
@@ -235,10 +230,6 @@
 </a>
                             <a href="downloads.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
                                 <i class="fa-solid fa-download text-mint-600"></i> Downloads
-                            </a>
-                            <a href="updates.html" class="flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
-                                <span class="flex items-center gap-2.5"><i class="fa-solid fa-arrows-rotate text-mint-600"></i> Updates</span>
-                                <span id="profileUpdatesCount" class="hidden min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] items-center justify-center">0</span>
                             </a>
                             <a href="favorites.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
                                 <i class="fa-solid fa-heart text-mint-600"></i> Favorites
@@ -264,8 +255,6 @@
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
                 <input id="compactSearchInput" type="search" autocomplete="off"
-                       oninput="window.runStoreSearch && window.runStoreSearch(this.value)"
-                       onkeydown="if(event.key==='Enter'){event.preventDefault();window.openFirstStoreSearchResult&&window.openFirstStoreSearchResult();}"
                        placeholder="Search apps, games, tools..."
                        class="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400">
                 <button id="closeSearchPanel" type="button"
@@ -357,25 +346,6 @@
             </div>
         </section>
 
-        <!-- Updates shortcut -->
-        <section id="updatesShortcutSection" class="mb-8">
-            <a href="updates.html" class="app-card flex items-center justify-between p-4 sm:p-5 hover:border-mint-300">
-                <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-xl bg-mint-50 text-mint-600 flex items-center justify-center">
-                        <i class="fa-solid fa-arrows-rotate"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-white">App Updates</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">See apps with a newer version available.</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span id="updatesShortcutCount" class="hidden px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-[11px] font-black">0 updates</span>
-                    <i class="fa-solid fa-chevron-right text-gray-400"></i>
-                </div>
-            </a>
-        </section>
-
         <!-- Apps Listing Section (Filtered by Category / Search) -->
         <section class="mb-12">
             <div class="flex items-center justify-between mb-6">
@@ -430,12 +400,6 @@
 <li>
     <a href="index.html#topChartsSection" class="hover:text-mint-600 transition">
         Top Charts
-    </a>
-</li>
-
-<li>
-    <a href="updates.html" class="hover:text-mint-600 transition">
-        Updates
     </a>
 </li>
 
@@ -787,108 +751,39 @@ recordSiteVisit();
             if (compactSearchResults) compactSearchResults.innerHTML = '';
         }
 
-        window.storeSearchMatches = [];
-        window.runStoreSearch = function(query) {
+        function renderCompactSearchResults(query) {
             if (!compactSearchResults) return;
             const q = String(query || '').trim().toLowerCase();
-            const apps = Array.isArray(window.allAppsCache) ? window.allAppsCache : [];
 
             if (!q) {
-                window.storeSearchMatches = [];
                 compactSearchResults.innerHTML =
-                    '<p class="text-xs text-gray-400 text-center py-4">Type an app name, category or developer.</p>';
+                    '<p class="text-xs text-gray-400 text-center py-5">Search by app name or category.</p>';
                 return;
             }
 
-            const matches = apps.filter(app => {
-                const haystack = [
-                    app?.name, app?.category, app?.description, app?.developer,
-                    app?.package_name, app?.version
-                ].map(v => String(v || '').toLowerCase()).join(' ');
-                return haystack.includes(q);
-            }).slice(0, 20);
+            const matches = (window.allAppsCache || []).filter(app => {
+                const name = String(app?.name || '').toLowerCase();
+                const category = String(app?.category || '').toLowerCase();
+                return name.includes(q) || category.includes(q);
+            }).slice(0, 10);
 
-            window.storeSearchMatches = matches;
             if (!matches.length) {
                 compactSearchResults.innerHTML =
-                    '<div class="py-5 text-center"><i class="fa-solid fa-magnifying-glass text-gray-300 text-xl mb-2"></i><p class="text-xs font-bold text-gray-600">No app found</p><p class="text-[11px] text-gray-400 mt-1">Try another app name or category.</p></div>';
+                    '<p class="text-xs text-gray-500 text-center py-5">No apps found.</p>';
                 return;
             }
 
             compactSearchResults.innerHTML = matches.map(app => `
-                <button type="button" data-compact-app-id="${escapeHTML(app.id)}"
-                        class="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-mint-50 active:bg-mint-100 text-left transition">
-                    <img src="${escapeHTML(app.icon_url || '')}" alt="${escapeHTML(app.name || 'App')}"
-                         class="w-11 h-11 rounded-xl object-contain bg-gray-100 p-1">
-                    <span class="min-w-0 flex-1">
+                <button type="button" onclick="openAppDetails('${app.id}')"
+                        class="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-mint-50 text-left transition">
+                    <img src="${app.icon_url || ''}" alt="${escapeHTML(app.name || 'App')}"
+                         class="w-10 h-10 rounded-xl object-cover bg-gray-100">
+                    <span class="min-w-0">
                         <span class="block text-sm font-bold text-gray-900 truncate">${escapeHTML(app.name || 'Unknown App')}</span>
                         <span class="block text-[11px] text-gray-400 truncate">${escapeHTML(app.category || 'App')} • v${escapeHTML(app.version || '1.0')}</span>
                     </span>
-                    <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
                 </button>
             `).join('');
-        };
-
-        window.openFirstStoreSearchResult = function() {
-            const first = window.storeSearchMatches?.[0];
-            if (first?.id) window.openAppDetails?.(first.id);
-        };
-
-        compactSearchResults?.addEventListener('click', (e) => {
-            const item = e.target.closest('[data-compact-app-id]');
-            if (!item) return;
-            const id = item.getAttribute('data-compact-app-id');
-            if (id) window.openAppDetails?.(id);
-        });
-
-        function renderCompactSearchResults(query) {
-            if (!compactSearchResults) return;
-            const q = String(query || '').trim().toLowerCase();
-            const apps = Array.isArray(window.allAppsCache) ? window.allAppsCache : [];
-
-            // Show real store apps immediately when search opens.
-            if (!q) {
-                if (!apps.length) {
-                    compactSearchResults.innerHTML = '<p class="text-xs text-gray-400 text-center py-5">Loading apps...</p>';
-                    return;
-                }
-                compactSearchResults.innerHTML = '<div class="px-1 pb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Apps in PaliaAPK HUB</div>' +
-                    apps.slice(0, 8).map(renderCompactSearchApp).join('');
-                return;
-            }
-
-            const matches = apps.filter(app => {
-                const haystack = [app?.name, app?.category, app?.description, app?.developer, app?.package_name, app?.version]
-                    .map(v => String(v || '').toLowerCase()).join(' ');
-                return haystack.includes(q);
-            }).slice(0, 20);
-
-            if (!matches.length) {
-                compactSearchResults.innerHTML = `
-                    <div class="py-6 text-center">
-                        <i class="fa-solid fa-magnifying-glass text-gray-300 text-xl mb-2"></i>
-                        <p class="text-sm font-bold text-gray-600">No app found</p>
-                        <p class="text-xs text-gray-400 mt-1">No result for “${escapeHTML(query)}”</p>
-                    </div>`;
-                return;
-            }
-
-            compactSearchResults.innerHTML = `<div class="px-1 pb-2 text-[11px] font-bold text-mint-600">${matches.length} app${matches.length === 1 ? '' : 's'} found</div>` +
-                matches.map(renderCompactSearchApp).join('');
-        }
-
-        function renderCompactSearchApp(app) {
-            return `
-                <button type="button" data-compact-app-id="${escapeHTML(app.id)}"
-                        class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-mint-50 active:bg-mint-100 text-left transition border-b border-gray-50 last:border-0">
-                    <img src="${escapeHTML(app.icon_url || '')}" alt="${escapeHTML(app.name || 'App')}"
-                         class="w-12 h-12 rounded-xl object-contain bg-gray-100 p-1" onerror="this.style.visibility='hidden'">
-                    <span class="min-w-0 flex-1">
-                        <span class="block text-sm font-bold text-gray-900 truncate">${escapeHTML(app.name || 'Unknown App')}</span>
-                        <span class="block text-[11px] text-gray-500 truncate">${escapeHTML(app.category || 'App')} • v${escapeHTML(app.version || '1.0')}</span>
-                    </span>
-                    <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
-                </button>`;
         }
 
         mobileSearchToggle?.addEventListener('click', () => {
@@ -898,16 +793,7 @@ recordSiteVisit();
         });
 
         closeSearchPanel?.addEventListener('click', closeCompactSearch);
-        const runCompactSearch = e => renderCompactSearchResults(e.target.value);
-        compactSearchInput?.addEventListener('input', runCompactSearch);
-        compactSearchInput?.addEventListener('keyup', runCompactSearch);
-        compactSearchInput?.addEventListener('search', runCompactSearch);
-        compactSearchResults?.addEventListener('click', e => {
-            const item = e.target.closest('[data-compact-app-id]');
-            if (!item) return;
-            const appId = item.getAttribute('data-compact-app-id');
-            if (appId) window.openAppDetails(appId);
-        });
+        compactSearchInput?.addEventListener('input', e => renderCompactSearchResults(e.target.value));
 
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') closeCompactSearch();
@@ -935,26 +821,6 @@ recordSiteVisit();
             if (autocomplete) autocomplete.classList.add('hidden');
         });
 
-        // ===============================
-        // UPDATE COUNT
-        // ===============================
-        function updateUpdateBadges(apps) {
-            const updates = (apps || []).filter(app => app && app.update_available === true);
-            const count = updates.length;
-            ['updatesNavCount','profileUpdatesCount'].forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                el.textContent = count;
-                el.classList.toggle('hidden', count === 0);
-                el.classList.toggle('flex', count > 0);
-            });
-            const shortcut = document.getElementById('updatesShortcutCount');
-            if (shortcut) {
-                shortcut.textContent = `${count} update${count === 1 ? '' : 's'}`;
-                shortcut.classList.toggle('hidden', count === 0);
-            }
-        }
-
         // Initialize Data from Supabase
        // ===============================
 // LOAD APPS FROM SUPABASE
@@ -981,10 +847,6 @@ async function initData() {
         console.log("TOTAL APPS:", apps?.length || 0);
 
         window.allAppsCache = apps || [];
-        updateUpdateBadges(window.allAppsCache);
-        if (compactSearchInput && appSearchPanel && !appSearchPanel.classList.contains('hidden')) {
-            renderCompactSearchResults(compactSearchInput.value);
-        }
 
         renderPageData(window.allAppsCache);
 
@@ -1456,9 +1318,7 @@ window.openAppDetails = function(appId) {
                 const name = normalizeSearch(app?.name);
                 const category = normalizeSearch(app?.category);
                 const description = normalizeSearch(app?.description);
-                const developer = normalizeSearch(app?.developer);
-                const packageName = normalizeSearch(app?.package_name);
-                return name.includes(q) || category.includes(q) || description.includes(q) || developer.includes(q) || packageName.includes(q);
+                return name.includes(q) || category.includes(q) || description.includes(q);
             }).slice(0, limit);
         }
 
@@ -1704,7 +1564,6 @@ window.handleDownloadClick = async function(appId) {
   <a href="index.html#categoriesSection"><i class="fa-solid fa-layer-group"></i><span>Categories</span></a>
   <a href="index.html#topChartsSection"><i class="fa-solid fa-chart-line"></i><span>Top Charts</span></a>
   <a href="downloads.html"><i class="fa-solid fa-download"></i><span>Downloads</span></a>
-  <a href="updates.html"><i class="fa-solid fa-arrows-rotate"></i><span>Updates</span></a>
   <a href="settings.html"><i class="fa-solid fa-user"></i><span>Profile</span></a>
 </nav>
 
