@@ -1,13 +1,1 @@
-// Firebase Authentication native proxy for the Capacitor Android bridge.
-(function () {
-  try {
-    if (!window.Capacitor || typeof window.Capacitor.registerPlugin !== "function") {
-      throw new Error("Capacitor runtime is unavailable.");
-    }
-    window.FirebaseAuthentication = window.Capacitor.registerPlugin("FirebaseAuthentication");
-    console.log("FirebaseAuthentication proxy registered.");
-  } catch (error) {
-    console.error("FirebaseAuthentication proxy setup failed:", error);
-    window.FirebaseAuthentication = null;
-  }
-})();
+// Legacy compatibility file. The official dist/plugin.js is loaded by Codemagic.
