@@ -88,9 +88,9 @@ workflows:
         script: |
           set -e
           rm -rf android
-          test -f capacitor.config.json
+          test -f capacitor.config.ts
           echo "===== Capacitor config ====="
-          cat capacitor.config.json
+          cat capacitor.config.ts
           npx cap config
           npx cap add android
 
