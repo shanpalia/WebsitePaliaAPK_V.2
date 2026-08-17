@@ -30,7 +30,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <!-- Capacitor runtime is loaded first; Firebase Authentication bridge comes after it. -->
 <script src="capacitor.js"></script>
-<script src="firebase-authentication-plugin.js"></script>
     <style>
         .ui-icon {
             display: inline-flex;
@@ -344,6 +343,9 @@ async function syncUserToSupabase(user) {
             window.location.replace(target || fallback);
         }
 
+        // Restore the page target before Firebase emits the initial auth state.
+        restoreGoogleRedirectTarget();
+
         // Auto-redirect if already logged in
         auth.onAuthStateChanged(async (user) => {
 
@@ -521,41 +523,62 @@ async function syncUserToSupabase(user) {
         }
   
 // ===============================
-// GOOGLE LOGIN
+// GOOGLE LOGIN - FIREBASE WEB REDIRECT
 // ===============================
 
-document.getElementById("googleLoginBtn").addEventListener("click", async () => {
-    const btn = document.getElementById("googleLoginBtn");
-    btn.disabled = true;
-    btn.innerHTML = '<span class="ui-spinner" aria-hidden="true"></span> Signing in...';
+// Preserve the page the user was trying to open before leaving for Google.
+function saveGoogleRedirectTarget() {
     try {
-        const isNative = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function" && window.Capacitor.isNativePlatform());
-        if (isNative) {
-            const FirebaseAuthentication = window.FirebaseAuthentication;
-            if (!FirebaseAuthentication || typeof FirebaseAuthentication.signInWithGoogle !== "function") {
-                throw new Error("FirebaseAuthentication native plugin is unavailable. The APK was built without the native Firebase Authentication module. Please rebuild the APK with the latest project.");
-            }
-            const result = await FirebaseAuthentication.signInWithGoogle({ useCredentialManager: true });
-            const tokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: true });
-            const idToken = tokenResult?.token;
-            if (!idToken) throw new Error("Google Sign-In completed, but Firebase did not return an ID token.");
-            const credential = firebase.auth.GoogleAuthProvider.credential(idToken);
-            await auth.signInWithCredential(credential);
-            window.location.href = safeRedirect();
-            return;
+        sessionStorage.setItem('palia_google_redirect', redirectTarget || 'index.html');
+    } catch (_) {}
+}
+
+function restoreGoogleRedirectTarget() {
+    try {
+        const saved = sessionStorage.getItem('palia_google_redirect');
+        if (saved) {
+            redirectTarget = saved;
+            sessionStorage.removeItem('palia_google_redirect');
         }
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);
-        if (result?.user) window.location.href = safeRedirect();
+    } catch (_) {}
+}
+
+// Complete a Firebase Web redirect when Google sends the user back.
+(async function handleGoogleRedirectResult() {
+    try {
+        const result = await auth.getRedirectResult();
+        if (result && result.user) {
+            await syncUserToSupabase(result.user);
+            safeRedirect();
+        }
     } catch (error) {
-        console.error("Google Login Error:", error);
+        console.error('Google redirect login error:', error);
+        showToast(friendlyAuthError(error));
+    }
+})();
+
+document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('googleLoginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="ui-spinner" aria-hidden="true"></span> Redirecting to Google...';
+
+    try {
+        saveGoogleRedirectTarget();
+
+        // Firebase Web Authentication: redirect to Google account selection.
+        // No native FirebaseAuthentication Capacitor plugin is required.
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        await auth.signInWithRedirect(provider);
+    } catch (error) {
+        console.error('Google Redirect Login Error:', error);
         showToast(friendlyAuthError(error));
         btn.disabled = false;
         btn.innerHTML = '<span class="google-glyph" aria-hidden="true">G</span> Continue with Google';
     }
 });
 
-        // ===============================
+// ===============================
 // CLEAR LOGIN FIELDS
 // ===============================
 window.addEventListener("pageshow", function () {

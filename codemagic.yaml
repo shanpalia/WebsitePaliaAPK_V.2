@@ -12,7 +12,6 @@ workflows:
         script: |
           set -e
           npm install
-          npm install firebase@12.6.0 @capacitor-firebase/authentication@8.3.0
 
       - name: Prepare web assets
         script: |
@@ -28,81 +27,17 @@ workflows:
           [ ! -d images ] || cp -r images www/
           test -f node_modules/@capacitor/core/dist/capacitor.js
           cp node_modules/@capacitor/core/dist/capacitor.js www/capacitor.js
-          # Plain HTML apps must not load the package's ESM dist/plugin.js as a classic script.
-          # Use the local classic bridge, which registers the native Capacitor plugin.
-          test -f firebase-authentication-plugin.js
-          cp firebase-authentication-plugin.js www/firebase-authentication-plugin.js
-          python3 - <<'PY'
-          from pathlib import Path
-          for p in Path('www').glob('*.html'):
-              s=p.read_text()
-              # remove any old auth script and any old capacitor runtime includes
-              import re
-              s=re.sub(r'\s*<script[^>]+src=["\']capacitor-auth\.js["\'][^>]*></script>', '', s, flags=re.I)
-              s=re.sub(r'\s*<script[^>]+src=["\']capacitor\.js["\'][^>]*></script>', '', s, flags=re.I)
-              if '<head>' in s:
-                  s=s.replace('<head>', '<head>\n    <script src="capacitor.js"></script>\n    <script src="firebase-authentication-plugin.js"></script>', 1)
-              else:
-                  s='<script src="capacitor.js"></script>\n<script src="firebase-authentication-plugin.js"></script>\n'+s
-              p.write_text(s)
-          PY
+          python3 -c 'from pathlib import Path; import re; files=list(Path("www").glob("*.html")); [p.write_text((lambda s: (re.sub(r"\\s*<script[^>]+src=[\"\\\']capacitor-auth\\.js[\"\\\'][^>]*></script>", "", re.sub(r"\\s*<script[^>]+src=[\"\\\']firebase-authentication-plugin\\.js[\"\\\'][^>]*></script>", "", re.sub(r"\\s*<script[^>]+src=[\"\\\']capacitor\\.js[\"\\\'][^>]*></script>", "", s, flags=re.I), flags=re.I), flags=re.I)).replace("<head>", "<head>\\n    <script src=\\"capacitor.js\\"></script>", 1) if "<head>" in s else "<script src=\\"capacitor.js\\"></script>\\n"+s)) for p in files]'
           test -s www/capacitor.js
-          test -s www/firebase-authentication-plugin.js
 
-      - name: Create Android project and sync official plugins
+      - name: Create Android project and sync Capacitor
         script: |
           set -e
-          echo "Creating Android platform with official Capacitor plugins..."
           npx cap add android
-          test -d android
-          test -f android/capacitor.settings.gradle
-          test -f android/app/capacitor.build.gradle
-          echo "Android platform and Capacitor plugin files created successfully."
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('android/variables.gradle')
-          s=p.read_text()
-          if 'rgcfaIncludeGoogle' not in s:
-              if 'ext {' in s:
-                  s=s.replace('ext {', "ext {\n    rgcfaIncludeGoogle = true\n    androidxCredentialsVersion = '1.3.0'", 1)
-              else:
-                  s += "\next {\n    rgcfaIncludeGoogle = true\n    androidxCredentialsVersion = '1.3.0'\n}\n"
-              p.write_text(s)
-          PY
-          # Prefer the Codemagic secret when supplied; otherwise use the bundled Firebase client config.
-          if [ -n "${FIREBASE_GOOGLE_SERVICES_JSON:-}" ]; then
-            printf '%s' "$FIREBASE_GOOGLE_SERVICES_JSON" > android/app/google-services.json
-          elif [ -f google-services.json ]; then
-            cp google-services.json android/app/google-services.json
-          else
-            echo "ERROR: Firebase google-services.json is missing."
-            exit 1
-          fi
-          test -s android/app/google-services.json
-          echo "Syncing plugins after Google configuration..."
           npx cap sync android
-          echo "Official Capacitor Android project created and synced."
-
-      - name: Verify official Firebase Authentication integration
-        script: |
-          set -e
-          echo '--- Capacitor config ---'
-          npx cap config | grep -E "appId|appName|webDir" -A1
-          echo '--- Native plugin metadata ---'
-          test -f android/app/src/main/assets/capacitor.plugins.json
-          grep -q '@capacitor-firebase/authentication' android/app/src/main/assets/capacitor.plugins.json
-          grep -q 'FirebaseAuthenticationPlugin' android/app/src/main/assets/capacitor.plugins.json
-          echo 'Official FirebaseAuthentication plugin metadata found.'
-          echo '--- Native module wiring ---'
-          grep -R -q 'capacitor-firebase-authentication' android/capacitor.settings.gradle android/app/capacitor.build.gradle
-          echo 'Official native FirebaseAuthentication module found in generated Gradle files.'
-          echo '--- Google dependency flag ---'
-          grep -q 'rgcfaIncludeGoogle = true' android/variables.gradle
-          echo 'Google provider dependency enabled.'
-          echo '--- Web plugin bundle ---'
-          test -s www/firebase-authentication-plugin.js
-          grep -q 'FirebaseAuthentication' www/firebase-authentication-plugin.js
-          echo 'Official no-bundler FirebaseAuthentication JS bundle present.'
+          test -d android
+          test -f android/app/src/main/assets/capacitor.config.json
+          echo "Capacitor Android project created successfully."
 
       - name: Generate app assets
         script: |
@@ -112,61 +47,10 @@ workflows:
       - name: Configure Android release signing
         script: |
           set -e
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p = Path("android/app/build.gradle")
-          s = p.read_text()
-          if "signingConfigs {" not in s:
-              marker = "    buildTypes {"
-              block = """    signingConfigs {
-                  release {
-                      if (System.getenv("CI")) {
-                          storeFile file(System.getenv("CM_KEYSTORE_PATH"))
-                          storePassword System.getenv("CM_KEYSTORE_PASSWORD")
-                          keyAlias System.getenv("CM_KEY_ALIAS")
-                          keyPassword System.getenv("CM_KEY_PASSWORD")
-                      }
-                  }
-              }
-
-          """
-              if marker not in s:
-                  raise SystemExit("Could not find buildTypes in android/app/build.gradle")
-              s = s.replace(marker, block + marker, 1)
-
-          m = re.search(r"(?m)^    buildTypes\s*\{", s)
-          if not m:
-              raise SystemExit("Could not find buildTypes block")
-          tail = s[m.start():]
-          rm = re.search(r"(?m)^        release\s*\{", tail)
-          if not rm:
-              raise SystemExit("Could not find release build type")
-          release_start = m.start() + rm.start()
-          brace = s.find("{", release_start)
-          depth = 0
-          end = None
-          for i in range(brace, len(s)):
-              if s[i] == "{":
-                  depth += 1
-              elif s[i] == "}":
-                  depth -= 1
-                  if depth == 0:
-                      end = i
-                      break
-          if end is None:
-              raise SystemExit("Could not parse release build type")
-          release_block = s[release_start:end+1]
-          if "signingConfig signingConfigs.release" not in release_block:
-              release_block = release_block[:-1] + "\n            signingConfig signingConfigs.release\n        }"
-              s = s[:release_start] + release_block + s[end+1:]
-          p.write_text(s)
-          print("Codemagic release signing wired to CM_KEYSTORE_* variables.")
-          PY
+          python3 configure_signing.py
           grep -q 'signingConfig signingConfigs.release' android/app/build.gradle
           test -n "${CM_KEYSTORE_PATH:-}"
           test -f "$CM_KEYSTORE_PATH"
-          echo "Signing keystore found: $CM_KEYSTORE_PATH"
 
       - name: Build signed release APK
         script: |
@@ -177,7 +61,6 @@ workflows:
           test -s "$APK"
           apksigner verify --verbose "$APK"
           cp "$APK" "app/build/outputs/apk/release/PaliaAPK HUB.apk"
-          echo "Signed APK created: app/build/outputs/apk/release/PaliaAPK HUB.apk"
 
     artifacts:
       - android/app/build/outputs/apk/release/*.apk
