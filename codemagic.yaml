@@ -49,13 +49,7 @@ workflows:
         script: |
           set -e
           python3 configure_native_downloader.py
-          python3 - <<'PY'
-from pathlib import Path
-import xml.etree.ElementTree as ET
-p=Path("android/app/src/main/AndroidManifest.xml")
-ET.parse(p)
-print("AndroidManifest.xml XML parse OK")
-PY
+          python3 -c 'import xml.etree.ElementTree as ET; ET.parse("android/app/src/main/AndroidManifest.xml"); print("AndroidManifest.xml XML parse OK")'
           test -f android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
           grep -q 'registerPlugin(PaliaDownloaderPlugin.class)' android/app/src/main/java/com/shanpalia/paliaapkhub/MainActivity.java
           grep -q '@CapacitorPlugin(name = "PaliaDownloader")' android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
