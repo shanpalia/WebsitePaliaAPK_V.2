@@ -531,6 +531,29 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
         const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
+        // Keep the header authentication state in sync with Firebase.
+        // This is intentionally on index.html so the Login button changes
+        // immediately after returning from user.html.
+        function updateHeaderAuth(user) {
+            const loginBtn = document.getElementById('loginBtn');
+            const profileBox = document.getElementById('profileBox');
+            const profileAvatar = document.getElementById('profileAvatar');
+            if (!loginBtn || !profileBox) return;
+
+            if (user) {
+                loginBtn.classList.add('hidden');
+                profileBox.classList.remove('hidden');
+                const name = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+                if (profileAvatar) profileAvatar.textContent = name.slice(0, 2).toUpperCase();
+            } else {
+                loginBtn.classList.remove('hidden');
+                profileBox.classList.add('hidden');
+            }
+        }
+
+        auth.onAuthStateChanged(updateHeaderAuth);
+        window.addEventListener('pageshow', () => updateHeaderAuth(auth.currentUser));
+
         window.allAppsCache = [];
         window.currentCategory = 'All';
         window.currentSearchQuery = '';
