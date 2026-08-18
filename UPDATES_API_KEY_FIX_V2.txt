@@ -1,0 +1,3 @@
+updates.html now uses the exact Supabase anon key already present in index.html.
+No new/generated API key was introduced.
+Search/login code was not changed.
