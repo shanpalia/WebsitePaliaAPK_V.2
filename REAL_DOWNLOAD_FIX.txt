@@ -1,0 +1,7 @@
+Fixed from the full working PaliaAPK HUB project:
+- #12 horizontal half-Android header icon is now a dedicated large 72px asset in all main headers.
+- download.html no longer waits for Firebase auth state before showing the download UI.
+- download.html fetches the app from Supabase and directly wires the Download APK button to native PaliaDownloader.
+- No browser fallback inside Android.
+- Broken avatar fallback fixed.
+- Existing launcher icon, Google Login, Supabase and full project preserved.

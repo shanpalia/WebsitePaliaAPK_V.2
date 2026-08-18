@@ -42,7 +42,7 @@
                     <i class="fa-solid fa-arrow-left text-lg"></i>
                 </a>
                 <a href="index.html" class="flex items-center gap-2">
-                    <div class="w-9 h-9 rounded-xl bg-mint-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-mint-500/20">P</div>
+                    <div class="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-2xl bg-white border border-mint-100 flex items-center justify-center overflow-hidden shadow-md shadow-mint-500/10"><img src="assets/home-half-android-12-header.png" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
                     <span class="font-bold text-lg tracking-tight text-gray-900 hidden sm:inline">PaliaAPK<span class="text-mint-600">HUB</span></span>
                 </a>
             </div>
@@ -251,15 +251,16 @@
             profileDropdown.classList.add('hidden');
         });
 
-        // Initialize App & Auth state listener
+        // Initialize App data. Download is handled natively inside the APK.
         async function init() {
             if (!appId) {
-                document.body.innerHTML = '<div class="flex items-center justify-center h-screen text-gray-500 font-medium">No App ID specified in URL.</div>';
+                pageLoader.classList.add('hidden');
+                downloadCard.classList.remove('hidden');
+                downloadCard.innerHTML = '<div class="p-8 text-center text-gray-500">No App ID specified.</div>';
                 return;
             }
 
             try {
-                // Fetch app data from Supabase
                 const { data: app, error } = await _supabase
                     .from('apps')
                     .select('*')
@@ -267,47 +268,84 @@
                     .single();
 
                 if (error || !app) {
-                    document.body.innerHTML = '<div class="flex items-center justify-center h-screen text-gray-500 font-medium">App not found.</div>';
+                    console.error('App lookup failed:', error);
+                    pageLoader.classList.add('hidden');
+                    downloadCard.classList.remove('hidden');
+                    downloadCard.innerHTML = '<div class="p-8 text-center"><p class="text-red-600 font-bold">Unable to load app.</p><p class="text-sm text-gray-500 mt-2">Please try again.</p></div>';
                     return;
                 }
 
                 currentAppData = app;
 
-                // Populate App Details UI
-                document.getElementById('appIcon').src = app.icon_url || 'https://via.placeholder.com/150';
+                document.getElementById('appIcon').src = app.icon_url || 'assets/home-half-android-12-header.png';
                 document.getElementById('appName').textContent = app.name || 'App Name';
                 document.getElementById('appDeveloper').textContent = app.developer || 'Unknown';
                 document.getElementById('appVersion').textContent = app.version || '1.0';
                 document.getElementById('appSize').textContent = app.apk_size || 'Varies';
 
                 pageLoader.classList.add('hidden');
+                authCard.classList.add('hidden');
+                downloadCard.classList.remove('hidden');
+                authHeaderLoggedOut.classList.add('hidden');
+                authHeaderLoggedIn.classList.add('hidden');
 
-                // Listen to Firebase Auth state changes
-                auth.onAuthStateChanged(async (user) => {
-                    if (user) {
-                        // User is logged in
-                        renderUserProfile(user);
-                        authCard.classList.add('hidden');
-                        authHeaderLoggedOut.classList.add('hidden');
-                        authHeaderLoggedIn.classList.remove('hidden');
-                        authHeaderLoggedIn.classList.add('flex');
-                        downloadCard.classList.remove('hidden');
-
-                        // Start download countdown process
-                        startDownloadProcess(app);
-                    } else {
-                        // User is not logged in
-                        authHeaderLoggedIn.classList.add('hidden');
-                        authHeaderLoggedIn.classList.remove('flex');
-                        authHeaderLoggedOut.classList.remove('hidden');
-                        downloadCard.classList.add('hidden');
-                        authCard.classList.remove('hidden');
-                    }
-                });
-
+                setupNativeDownload(app);
             } catch (err) {
                 console.error('Initialization error:', err);
+                pageLoader.classList.add('hidden');
+                downloadCard.classList.remove('hidden');
+                downloadCard.innerHTML = '<div class="p-8 text-center"><p class="text-red-600 font-bold">Unable to load app.</p><p class="text-sm text-gray-500 mt-2">Check your connection and try again.</p></div>';
             }
+        }
+
+        function setupNativeDownload(app) {
+            const finalBtn = document.getElementById('finalDownloadBtn');
+            if (!finalBtn) return;
+
+            const filename = ((app.name || 'PaliaAPK-HUB-App')
+                .replace(/[^a-zA-Z0-9 _-]/g, '').trim() || 'PaliaAPK-HUB-App') + '.apk';
+
+            let downloadUrl = '';
+            if (app.telegram_message_id) {
+                downloadUrl = `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
+            } else if (app.apk_url) {
+                downloadUrl = app.apk_url;
+            }
+
+            finalBtn.onclick = async function(e) {
+                e.preventDefault();
+
+                if (!downloadUrl) {
+                    alert('APK download URL is not available for this app.');
+                    return;
+                }
+
+                finalBtn.disabled = true;
+                finalBtn.classList.add('opacity-70');
+                finalBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Starting Download...';
+
+                try {
+                    const result = await window.startPaliaApkDownload(downloadUrl, filename);
+
+                    // Count only after DownloadManager successfully queued the file.
+                    try {
+                        await _supabase
+                            .from('apps')
+                            .update({ downloads: (app.downloads || 0) + 1 })
+                            .eq('id', app.id);
+                    } catch (_) {}
+
+                    finalBtn.innerHTML = '<i class="fa-solid fa-check"></i> Download Started';
+                    finalBtn.disabled = false;
+                    finalBtn.classList.remove('opacity-70');
+                } catch (err) {
+                    console.error('Native download error:', err);
+                    finalBtn.disabled = false;
+                    finalBtn.classList.remove('opacity-70');
+                    finalBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download APK Now';
+                    alert('Native APK download could not be started. Please install the latest PaliaAPK HUB build.');
+                }
+            };
         }
 
         // Render User Avatar and Details in Header
@@ -315,6 +353,10 @@
             const email = user.email || 'user@example.com';
             const displayName = user.displayName || email.split('@')[0];
             const photoURL = user.photoURL;
+            const usernamePart = email.split('@')[0];
+            const letters = usernamePart.replace(/[^a-zA-Z]/g, '');
+            const initials = letters.length >= 2 ? letters.substring(0,2).toUpperCase()
+                : (usernamePart.length >= 2 ? usernamePart.substring(0,2).toUpperCase() : 'U');
 
             headerUserName.textContent = displayName;
             headerUserEmail.textContent = email;
@@ -322,156 +364,9 @@
             if (photoURL) {
                 avatarContainer.innerHTML = `<img src="${photoURL}" alt="Avatar" class="w-full h-full object-cover" onerror="this.onerror=null;this.remove();this.parentElement.innerHTML='<span class="text-xs font-bold text-mint-700">${initials}</span>';">`;
             } else {
-                // Generate initials from email username (e.g. shanpalia786@gmail.com -> SP)
-                const usernamePart = email.split('@')[0];
-                let initials = 'U';
-                const letters = usernamePart.replace(/[^a-zA-Z]/g, '');
-                if (letters.length >= 2) {
-                    initials = letters.substring(0, 2).toUpperCase();
-                } else if (usernamePart.length >= 2) {
-                    initials = usernamePart.substring(0, 2).toUpperCase();
-                } else if (usernamePart.length === 1) {
-                    initials = usernamePart.toUpperCase();
-                }
                 avatarContainer.innerHTML = `<span class="text-xs font-bold text-mint-700">${initials}</span>`;
             }
         }
-
-        // Handle Download Countdown & Counter Update
-        let countdownStarted = false;
-        function startDownloadProcess(app) {
-            if (countdownStarted) return;
-            countdownStarted = true;
-
-            let timeLeft = 5;
-            countdownTimer.textContent = timeLeft;
-            countdownBox.classList.remove('hidden');
-            readyBox.classList.add('hidden');
-
-            const timerInterval = setInterval(async () => {
-                timeLeft--;
-                countdownTimer.textContent = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    countdownBox.classList.add('hidden');
-                    readyBox.classList.remove('hidden');
-
-                    // Increment downloads count in Supabase safely
-                    try {
-                        const newDownloads = (app.downloads || 0) + 1;
-                        await _supabase
-                            .from('apps')
-                            .update({ downloads: newDownloads })
-                            .eq('id', app.id);
-                    } catch (e) {
-                        console.error('Failed to update download count:', e);
-                    }
-
-                    // Setup clean custom download filename <App Name>.apk
-                    const safeName = (app.name || 'App').replace(/[^a-zA-Z0-9 _-]/g, '').trim();
-                    const filename = `${safeName}.apk`;
-
-                    let downloadUrl = "";
-                    if (app.telegram_message_id) {
-                        downloadUrl =
-                            `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
-                    } else if (app.apk_url) {
-                        downloadUrl = app.apk_url;
-                    }
-
-                    finalDownloadBtn.onclick = async (e) => {
-                        e.preventDefault();
-                        if (!downloadUrl) {
-                            alert('APK download URL is invalid.');
-                            return;
-                        }
-
-                        finalDownloadBtn.disabled = true;
-                        finalDownloadBtn.classList.add('opacity-70');
-                        finalDownloadBtn.innerHTML =
-                            '<i class="fa-solid fa-spinner fa-spin"></i> Starting Download...';
-
-                        try {
-                            await window.startPaliaApkDownload(downloadUrl, filename);
-                            finalDownloadBtn.innerHTML =
-                                '<i class="fa-solid fa-check"></i> Download Started';
-                        } catch (err) {
-                            console.error('Native APK download error:', err);
-                            finalDownloadBtn.disabled = false;
-                            finalDownloadBtn.classList.remove('opacity-70');
-                            finalDownloadBtn.innerHTML =
-                                '<i class="fa-solid fa-download"></i> Download APK Now';
-                            alert('Unable to start download. Please try again.');
-                        }
-                    };
-                }
-            }, 1000);
-        }
-
-        // Firebase Google Login
-        googleLoginBtn.addEventListener('click', async () => {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            try {
-                authErrorMsg.classList.add('hidden');
-                await auth.signInWithPopup(provider);
-            } catch (error) {
-                authErrorMsg.textContent = error.message;
-                authErrorMsg.classList.remove('hidden');
-            }
-        });
-
-        // Email Login / Signup Handlers
-        loginSubmitBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const email = authEmailInput.value.trim();
-            const password = authPasswordInput.value.trim();
-            if (!email || !password) {
-                authErrorMsg.textContent = 'Please enter both email and password.';
-                authErrorMsg.classList.remove('hidden');
-                return;
-            }
-            try {
-                authErrorMsg.classList.add('hidden');
-                await auth.signInWithEmailAndPassword(email, password);
-            } catch (error) {
-                authErrorMsg.textContent = error.message;
-                authErrorMsg.classList.remove('hidden');
-            }
-        });
-
-        signupSubmitBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const email = authEmailInput.value.trim();
-            const password = authPasswordInput.value.trim();
-            if (!email || !password) {
-                authErrorMsg.textContent = 'Please enter both email and password.';
-                authErrorMsg.classList.remove('hidden');
-                return;
-            }
-            try {
-                authErrorMsg.classList.add('hidden');
-                await auth.createUserWithEmailAndPassword(email, password);
-            } catch (error) {
-                authErrorMsg.textContent = error.message;
-                authErrorMsg.classList.remove('hidden');
-            }
-        });
-
-        // Header Login Button Click action to focus auth card
-        document.getElementById('headerLoginBtn')?.addEventListener('click', () => {
-            authCard.scrollIntoView({ behavior: 'smooth' });
-        });
-
-        // Logout Action
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                await auth.signOut();
-                countdownStarted = false;
-                window.location.reload();
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        });
 
         // Run initialization on load
         init();
