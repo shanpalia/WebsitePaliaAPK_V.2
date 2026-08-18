@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 java_dir=Path("android/app/src/main/java/com/shanpalia/paliaapkhub")
@@ -32,9 +33,16 @@ main.write_text(text,encoding="utf-8")
 
 manifest=Path("android/app/src/main/AndroidManifest.xml")
 m=manifest.read_text(encoding="utf-8")
+
+# IMPORTANT: insert permissions after the real <manifest ...> opening tag.
+# Do not use the first ">" because AndroidManifest.xml begins with an XML declaration.
 if "android.permission.REQUEST_INSTALL_PACKAGES" not in m:
-    pos=m.find(">")
-    m=m[:pos+1]+'\n    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />\n'+m[pos+1:]
+    match=re.search(r"<manifest\\b[^>]*>", m)
+    if not match:
+        raise SystemExit("Could not find opening <manifest> tag")
+    pos=match.end()
+    m=m[:pos]+'\\n    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />'+m[pos:]
+
 provider="""        <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -47,13 +55,18 @@ provider="""        <provider
 """
 if "androidx.core.content.FileProvider" not in m:
     pos=m.rfind("</application>")
-    if pos<0: raise SystemExit("application tag missing")
+    if pos<0:
+        raise SystemExit("application tag missing")
     m=m[:pos]+provider+m[pos:]
+
 manifest.write_text(m,encoding="utf-8")
 
 gradle=Path("android/app/build.gradle")
 g=gradle.read_text(encoding="utf-8")
 if "androidx.core:core:" not in g:
-    g=g.replace("dependencies {","dependencies {\n    implementation 'androidx.core:core:1.15.0'",1)
+    if "dependencies {" not in g:
+        g += "\n\ndependencies { implementation 'androidx.core:core:1.15.0' }\n"
+    else:
+        g=g.replace("dependencies {","dependencies {\n    implementation 'androidx.core:core:1.15.0'",1)
 gradle.write_text(g,encoding="utf-8")
-print("Native progress + installer configured.")
+print("Native progress + installer configured; manifest insertion is XML-safe.")

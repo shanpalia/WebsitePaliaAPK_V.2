@@ -1,0 +1,11 @@
+Fixed Codemagic Step 11 ManifestMerger parse failure.
+
+Cause:
+The previous configure_native_downloader.py used m.find(">"), which found the
+closing > of the XML declaration (<?xml ...?>), so REQUEST_INSTALL_PACKAGES was
+inserted inside the XML declaration and produced an invalid AndroidManifest.xml.
+
+Fix:
+The script now finds the actual opening <manifest ...> tag with a regex and
+inserts the permission after that tag. FileProvider is still inserted inside
+<application> correctly.
