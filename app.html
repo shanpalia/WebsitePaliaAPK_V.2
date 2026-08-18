@@ -231,7 +231,78 @@
         </div>
 
     </main>
+<!-- UPDATE AVAILABLE MODAL -->
+<div id="updateModal"
+     class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4">
 
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
+
+        <div class="p-6 text-center">
+
+            <div class="mx-auto w-16 h-16 rounded-2xl bg-mint-50 text-mint-600 flex items-center justify-center mb-4">
+                <i class="fa-solid fa-cloud-arrow-down text-2xl"></i>
+            </div>
+
+            <h2 class="text-xl font-bold text-gray-900">
+                Update Available
+            </h2>
+
+            <p id="updateAppName"
+               class="text-sm font-semibold text-mint-600 mt-1">
+            </p>
+
+            <p class="text-sm text-gray-500 mt-3">
+                A newer version of this app is available.
+            </p>
+
+            <div class="mt-5 bg-gray-50 rounded-2xl p-4 text-left">
+
+                <div class="flex justify-between text-sm mb-2">
+                    <span class="text-gray-500">Current version</span>
+                    <span id="updateOldVersion"
+                          class="font-semibold text-gray-800">
+                    </span>
+                </div>
+
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">New version</span>
+                    <span id="updateNewVersion"
+                          class="font-semibold text-mint-600">
+                    </span>
+                </div>
+
+            </div>
+
+            <div id="updateReleaseNotes"
+                 class="hidden mt-4 text-left bg-mint-50/60 border border-mint-100 rounded-2xl p-4">
+
+                <p class="font-semibold text-gray-800 text-sm mb-2">
+                    What's New
+                </p>
+
+                <div id="updateNotesText"
+                     class="text-sm text-gray-600 whitespace-pre-line">
+                </div>
+
+            </div>
+
+            <div class="flex gap-3 mt-6">
+
+                <button id="updateLaterBtn"
+                        class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl">
+                    Later
+                </button>
+
+                <button id="updateNowBtn"
+                        class="flex-1 bg-mint-600 hover:bg-mint-700 text-white font-semibold py-3 rounded-xl">
+                    Update Now
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
     <!-- FULLSCREEN IMAGE MODAL -->
     <div id="imageModal" class="fixed inset-0 z-50 bg-black/90 hidden items-center justify-center p-4">
         <button id="closeModal" class="absolute top-6 right-6 text-white text-3xl focus:outline-none" aria-label="Close">
@@ -331,7 +402,84 @@ const auth = firebase.auth();
                 document.getElementById('appDownloads').textContent = app.downloads ? `${app.downloads}+` : '0';
                 document.getElementById('appSize').textContent = app.apk_size || 'Varies';
                 document.getElementById('appVersion').textContent = app.version || '1.0';
+// ============================================
+// APP UPDATE NOTIFICATION
+// ============================================
 
+function checkForAppUpdate(app) {
+
+    // Update available नहीं है
+    if (!app.update_available) {
+        return;
+    }
+
+    // Required versions उपलब्ध नहीं हैं
+    if (!app.previous_version || !app.version) {
+        return;
+    }
+
+    // Popup elements
+    const updateModal = document.getElementById("updateModal");
+    const updateAppName = document.getElementById("updateAppName");
+    const updateOldVersion = document.getElementById("updateOldVersion");
+    const updateNewVersion = document.getElementById("updateNewVersion");
+    const updateReleaseNotes = document.getElementById("updateReleaseNotes");
+    const updateNotesText = document.getElementById("updateNotesText");
+    const updateNowBtn = document.getElementById("updateNowBtn");
+    const updateLaterBtn = document.getElementById("updateLaterBtn");
+
+    if (!updateModal) {
+        console.error("Update modal not found.");
+        return;
+    }
+
+    // App information
+    updateAppName.textContent = app.name || "PaliaAPK HUB";
+    updateOldVersion.textContent = app.previous_version;
+    updateNewVersion.textContent = app.version;
+
+    // Release notes
+    if (app.release_notes && app.release_notes.trim()) {
+        updateNotesText.textContent = app.release_notes;
+        updateReleaseNotes.classList.remove("hidden");
+    } else {
+        updateReleaseNotes.classList.add("hidden");
+    }
+
+    // Update button
+    updateNowBtn.onclick = function () {
+
+        let downloadUrl = "";
+
+        if (app.telegram_message_id) {
+
+            downloadUrl =
+                `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
+
+        } else if (app.apk_url) {
+
+            downloadUrl = app.apk_url;
+
+        }
+
+        if (!downloadUrl) {
+            alert("Update is currently unavailable.");
+            return;
+        }
+
+        window.location.href = downloadUrl;
+    };
+
+    // Later button
+    updateLaterBtn.onclick = function () {
+        updateModal.classList.add("hidden");
+        updateModal.classList.remove("flex");
+    };
+
+    // Show popup
+    updateModal.classList.remove("hidden");
+    updateModal.classList.add("flex");
+}
 // ===============================
 // DOWNLOAD APK
 // ===============================
@@ -437,7 +585,7 @@ if (downloadBtn) {
 
                 // Fetch Related Apps (6 apps, same category, exclude current app)
                 await fetchRelatedApps(app.category, app.id);
-
+                checkForAppUpdate(app);
                 // Show Content & Hide Skeleton
                 skeletonLoader.classList.add('hidden');
                 appContainer.classList.remove('hidden');

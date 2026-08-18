@@ -62,7 +62,6 @@ html { scroll-behavior: smooth; }
   --topbar-h: 68px;
   --ease: cubic-bezier(.4,0,.2,1);
 }
-
 @media (prefers-reduced-motion: reduce){
   *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }
@@ -1155,8 +1154,10 @@ img{ max-width: 100%; display: block; }
      ========================================================== */
   var urlParams = new URLSearchParams(window.location.search);
   var appId = urlParams.get('id');
-  var originalVersion = null;
   var appLoaded = false;
+  var originalVersion = '';
+  var originalUpdateAvailable = false;
+  var originalPreviousVersion = null;
  var originalDownloads = 0;
 var loadedApkSizeLabel = null;
 
@@ -1693,9 +1694,11 @@ var telegramMessageId = null;
   var btnCancel = document.getElementById('btnCancel');
 
   function populateForm(data){
+    originalVersion = data.version || '';
+    originalUpdateAvailable = Boolean(data.update_available);
+    originalPreviousVersion = data.previous_version || null;
     document.getElementById('fName').value = data.name || '';
     document.getElementById('fVersion').value = data.version || '';
-    originalVersion = data.version || null;
     document.getElementById('fDeveloper').value = data.developer || '';
     document.getElementById('fPackage').value = data.package_name || '';
 
@@ -1950,9 +1953,11 @@ async function replaceTelegramApk(
       banner_url: finalUrls.banner,
       apk_url: finalUrls.apk,
       screenshots: finalUrls.screenshots,
-     downloads: originalDownloads,
-telegram_message_id: telegramMessageId || null,
-updated_at: new Date().toISOString()
+      downloads: originalDownloads,
+      telegram_message_id: telegramMessageId || null,
+      updated_at: new Date().toISOString(),
+      previous_version: currentFieldValue('fVersion') !== originalVersion ? originalVersion : originalPreviousVersion,
+      update_available: currentFieldValue('fVersion') !== originalVersion ? true : originalUpdateAvailable
     };
   }
 
@@ -2112,17 +2117,6 @@ if (newApkFile) {
                 finalApkSize
             );
 
-        // Mark a real version change as an available update.
-        const newVersion = String(appData.version || '').trim();
-        const oldVersion = String(originalVersion || '').trim();
-        if (newVersion && oldVersion && newVersion !== oldVersion) {
-            payload.previous_version = oldVersion;
-            payload.update_available = true;
-        } else if (!oldVersion) {
-            payload.previous_version = null;
-            payload.update_available = false;
-        }
-
 
         // ============================================
         // 3. TELEGRAM
@@ -2209,6 +2203,9 @@ if (newApkFile) {
         );
 
 
+        // The database trigger is the source of truth for version changes.
+        // It automatically stores the previous version, sets update_available=true,
+        // and creates a real app_notifications row when the version changes.
         const {
             data: updatedApp,
             error: updateError
