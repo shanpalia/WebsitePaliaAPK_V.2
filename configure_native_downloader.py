@@ -37,11 +37,11 @@ m=manifest.read_text(encoding="utf-8")
 # IMPORTANT: insert permissions after the real <manifest ...> opening tag.
 # Do not use the first ">" because AndroidManifest.xml begins with an XML declaration.
 if "android.permission.REQUEST_INSTALL_PACKAGES" not in m:
-    match=re.search(r"<manifest\\b[^>]*>", m)
+    match=re.search(r"<manifest\b[^>]*>", m)
     if not match:
         raise SystemExit("Could not find opening <manifest> tag")
     pos=match.end()
-    m=m[:pos]+'\\n    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />'+m[pos:]
+    m=m[:pos]+'\n    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />'+m[pos:]
 
 provider="""        <provider
             android:name="androidx.core.content.FileProvider"

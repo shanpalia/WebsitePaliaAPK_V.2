@@ -1,0 +1,12 @@
+Step 7 fixed.
+
+The previous script had an incorrect regular expression:
+r"<manifest\\b[^>]*>"
+which searched for a literal backslash-b, so it could not find the manifest tag.
+
+It also risked writing a literal \\n into the XML. Both issues are fixed.
+The script now:
+1. Finds the actual <manifest> opening tag.
+2. Inserts REQUEST_INSTALL_PACKAGES after it with a real newline.
+3. Adds FileProvider inside <application>.
+4. Parses AndroidManifest.xml immediately after configuration to catch XML errors before Gradle.
