@@ -1,0 +1,16 @@
+Supabase project URL: https://ralinnuegsbuvlhwpzln.supabase.co
+Updated browser-side Supabase key to the supplied publishable key.
+Secret/service_role key was not used.
+Updated files:
+download.html
+add-app.html
+updates.html
+app.html
+edit-app.html
+downloads.html
+user.html
+manage-app.html
+dashboard.html
+script.js
+index.html
+favorites.html
