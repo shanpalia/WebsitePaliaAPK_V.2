@@ -1,0 +1,3 @@
+Home header uses assets/home-half-android.png (selected half-Android #12).
+Actual Android app icon restored to assets/icon.png from the previous working build.
+Only index.html home header was changed.
