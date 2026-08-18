@@ -50,7 +50,7 @@ workflows:
           set -e
           python3 configure_native_downloader.py
           test -f android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
-          grep -q 'PaliaDownloaderPlugin.class' android/app/src/main/java/com/shanpalia/paliaapkhub/MainActivity.java
+          grep -q 'registerPlugin(PaliaDownloaderPlugin.class)' android/app/src/main/java/com/shanpalia/paliaapkhub/MainActivity.java
           echo "Native APK downloader configured."
 
       - name: Generate app assets

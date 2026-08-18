@@ -1,0 +1,8 @@
+Based on the full working PaliaAPK HUB source ZIP supplied by the user.
+Changes only:
+1. Home header uses the selected horizontal half-Android #12 asset, enlarged.
+2. App detail Download no longer navigates directly to APK URL.
+3. Download opens download.html and native Android DownloadManager handles the APK inside the APK app.
+4. Native Android downloader has no browser fallback.
+5. Updates removed from bottom navigation only.
+Original app icon, Google login, Supabase, admin and remaining project files preserved.
