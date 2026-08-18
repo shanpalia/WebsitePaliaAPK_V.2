@@ -21,6 +21,14 @@
     return null;
   }
 
+  window.getPaliaApkDownloadProgress = async function (downloadId) {
+    const plugin = await getNativePlugin();
+    if (!plugin || typeof plugin.getProgress !== "function") {
+      throw new Error("PaliaDownloader progress API is not registered in this APK.");
+    }
+    return await plugin.getProgress({ downloadId: Number(downloadId) });
+  };
+
   window.startPaliaApkDownload = async function (url, filename) {
     if (!url) throw new Error("Download URL is missing");
 

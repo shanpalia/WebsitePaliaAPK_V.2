@@ -1,0 +1,8 @@
+Final fixes based on device screenshot:
+- Removed the misleading permanent 5-second countdown UI.
+- Download button starts Android DownloadManager immediately.
+- Added real download progress from Android DownloadManager: downloaded MB, total MB, percentage and speed.
+- Shows Download Complete when finished.
+- Added native getProgress plugin method.
+- Tight-cropped #12 horizontal half-Android header asset so the Android mark fills the header tile instead of appearing tiny.
+- Full original project preserved.
