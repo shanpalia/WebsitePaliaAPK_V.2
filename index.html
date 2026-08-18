@@ -308,7 +308,11 @@
                         
                         <!-- Profile Dropdown Menu -->
                         <div id="profileDropdown" class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-2 space-y-1">
-                            <a href="profile.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                            <a id="profileUpdateLink" href="updates.html" class="flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+    <span class="flex items-center gap-2.5"><i class="fa-solid fa-arrows-rotate text-mint-600"></i> App Updates</span>
+    <span id="profileUpdateBadge" class="hidden min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center"></span>
+</a>
+<a href="profile.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
     <i class="fa-solid fa-user text-mint-600"></i> My Profile
 </a>
                             <a href="downloads.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
@@ -811,6 +815,68 @@ recordSiteVisit();
             const autocomplete = document.getElementById('searchAutocomplete');
             if (autocomplete) autocomplete.classList.add('hidden');
         });
+
+
+        // REAL LOGOUT
+        const indexLogoutBtn = document.getElementById('logoutBtn');
+        if (indexLogoutBtn) {
+            indexLogoutBtn.addEventListener('click', async function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                try {
+                    indexLogoutBtn.disabled = true;
+                    indexLogoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging out...';
+
+                    await auth.signOut();
+
+                    const dropdown = document.getElementById('profileDropdown');
+                    dropdown?.classList.add('hidden');
+
+                    updateHeaderAuth(null);
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                    indexLogoutBtn.disabled = false;
+                    indexLogoutBtn.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> Logout';
+                    alert('Logout failed. Please try again.');
+                }
+            });
+        }
+
+        // APP UPDATES COUNT + PROFILE MENU LINK
+        async function loadUpdateAvailabilityCount() {
+            if (!supabaseClient) return;
+            const badge = document.getElementById('profileUpdateBadge');
+            try {
+                const { data, error } = await supabaseClient
+                    .from('apps')
+                    .select('id,version,previous_version,update_available');
+
+                if (error) throw error;
+
+                const updates = (data || []).filter(app =>
+                    app.update_available === true ||
+                    (app.previous_version && app.version &&
+                     String(app.previous_version) !== String(app.version))
+                );
+
+                if (badge) {
+                    if (updates.length) {
+                        badge.textContent = updates.length > 99 ? '99+' : String(updates.length);
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Update count error:', error);
+                badge?.classList.add('hidden');
+            }
+        }
+
+        loadUpdateAvailabilityCount();
+        window.setInterval(loadUpdateAvailabilityCount, 30000);
 
         // Initialize Data from Supabase
        // ===============================

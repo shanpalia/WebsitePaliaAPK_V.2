@@ -1,0 +1,5 @@
+Fixes:
+- Real Firebase logout handler on index.html profile dropdown.
+- App Updates link + live count in profile dropdown.
+- Real Supabase-backed updates.html using update_available / previous_version / version.
+- Profile page logout hardened.
