@@ -1,0 +1,4 @@
+PaliaAPK HUB APK web assets updated to the supplied Supabase publishable key.
+Project URL: https://ralinnuegsbuvlhwpzln.supabase.co
+Secret/service_role key was not used.
+This ZIP contains the source used to build the APK; rebuild the APK after replacing/committing these files.
