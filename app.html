@@ -43,7 +43,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
+<script src="native-downloader.js"></script>\n</head>
 <body class="h-full bg-gray-50 text-gray-800 flex flex-col font-sans antialiased selection:bg-mint-100 selection:text-mint-700">
 
     <!-- HEADER -->
@@ -384,8 +384,10 @@ if (downloadBtn) {
             }
         }
 
-        // Start APK download
-        window.location.href = downloadUrl;
+        // Open the APKPure-style in-app download screen.
+        // The actual APK transfer is handled by Android DownloadManager
+        // through the native PaliaDownloader Capacitor plugin.
+        window.location.href = "download.html?id=" + encodeURIComponent(app.id);
     };
 }
                 // Description

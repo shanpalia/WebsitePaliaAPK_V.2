@@ -1,36 +1,48 @@
 (function () {
-  let pluginPromise;
+  let plugin = null;
+  let nativeChecked = false;
 
-  function getPlugin() {
-    if (pluginPromise) return pluginPromise;
-    pluginPromise = (async () => {
-      if (!window.Capacitor || typeof window.Capacitor.registerPlugin !== "function") {
+  async function getNativeDownloader() {
+    if (nativeChecked) return plugin;
+    nativeChecked = true;
+
+    try {
+      const C = window.Capacitor;
+      if (!C || typeof C.isNativePlatform !== "function" || !C.isNativePlatform()) {
         return null;
       }
-      try {
-        const plugin = window.Capacitor.registerPlugin("PaliaDownloader");
-        if (typeof window.Capacitor.isNativePlatform === "function" &&
-            !window.Capacitor.isNativePlatform()) {
-          return null;
-        }
-        return plugin;
-      } catch (e) {
-        console.warn("PaliaDownloader unavailable:", e);
-        return null;
+
+      if (C.Plugins && C.Plugins.PaliaDownloader) {
+        plugin = C.Plugins.PaliaDownloader;
+      } else if (typeof C.registerPlugin === "function") {
+        plugin = C.registerPlugin("PaliaDownloader");
       }
-    })();
-    return pluginPromise;
+
+      return plugin;
+    } catch (e) {
+      console.error("PaliaDownloader initialization failed:", e);
+      return null;
+    }
   }
 
   window.startPaliaApkDownload = async function (url, filename) {
     if (!url) throw new Error("Download URL is missing");
 
-    const plugin = await getPlugin();
-    if (plugin && typeof plugin.download === "function") {
-      return plugin.download({ url: url, filename: filename || "PaliaAPK-HUB-App.apk" });
+    const C = window.Capacitor;
+    const isNative = !!(C && typeof C.isNativePlatform === "function" && C.isNativePlatform());
+
+    if (isNative) {
+      const p = await getNativeDownloader();
+      if (!p || typeof p.download !== "function") {
+        throw new Error("Native APK downloader is not available in this APK. Rebuild the APK after native downloader registration.");
+      }
+      return p.download({
+        url: url,
+        filename: filename || "PaliaAPK-HUB-App.apk"
+      });
     }
 
-    // Browser fallback only. Native APK uses Android DownloadManager and stays in-app.
+    // Website fallback: normal browser download is allowed only on the website.
     const a = document.createElement("a");
     a.href = url;
     a.download = filename || "PaliaAPK-HUB-App.apk";

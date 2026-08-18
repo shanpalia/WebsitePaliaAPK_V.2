@@ -1,0 +1,6 @@
+Final fixes:
+- Header uses dedicated selected #12 Android icon at 56/64px, while app launcher icon remains unchanged.
+- app.html no longer navigates directly to the APK URL.
+- Android downloads use the native PaliaDownloader/DownloadManager and do not open the browser.
+- Native downloader has no browser fallback on Android, so a broken native registration cannot silently open Chrome.
+- configure_native_downloader.py explicitly registers PaliaDownloader after Capacitor Android project creation.
