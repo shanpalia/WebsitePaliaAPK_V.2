@@ -1,0 +1,8 @@
+Based on the full working PaliaAPK HUB project.
+- Enlarged/tightly-cropped selected #12 horizontal half-Android header icon.
+- Preserved launcher/app icon.
+- Removed broken remote avatar behavior with initials fallback.
+- Replaced placeholder.com fallback app image with local asset.
+- app.html routes to APKPure-style download page instead of direct APK URL.
+- Native PaliaDownloader uses Android DownloadManager and is explicitly registered after Google plugin setup.
+- Native APK has no browser fallback.

@@ -320,7 +320,7 @@
             headerUserEmail.textContent = email;
 
             if (photoURL) {
-                avatarContainer.innerHTML = `<img src="${photoURL}" alt="Avatar" class="w-full h-full object-cover">`;
+                avatarContainer.innerHTML = `<img src="${photoURL}" alt="Avatar" class="w-full h-full object-cover" onerror="this.onerror=null;this.remove();this.parentElement.innerHTML='<span class="text-xs font-bold text-mint-700">${initials}</span>';">`;
             } else {
                 // Generate initials from email username (e.g. shanpalia786@gmail.com -> SP)
                 const usernamePart = email.split('@')[0];

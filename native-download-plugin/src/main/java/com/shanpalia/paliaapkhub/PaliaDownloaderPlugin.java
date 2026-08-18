@@ -4,7 +4,6 @@ import android.app.DownloadManager;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
-
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -13,7 +12,6 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 
 @CapacitorPlugin(name = "PaliaDownloader")
 public class PaliaDownloaderPlugin extends Plugin {
-
     @PluginMethod
     public void download(PluginCall call) {
         String url = call.getString("url");
@@ -26,29 +24,42 @@ public class PaliaDownloaderPlugin extends Plugin {
 
         try {
             DownloadManager manager =
-                    (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
 
-            DownloadManager.Request request =
-                    new DownloadManager.Request(Uri.parse(url));
+            if (manager == null) {
+                call.reject("Android Download Manager is unavailable");
+                return;
+            }
 
-            request.setTitle(filename);
+            Uri uri = Uri.parse(url);
+            if (uri.getScheme() == null || (!"http".equalsIgnoreCase(uri.getScheme())
+                    && !"https".equalsIgnoreCase(uri.getScheme()))) {
+                call.reject("Only HTTP/HTTPS APK URLs are supported");
+                return;
+            }
+
+            String safeFilename = filename.replaceAll("[^A-Za-z0-9._ -]", "_");
+            if (!safeFilename.toLowerCase().endsWith(".apk")) safeFilename += ".apk";
+
+            DownloadManager.Request request = new DownloadManager.Request(uri);
+            request.setTitle(safeFilename);
             request.setDescription("Downloading from PaliaAPK HUB");
             request.setMimeType("application/vnd.android.package-archive");
             request.setNotificationVisibility(
-                    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+                DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
             );
             request.setAllowedOverMetered(true);
             request.setAllowedOverRoaming(true);
             request.setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS,
-                    filename
+                Environment.DIRECTORY_DOWNLOADS, safeFilename
             );
 
-            long downloadId = manager.enqueue(request);
+            long id = manager.enqueue(request);
 
             JSObject result = new JSObject();
-            result.put("downloadId", downloadId);
-            result.put("filename", filename);
+            result.put("downloadId", id);
+            result.put("filename", safeFilename);
+            result.put("status", "queued");
             call.resolve(result);
         } catch (Exception e) {
             call.reject("Unable to start APK download: " + e.getMessage(), e);
