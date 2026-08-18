@@ -1,0 +1,6 @@
+PaliaAPK HUB final APK source changes:
+- Selected half-Android icon #12 installed as assets/icon.png on white background.
+- Updates removed from the mobile bottom navigation.
+- Homepage download now opens the in-app download.html screen after login.
+- Native Android DownloadManager plugin starts APK downloads without opening a browser.
+- Telegram download endpoint and apk_url are both supported.

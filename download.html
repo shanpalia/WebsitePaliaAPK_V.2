@@ -30,6 +30,7 @@
     <!-- Firebase App & Auth CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="native-downloader.js"></script>
 </head>
 <body class="h-full bg-gray-50 text-gray-800 flex flex-col font-sans antialiased selection:bg-mint-100 selection:text-mint-700">
 
@@ -370,19 +371,37 @@
                     const safeName = (app.name || 'App').replace(/[^a-zA-Z0-9 _-]/g, '').trim();
                     const filename = `${safeName}.apk`;
 
-                    finalDownloadBtn.onclick = (e) => {
+                    let downloadUrl = "";
+                    if (app.telegram_message_id) {
+                        downloadUrl =
+                            `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
+                    } else if (app.apk_url) {
+                        downloadUrl = app.apk_url;
+                    }
+
+                    finalDownloadBtn.onclick = async (e) => {
                         e.preventDefault();
-                        if (app.apk_url) {
-                            // Trigger file download via temporary anchor or direct assignment
-                            const a = document.createElement('a');
-                            a.href = app.apk_url;
-                            a.download = filename;
-                            // For cross-origin URLs where download attribute may fail, open or redirect fallback
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                        } else {
+                        if (!downloadUrl) {
                             alert('APK download URL is invalid.');
+                            return;
+                        }
+
+                        finalDownloadBtn.disabled = true;
+                        finalDownloadBtn.classList.add('opacity-70');
+                        finalDownloadBtn.innerHTML =
+                            '<i class="fa-solid fa-spinner fa-spin"></i> Starting Download...';
+
+                        try {
+                            await window.startPaliaApkDownload(downloadUrl, filename);
+                            finalDownloadBtn.innerHTML =
+                                '<i class="fa-solid fa-check"></i> Download Started';
+                        } catch (err) {
+                            console.error('Native APK download error:', err);
+                            finalDownloadBtn.disabled = false;
+                            finalDownloadBtn.classList.remove('opacity-70');
+                            finalDownloadBtn.innerHTML =
+                                '<i class="fa-solid fa-download"></i> Download APK Now';
+                            alert('Unable to start download. Please try again.');
                         }
                     };
                 }
