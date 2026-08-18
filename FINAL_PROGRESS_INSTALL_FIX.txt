@@ -1,0 +1,8 @@
+Fixes:
+- Header Android icon uses a tight crop so the Android artwork is actually large inside the 72px tile.
+- Native PaliaDownloader now implements getProgress() using Android DownloadManager query.
+- Download page shows real downloaded bytes, total bytes and percentage while downloading.
+- When download reaches STATUS_SUCCESSFUL, Android package installer is opened automatically.
+- Android REQUEST_INSTALL_PACKAGES permission and FileProvider are configured at build time.
+- Installation still requires the normal Android user confirmation; Android does not permit silent installation for an ordinary APK.
+- Original Google login/Supabase/project files are preserved.

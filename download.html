@@ -369,8 +369,17 @@
                         progressBar.style.width = '100%';
                         percent.textContent = '100%';
                         downloadedAmount.textContent = total > 0 ? formatMB(total) : formatMB(bytes);
-                        setStatus('Download Complete', 'APK saved in your Android Downloads folder.', 'fa-check');
+                        setStatus('Download Complete', 'APK downloaded. Opening Android installer…', 'fa-check');
                         speedEl.textContent = 'Complete';
+                         try {
+                             await window.openPaliaApkInstaller(filename);
+                             setStatus('Install APK', 'Android installer opened. Confirm Install to finish.', 'fa-download');
+                             speedEl.textContent = 'Ready to install';
+                         } catch (installErr) {
+                             console.error('Installer error:', installErr);
+                             setStatus('Download Complete', 'APK saved in Downloads. Tap it to install.', 'fa-check');
+                             speedEl.textContent = 'Ready to install';
+                         }
                         try { await _supabase.from('apps').update({ downloads: (app.downloads || 0) + 1 }).eq('id', app.id); } catch (_) {}
                     } else if (status === 16) { // DownloadManager.STATUS_FAILED
                         clearInterval(pollTimer);

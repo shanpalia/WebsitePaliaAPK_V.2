@@ -1,17 +1,59 @@
 from pathlib import Path
-root=Path("android")
-java=root/"app/src/main/java/com/shanpalia/paliaapkhub"
-main=java/"MainActivity.java"
+
+java_dir=Path("android/app/src/main/java/com/shanpalia/paliaapkhub")
+res_xml=Path("android/app/src/main/res/xml")
+main=java_dir/"MainActivity.java"
 src=Path("native-download-plugin/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java")
-dst=java/"PaliaDownloaderPlugin.java"
-if not main.exists() or not src.exists(): raise SystemExit("Native Android files missing")
-java.mkdir(parents=True,exist_ok=True)
+dst=java_dir/"PaliaDownloaderPlugin.java"
+
+if not main.exists(): raise SystemExit("MainActivity.java missing")
+if not src.exists(): raise SystemExit("PaliaDownloaderPlugin.java missing")
+java_dir.mkdir(parents=True,exist_ok=True)
+res_xml.mkdir(parents=True,exist_ok=True)
 dst.write_bytes(src.read_bytes())
-s=main.read_text(encoding="utf-8")
-if "import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;" not in s:
-    s=s.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\nimport com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;")
-if "registerPlugin(PaliaDownloaderPlugin.class);" not in s:
-    s=s.replace("registerPlugin(PaliaGoogleAuthPlugin.class);", "registerPlugin(PaliaGoogleAuthPlugin.class);\n        registerPlugin(PaliaDownloaderPlugin.class);")
-main.write_text(s,encoding="utf-8")
-assert "registerPlugin(PaliaDownloaderPlugin.class);" in main.read_text()
-print("PaliaDownloader registered.")
+
+text=main.read_text(encoding="utf-8")
+imp="import com.shanpalia.paliaapkhub.PaliaDownloaderPlugin;"
+if imp not in text:
+    text=text.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\n"+imp)
+if "registerPlugin(PaliaDownloaderPlugin.class);" not in text:
+    if "registerPlugin(PaliaGoogleAuthPlugin.class);" in text:
+        text=text.replace("registerPlugin(PaliaGoogleAuthPlugin.class);",
+                          "registerPlugin(PaliaGoogleAuthPlugin.class);\n        registerPlugin(PaliaDownloaderPlugin.class);",1)
+    else:
+        raise SystemExit("Google auth registration not found")
+main.write_text(text,encoding="utf-8")
+
+(res_xml/"palia_file_paths.xml").write_text("""<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path name="external_files" path="." />
+</paths>
+""",encoding="utf-8")
+
+manifest=Path("android/app/src/main/AndroidManifest.xml")
+m=manifest.read_text(encoding="utf-8")
+if "android.permission.REQUEST_INSTALL_PACKAGES" not in m:
+    pos=m.find(">")
+    m=m[:pos+1]+'\n    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />\n'+m[pos+1:]
+provider="""        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/palia_file_paths" />
+        </provider>
+"""
+if "androidx.core.content.FileProvider" not in m:
+    pos=m.rfind("</application>")
+    if pos<0: raise SystemExit("application tag missing")
+    m=m[:pos]+provider+m[pos:]
+manifest.write_text(m,encoding="utf-8")
+
+gradle=Path("android/app/build.gradle")
+g=gradle.read_text(encoding="utf-8")
+if "androidx.core:core:" not in g:
+    g=g.replace("dependencies {","dependencies {\n    implementation 'androidx.core:core:1.15.0'",1)
+gradle.write_text(g,encoding="utf-8")
+print("Native progress + installer configured.")
