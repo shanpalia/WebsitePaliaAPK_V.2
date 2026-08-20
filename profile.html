@@ -441,45 +441,72 @@ window.profileSupabaseClient = window.supabase.createClient(
   if(!box)return;
 
   box.classList.remove('hidden');
-  box.innerHTML='<div class="p-3 text-sm text-gray-500">Checking updates...</div>';
+  box.innerHTML='<div class="p-3 text-sm text-gray-500">Checking latest app versions...</div>';
 
   try {
-    const client = window.profileSupabaseClient || window.supabaseClient || window._supabaseClient;
-    if(!client) throw new Error('Supabase client not initialized');
-
-    const {data,error}=await client.from('apps')
-      .select('id,name,version,icon_url,updated_at')
-      .order('updated_at',{ascending:false});
-
-    if(error) throw error;
-
-    const installed=JSON.parse(localStorage.getItem('palia_installed_versions')||'{}');
-    const snapshot=JSON.parse(localStorage.getItem('palia_profile_versions')||'{}');
-
-    const updates=(data||[]).filter(app=>{
-      const id=String(app.id);
-      const current=String(app.version||app.updated_at||'');
-      return installed[id] && installed[id]!==current;
-    });
-
-    // If there is no installed-version record yet, still show apps whose
-    // version changed since the last profile check.
-    if(!updates.length){
-      (data||[]).forEach(app=>{
-        const id=String(app.id), current=String(app.version||app.updated_at||'');
-        if(snapshot[id] && snapshot[id]!==current) updates.push(app);
-      });
+    // Homepage already fetches the apps successfully. Reuse that verified
+    // data instead of creating a second Supabase request on the profile page.
+    let data = [];
+    try {
+      data = JSON.parse(localStorage.getItem('palia_apps_cache') || '[]');
+    } catch (_) {
+      data = [];
     }
 
+    if (!Array.isArray(data) || !data.length) {
+      box.innerHTML =
+        '<div class="p-3 rounded-xl bg-yellow-50 text-sm text-yellow-700">' +
+        'Please open Home once to refresh the app list, then check updates again.' +
+        '</div>';
+      if(count) {
+        count.textContent='0';
+        count.classList.add('hidden');
+      }
+      return;
+    }
+
+    let installed = {};
+    let snapshot = {};
+    try { installed=JSON.parse(localStorage.getItem('palia_installed_versions')||'{}'); } catch(_){}
+    try { snapshot=JSON.parse(localStorage.getItem('palia_profile_versions')||'{}'); } catch(_){}
+
+    const updates=[];
+    data.forEach(app=>{
+      const id=String(app.id);
+      const current=String(app.version || app.updated_at || '');
+      const oldInstalled=installed[id];
+      const oldChecked=snapshot[id];
+
+      // Installed app is older than Supabase.
+      if(oldInstalled && oldInstalled !== current) {
+        updates.push(app);
+        return;
+      }
+
+      // App changed since the user's previous update check.
+      if(!oldInstalled && oldChecked && oldChecked !== current) {
+        updates.push(app);
+      }
+    });
+
     const next={};
-    (data||[]).forEach(app=>next[String(app.id)]=String(app.version||app.updated_at||''));
+    data.forEach(app=>{
+      next[String(app.id)]=String(app.version || app.updated_at || '');
+    });
     localStorage.setItem('palia_profile_versions',JSON.stringify(next));
 
-    count.textContent=updates.length>99?'99+':String(updates.length);
-    count.classList.toggle('hidden',updates.length===0);
+    const total=updates.length;
+    if(count){
+      count.textContent=total>99?'99+':String(total);
+      count.classList.toggle('hidden',total===0);
+    }
 
-    if(!updates.length){
-      box.innerHTML='<div class="p-3 rounded-xl bg-gray-50 text-sm text-gray-600">No updates available.</div>';
+    if(!total){
+      box.innerHTML=
+        '<div class="p-4 rounded-xl bg-gray-50 text-center text-sm text-gray-600">' +
+        '<i class="fa-solid fa-circle-check text-green-500 mr-1"></i>' +
+        'No updates available.' +
+        '</div>';
       return;
     }
 
@@ -501,10 +528,10 @@ window.profileSupabaseClient = window.supabase.createClient(
         window.location.href='app.html?id='+encodeURIComponent(btn.dataset.appId);
       });
     });
-  }catch(e){
-    console.error('Profile updates error:', e);
-    const detail = e && e.message ? e.message : 'Supabase request failed';
-    box.innerHTML='<div class="p-3 rounded-xl bg-red-50 text-sm text-red-600">Unable to load updates.<br><span class="text-xs">'+detail.replace(/</g,'&lt;')+'</span></div>';
+
+  } catch(e) {
+    console.error('Profile updates:',e);
+    box.innerHTML='<div class="p-3 rounded-xl bg-red-50 text-sm text-red-600">Unable to load updates. Please try again.</div>';
   }
 }
 window.openAvailableUpdates = loadAvailableUpdates;

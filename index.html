@@ -786,6 +786,12 @@ async function initData() {
         console.log("TOTAL APPS:", apps?.length || 0);
 
         window.allAppsCache = apps || [];
+        try {
+            localStorage.setItem('palia_apps_cache', JSON.stringify(window.allAppsCache));
+            localStorage.setItem('palia_apps_cache_time', String(Date.now()));
+        } catch (cacheError) {
+            console.warn('Could not cache apps locally:', cacheError);
+        }
 
         renderPageData(window.allAppsCache);
 
