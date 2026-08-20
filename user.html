@@ -324,8 +324,8 @@ async function syncUserToSupabase(user) {
         }
 
         // Safe, reliable redirect after authentication.
-        // IMPORTANT: use location.href instead of relative replace() because
-        // Capacitor WebView can otherwise retain the user.html document.
+        // Website/PWA: always return to the homepage unless a valid local page
+        // was explicitly requested before login.
         function safeRedirect() {
             const fallback = 'index.html';
             let target = redirectTarget || fallback;
@@ -336,23 +336,28 @@ async function syncUserToSupabase(user) {
 
             target = String(target || fallback).trim();
 
-            // Only allow local app pages.
+            // Never leave this website or execute a URL scheme.
             if (/^(https?:|javascript:|data:|\/\/)/i.test(target) ||
                 target.includes('\\')) {
                 target = fallback;
             }
 
-            // Strip an accidental leading slash so Capacitor loads the bundled page.
             if (target.startsWith('/')) target = target.slice(1);
 
-            const allowed = /^(index\.html|app\.html|download\.html|downloads\.html|updates\.html|profile\.html|settings\.html|favorites\.html|dashboard\.html)(\?.*)?$/i;
+            // Only permit pages that belong to this website.
+            const allowed = /^(index\.html|app\.html|download\.html|downloads\.html|updates\.html|profile\.html|settings\.html|favorites\.html)(\?.*)?$/i;
             if (!allowed.test(target)) {
                 target = fallback;
             }
 
-            // Force a fresh navigation to the bundled homepage/app page.
-            const destination = new URL(target, window.location.href).href;
-            window.location.assign(destination);
+            // Clear stale login redirect state so the next login doesn't
+            // unexpectedly return to an old page.
+            try {
+                sessionStorage.removeItem('palia_google_redirect');
+                localStorage.removeItem('redirect_after_login');
+            } catch (_) {}
+
+            window.location.href = target;
         }
 
         // Restore the page target before Firebase emits the initial auth state.
@@ -469,7 +474,7 @@ async function syncUserToSupabase(user) {
                 showToast('Login successful! Redirecting...', 'success');
                 setTimeout(() => {
                     if (auth.currentUser) safeRedirect();
-                }, 500);
+                }, 300);
             } catch (error) {
                 showToast(friendlyAuthError(error));
                 btn.disabled = false;
@@ -507,7 +512,7 @@ async function syncUserToSupabase(user) {
                 showToast('Account created successfully! Redirecting...', 'success');
                 setTimeout(() => {
                     if (auth.currentUser) safeRedirect();
-                }, 500);
+                }, 300);
             } catch (error) {
                 showToast(friendlyAuthError(error));
                 btn.disabled = false;

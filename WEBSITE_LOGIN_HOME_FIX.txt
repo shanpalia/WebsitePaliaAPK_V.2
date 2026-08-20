@@ -1,0 +1,7 @@
+Website-only login fix:
+- user.html now redirects successful login to index.html by default.
+- Stale sessionStorage/localStorage redirect values are cleared.
+- Only local website pages are allowed as redirect targets.
+- External URLs and unsafe schemes are rejected.
+- index.html no longer follows arbitrary stale redirect_after_login values.
+- This ZIP is the website source, not an APK build.

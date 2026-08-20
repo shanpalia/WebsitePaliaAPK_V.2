@@ -1717,7 +1717,10 @@ window.handleDownloadClick = async function(appId) {
                 const redirectUrl = localStorage.getItem('redirect_after_login');
                 if (redirectUrl) {
                     localStorage.removeItem('redirect_after_login');
-                    window.location.href = redirectUrl;
+                    // Only follow local website pages; never send the user away.
+                    if (/^(index\.html|app\.html|download\.html|downloads\.html|updates\.html|profile\.html|settings\.html|favorites\.html)(\?.*)?$/i.test(redirectUrl)) {
+                        window.location.href = redirectUrl;
+                    }
                 }
             } else {
                 loginBtn?.classList.remove('hidden');
