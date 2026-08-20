@@ -103,7 +103,24 @@
             </div>
 
 
-            <!-- ACCOUNT INFORMATION -->
+            
+<div id="profileUpdatesCard" class="mx-4 sm:mx-6 mt-5 mb-5 rounded-2xl border-2 border-green-100 bg-white p-4 shadow-sm">
+  <div class="flex items-center justify-between gap-3">
+    <div>
+      <div class="font-black text-gray-900 text-base">App Updates</div>
+      <div class="text-xs text-gray-500 mt-1">Check latest versions from PaliaAPK HUB</div>
+    </div>
+    <button id="profileUpdateBtn" type="button"
+      class="shrink-0 h-10 px-4 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-sm shadow-md flex items-center gap-2">
+      <i class="fa-solid fa-rotate"></i>
+      <span>Check Updates</span>
+      <span id="profileUpdateCount" class="hidden min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">0</span>
+    </button>
+  </div>
+  <div id="availableUpdates" class="mt-3 hidden"></div>
+</div>
+
+<!-- ACCOUNT INFORMATION -->
             <div class="p-6">
 
                 <h3 class="text-lg font-black text-gray-900 mb-5">
@@ -411,67 +428,78 @@
         // APP UPDATES FROM SUPABASE
         // ===============================
         async function loadAvailableUpdates() {
-            const box = document.getElementById('availableUpdates');
-            const count = document.getElementById('availableUpdatesCount');
-            if (!box) return;
+  const box=document.getElementById('availableUpdates');
+  const count=document.getElementById('profileUpdateCount');
+  if(!box)return;
 
-            box.innerHTML = '<div class="p-4 text-sm text-gray-500">Checking for updates...</div>';
+  box.classList.remove('hidden');
+  box.innerHTML='<div class="p-3 text-sm text-gray-500">Checking updates...</div>';
 
-            try {
-                const client = window.supabaseClient || window._supabaseClient ||
-                    (window.supabase && typeof window.supabase.from === 'function'
-                        ? window.supabase
-                        : null);
+  try {
+    const client=window.supabaseClient || window._supabaseClient ||
+      (window.supabase && typeof window.supabase.from==='function' ? window.supabase : null);
+    if(!client) throw new Error('Supabase client not initialized');
 
-                if (!client) throw new Error('Supabase is not configured');
+    const {data,error}=await client.from('apps')
+      .select('id,name,version,icon_url,updated_at')
+      .order('updated_at',{ascending:false});
 
-                const { data: apps, error } = await client
-                    .from('apps')
-                    .select('id,name,version,icon_url,updated_at,description');
+    if(error) throw error;
 
-                if (error) throw error;
+    const installed=JSON.parse(localStorage.getItem('palia_installed_versions')||'{}');
+    const snapshot=JSON.parse(localStorage.getItem('palia_profile_versions')||'{}');
 
-                // Compare the installed versions saved by the profile/app.
-                // If no installed version exists, show the app as available to update
-                // only when a previous local version is known.
-                const installed = JSON.parse(localStorage.getItem('palia_installed_versions') || '{}');
+    const updates=(data||[]).filter(app=>{
+      const id=String(app.id);
+      const current=String(app.version||app.updated_at||'');
+      return installed[id] && installed[id]!==current;
+    });
 
-                const updates = (apps || []).filter(app => {
-                    const oldVersion = installed[String(app.id)];
-                    return oldVersion && String(oldVersion) !== String(app.version || '');
-                });
+    // If there is no installed-version record yet, still show apps whose
+    // version changed since the last profile check.
+    if(!updates.length){
+      (data||[]).forEach(app=>{
+        const id=String(app.id), current=String(app.version||app.updated_at||'');
+        if(snapshot[id] && snapshot[id]!==current) updates.push(app);
+      });
+    }
 
-                if (count) count.textContent = String(updates.length);
+    const next={};
+    (data||[]).forEach(app=>next[String(app.id)]=String(app.version||app.updated_at||''));
+    localStorage.setItem('palia_profile_versions',JSON.stringify(next));
 
-                if (!updates.length) {
-                    box.innerHTML = '<div class="p-4 rounded-xl bg-gray-50 text-sm text-gray-500">No updates available.</div>';
-                    return;
-                }
+    count.textContent=updates.length>99?'99+':String(updates.length);
+    count.classList.toggle('hidden',updates.length===0);
 
-                box.innerHTML = updates.map(app => `
-                    <button type="button"
-                        onclick="window.location.href='app.html?id=${encodeURIComponent(app.id)}'"
-                        class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-mint-50 transition text-left border border-gray-100 mb-2">
-                        <div class="w-12 h-12 rounded-xl bg-white border border-gray-200 p-1.5 flex items-center justify-center shrink-0">
-                            <img src="${app.icon_url || ''}" alt="" class="w-full h-full object-contain rounded-lg">
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <div class="font-bold text-sm text-gray-900 truncate">${app.name || 'App'}</div>
-                            <div class="text-xs text-gray-500 mt-1">
-                                Update available: <b class="text-mint-600">${app.version || 'Latest'}</b>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-gray-400"></i>
-                    </button>
-                `).join('');
-            } catch (e) {
-                console.error('Unable to load updates:', e);
-                if (count) count.textContent = '0';
-                box.innerHTML = '<div class="p-4 rounded-xl bg-red-50 text-sm text-red-600">Unable to load updates.</div>';
-            }
-        }
+    if(!updates.length){
+      box.innerHTML='<div class="p-3 rounded-xl bg-gray-50 text-sm text-gray-600">No updates available.</div>';
+      return;
+    }
 
-        window.openAvailableUpdates = loadAvailableUpdates;
+    box.innerHTML=updates.map(app=>`
+      <button type="button" class="update-item w-full flex items-center gap-3 p-3 mt-2 rounded-xl border border-gray-100 hover:bg-green-50 text-left"
+        data-app-id="${String(app.id).replace(/"/g,'&quot;')}">
+        <div class="w-11 h-11 rounded-xl border bg-white flex items-center justify-center overflow-hidden">
+          <img src="${app.icon_url||''}" class="w-full h-full object-contain" alt="">
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-sm text-gray-900 truncate">${app.name||'App'}</div>
+          <div class="text-xs text-green-600 font-semibold">Update available • v${app.version||'Latest'}</div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-gray-400"></i>
+      </button>`).join('');
+
+    box.querySelectorAll('.update-item').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        window.location.href='app.html?id='+encodeURIComponent(btn.dataset.appId);
+      });
+    });
+  }catch(e){
+    console.error('Profile updates:',e);
+    box.innerHTML='<div class="p-3 rounded-xl bg-red-50 text-sm text-red-600">Unable to load updates. Please try again.</div>';
+  }
+}
+window.openAvailableUpdates = loadAvailableUpdates;
 
         // ===============================
         // LOGOUT
@@ -519,5 +547,10 @@
         </section>
 
 <script>document.addEventListener('DOMContentLoaded',()=>setTimeout(loadAvailableUpdates,700));</script>
+
+document.addEventListener('DOMContentLoaded',function(){
+  const b=document.getElementById('profileUpdateBtn');
+  if(b)b.addEventListener('click',loadAvailableUpdates);
+});
 </body>
 </html>
