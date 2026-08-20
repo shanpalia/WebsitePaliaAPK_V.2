@@ -1,0 +1,1 @@
+Login fix: removed missing capacitor.js web 404; made Firebase email login deterministic; Supabase sync cannot block login; added Firebase auth error messages including unauthorized-domain and invalid-api-key; prevented duplicate auth-state redirects.

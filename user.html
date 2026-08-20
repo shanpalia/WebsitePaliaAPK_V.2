@@ -29,7 +29,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <!-- Capacitor runtime is loaded first; Firebase Authentication bridge comes after it. -->
-<script src="capacitor.js"></script>
 <script src="native-google-auth.js"></script>
     <style>
         .ui-icon {
@@ -344,14 +343,14 @@ async function syncUserToSupabase(user) {
         restoreGoogleRedirectTarget();
 
         // Auto-redirect if already logged in
+        let authRedirectDone = false;
         auth.onAuthStateChanged(async (user) => {
-
-    if (user) {
-        syncUserToSupabase(user).catch(()=>{});
-        safeRedirect();
-    }
-
-});
+            if (!user || authRedirectDone) return;
+            authRedirectDone = true;
+            try { await syncUserToSupabase(user); } catch (_) {}
+            // Give Firebase persistence/state propagation a moment before navigation.
+            setTimeout(() => safeRedirect(), 150);
+        });
 
         // Toast Notification Helper
         function showToast(message, type = 'error') {
@@ -424,7 +423,11 @@ async function syncUserToSupabase(user) {
                 'auth/too-many-requests': 'Too many attempts. Please try again later.',
                 'auth/popup-closed-by-user': 'Google login was cancelled.',
                 'auth/network-request-failed': 'Network error. Check your internet connection.',
-                'auth/operation-not-allowed': 'This login method is not enabled in Firebase.'
+                'auth/operation-not-allowed': 'This login method is not enabled in Firebase.',
+                'auth/unauthorized-domain': 'This website domain is not authorized in Firebase Authentication.',
+                'auth/invalid-api-key': 'Firebase API key is invalid. Please check the Firebase configuration.',
+                'auth/app-deleted': 'Firebase app configuration is invalid.',
+                'auth/internal-error': 'Firebase authentication service returned an internal error.'
             };
             return messages[code] || error?.message || 'Login failed. Please try again.';
         }
@@ -432,6 +435,7 @@ async function syncUserToSupabase(user) {
         // Email Login Handler
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             const rememberMe = document.getElementById('rememberMe').checked;
@@ -447,22 +451,23 @@ async function syncUserToSupabase(user) {
             btn.innerHTML = '<span class="ui-spinner" aria-hidden="true"></span> Logging in...';
 
             try {
-                // Persistence failure must never block authentication.
-                try {
-                    await auth.setPersistence(
-                        rememberMe
-                            ? firebase.auth.Auth.Persistence.LOCAL
-                            : firebase.auth.Auth.Persistence.SESSION
-                    );
-                } catch (persistenceError) {
-                    console.warn('Auth persistence warning:', persistenceError);
+                const persistence = rememberMe
+                    ? firebase.auth.Auth.Persistence.LOCAL
+                    : firebase.auth.Auth.Persistence.SESSION;
+
+                await auth.setPersistence(persistence);
+                const credential = await auth.signInWithEmailAndPassword(email, password);
+                const loggedInUser = credential && credential.user ? credential.user : auth.currentUser;
+
+                if (!loggedInUser) {
+                    throw new Error('Authentication completed but Firebase did not return a user.');
                 }
 
-                await auth.signInWithEmailAndPassword(email, password);
-                showToast('Login successful! Redirecting...', 'success');
+                // Supabase profile sync is optional; it must never block login.
+                try { await syncUserToSupabase(loggedInUser); } catch (_) {}
 
-                // Firebase auth state is the source of truth; give it a moment to settle.
-                setTimeout(() => safeRedirect(), 350);
+                showToast('Login successful! Redirecting...', 'success');
+                setTimeout(() => safeRedirect(), 250);
             } catch (error) {
                 console.error('Email login error:', error);
                 showToast(friendlyAuthError(error));
