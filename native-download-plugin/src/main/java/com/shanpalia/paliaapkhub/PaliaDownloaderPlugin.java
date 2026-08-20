@@ -67,11 +67,12 @@ public class PaliaDownloaderPlugin extends Plugin {
             return;
         }
 
-        String safeFilename =
+        String sanitizedFilename =
                 filename.replaceAll("[^A-Za-z0-9._ -]", "_");
-        if (!safeFilename.toLowerCase().endsWith(".apk")) {
-            safeFilename += ".apk";
+        if (!sanitizedFilename.toLowerCase().endsWith(".apk")) {
+            sanitizedFilename += ".apk";
         }
+        final String safeFilename = sanitizedFilename;
 
         final long id = idGenerator.incrementAndGet();
 

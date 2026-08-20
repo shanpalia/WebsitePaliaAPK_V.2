@@ -1,0 +1,11 @@
+Fixed Step 11 Java compilation error.
+
+Cause:
+safeFilename was modified after declaration, so Java did not consider it
+effectively final when it was captured by the worker-thread lambda.
+
+Fix:
+The filename is first built in sanitizedFilename, then copied into:
+final String safeFilename = sanitizedFilename;
+
+The downloader remains app-owned; Android DownloadManager is not used.
