@@ -1,0 +1,7 @@
+Fixed Firebase login persistence between user.html and index.html:
+- Same Firebase configuration on both pages.
+- Homepage listens to Firebase onAuthStateChanged and switches Login -> profile.
+- Google popup uses LOCAL persistence and waits for authenticated user.
+- Supabase sync cannot block login.
+- Logout signs out Firebase and reloads the homepage.
+- Login redirect does not overwrite an existing app redirect target.

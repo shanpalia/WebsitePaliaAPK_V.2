@@ -334,14 +334,19 @@ if (redirectTarget) {
 
         // Auto-redirect if already logged in
         auth.onAuthStateChanged(async (user) => {
+    if (!user) return;
 
-    if (user) {
-
+    try {
         await syncUserToSupabase(user);
-
-        window.location.href = redirectTarget;
+    } catch (e) {
+        console.warn('Supabase sync skipped:', e);
     }
 
+    // Only redirect while we are actually on user.html.
+    if (window.location.pathname.toLowerCase().endsWith('/user.html') ||
+        window.location.pathname.toLowerCase().endsWith('user.html')) {
+        setTimeout(() => safeRedirect(), 150);
+    }
 });
 
         // Toast Notification Helper
@@ -467,20 +472,49 @@ if (redirectTarget) {
         });
 
         // Google Login Handler
-        document.getElementById('googleLoginBtn').addEventListener('click', async () => {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            try {
-                await auth.signInWithPopup(provider);
-                showToast('Google login successful! Redirecting...', 'success');
-                setTimeout(() => {
-                    window.location.href = redirectTarget;
-                }, 800);
-            } catch (error) {
-                showToast(error.message);
-            }
-        });
+document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
 
-        // Forgot Password Handler
+    const btn = document.getElementById('googleLoginBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="ui-spinner"></span> Signing in...';
+    }
+
+    try {
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user || auth.currentUser;
+
+        if (!user) throw new Error('Google authentication did not return a user.');
+
+        try {
+            await syncUserToSupabase(user);
+        } catch (syncError) {
+            console.warn('Supabase sync skipped:', syncError);
+        }
+
+        localStorage.setItem('palia_logged_in', 'true');
+        localStorage.setItem('palia_user_uid', user.uid);
+
+        showToast('Google login successful!', 'success');
+
+        setTimeout(() => {
+            try { safeRedirect(); }
+            catch (_) { window.location.href = 'index.html'; }
+        }, 300);
+    } catch (error) {
+        console.error('Google login failed:', error);
+        showToast(error?.message || 'Google login failed.');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-brands fa-google"></i> Continue with Google';
+        }
+    }
+});
+
+// Forgot Password Handler
         async function handleForgotPassword() {
             const email = document.getElementById('loginEmail').value.trim();
             if (!email) {

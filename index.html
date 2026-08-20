@@ -536,6 +536,39 @@
         };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        // Keep the homepage UI synchronized with Firebase Authentication.
+        // Firebase auth state persists across the login page -> homepage navigation.
+        auth.onAuthStateChanged((user) => {
+            const loginBtn = document.getElementById('loginBtn');
+            const profileBox = document.getElementById('profileBox');
+            const profileAvatar = document.getElementById('profileAvatar');
+
+            if (user) {
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (profileBox) profileBox.classList.remove('hidden');
+
+                if (profileAvatar) {
+                    const displayName = user.displayName || user.email || 'User';
+                    const initials = displayName
+                        .split(/[\s@._-]+/)
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map(x => x[0].toUpperCase())
+                        .join('');
+                    profileAvatar.textContent = initials || 'U';
+                    profileAvatar.title = user.email || '';
+                }
+
+                localStorage.setItem('palia_logged_in', 'true');
+                localStorage.setItem('palia_user_uid', user.uid);
+            } else {
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (profileBox) profileBox.classList.add('hidden');
+                localStorage.removeItem('palia_logged_in');
+                localStorage.removeItem('palia_user_uid');
+            }
+        });
+
 
         // Supabase Client
         const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
@@ -645,7 +678,9 @@ recordSiteVisit();
         document.getElementById('loginBtn')?.addEventListener('click', (e) => {
             e.preventDefault();
             try {
-                localStorage.setItem('redirect_after_login', 'index.html');
+                if (!localStorage.getItem('redirect_after_login')) {
+                    localStorage.setItem('redirect_after_login', 'index.html');
+                }
             } catch (_) {}
             window.location.href = 'user.html';
         });
@@ -702,6 +737,16 @@ recordSiteVisit();
             profileDropdown?.classList.toggle('hidden');
         });
 
+
+        document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await auth.signOut();
+                window.location.reload();
+            } catch (err) {
+                console.error('Logout failed:', err);
+            }
+        });
         // Close dropdowns when clicking outside
         document.addEventListener('click', () => {
             notificationDropdown?.classList.add('hidden');
