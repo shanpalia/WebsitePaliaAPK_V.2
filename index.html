@@ -173,32 +173,93 @@
         }
     </style>
 <link rel="stylesheet" href="palia-mobile-app.css">
-
-<style id="paliaHeaderControlsStyle">
-  #paliaHeaderControls{z-index:60}
-  html.dark body{background:#0f172a!important;color:#e5e7eb}
-  html.dark .bg-white{background:#111827!important}
-  html.dark .bg-gray-50{background:#0f172a!important}
-  html.dark .bg-gray-100{background:#1f2937!important}
-  html.dark .text-gray-900{color:#f9fafb!important}
-  html.dark .text-gray-800{color:#f3f4f6!important}
-  html.dark .text-gray-700{color:#e5e7eb!important}
-  html.dark .text-gray-600{color:#d1d5db!important}
-</style>
-
-<style id="paliaHeaderReferenceStyle">
-#paliaHeaderControls{position:relative;display:flex;align-items:center;gap:.75rem}
-#paliaHeaderControls button,#paliaHeaderControls a{box-sizing:border-box}
-#paliaLoginBtn{min-width:84px}
-</style><style id="paliaNotificationColors">
-#paliaHeaderControls{position:relative}
-#paliaNotificationBtn,#paliaDarkModeBtn{position:relative}
-</style><style id="paliaSingleHeaderStyle">
-#paliaHeaderControls{display:flex!important;align-items:center!important;gap:.75rem!important;margin-left:auto!important;position:relative!important}
-#paliaHeaderControls button,#paliaHeaderControls a{flex:none!important;box-sizing:border-box!important}
-#paliaLoginBtn{min-width:84px!important}
-</style></head>
+</head>
 <body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
+
+    <!-- Header & Navigation -->
+    <nav class="glass sticky top-0 z-50 border-b border-gray-200/80 py-3 transition-all duration-300">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+            
+            <!-- Logo Brand with Hidden Admin Trigger (5 clicks in 2 seconds) -->
+            <div id="adminTriggerLogo" class="flex items-center gap-3 group focus:outline-none cursor-pointer" role="button" aria-label="PaliaAPK HUB Home">
+                <div class="w-[52px] h-[52px] rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-lg shadow-mint-600/10 overflow-hidden">
+<img src="assets/header-android-12-visible.png" alt="Android" class="w-full h-full object-contain" />
+</div>
+                <div>
+                    <h1 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
+                        PaliaAPK <span class="text-mint-600">HUB</span>
+                    </h1>
+                    <p class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Android Store</p>
+                </div>
+            </div>
+
+            <!-- Search Bar with Autocomplete Dropdown -->
+            <div class="hidden md:flex flex-1 max-w-lg mx-4 relative">
+                <div class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full w-full px-4 py-2.5 flex items-center relative">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                    <input type="text" id="searchInput" placeholder="Search apps, games, tools..." class="bg-transparent outline-none w-full ml-3 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400">
+                    <div id="searchAutocomplete" class="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700"></div>
+                </div>
+            </div>
+
+            <!-- Right Actions: Search + Notifications + Dark Mode + Profile/Login -->
+            <div class="flex items-center gap-3">
+                <button id="mobileSearchToggle"
+                        type="button"
+                        class="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 hover:bg-mint-50 hover:text-mint-600 transition flex items-center justify-center border border-gray-200"
+                        aria-label="Search apps"
+                        title="Search apps">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </button>
+
+                <button id="paliaNotificationBtn" type="button" aria-label="Notifications"
+                        class="relative w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-100 transition flex items-center justify-center border border-amber-200"
+                        title="Notifications">
+                    <i class="fa-solid fa-bell text-sm"></i>
+                    <span id="paliaNotificationDot" class="hidden absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
+                </button>
+
+                <button id="paliaDarkModeBtn" type="button" aria-label="Toggle dark mode"
+                        class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition flex items-center justify-center border border-indigo-200"
+                        title="Dark mode">
+                    <i id="paliaThemeIcon" class="fa-solid fa-moon text-sm"></i>
+                </button>
+
+                <!-- Authentication & Profile Avatar Dropdown -->
+                <div class="relative" id="userArea">
+                    <button id="loginBtn" class="px-4 h-10 rounded-xl bg-mint-600 hover:bg-mint-700 text-white font-bold text-xs transition shadow-md shadow-mint-600/20 flex items-center gap-2">
+                        <i class="fa-solid fa-user"></i> Login
+                    </button>
+<div id="profileBox" class="hidden relative">
+                        <div id="profileAvatarBtn" class="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
+                            <div id="profileAvatar" class="w-9 h-9 rounded-lg gradient-bg text-white flex items-center justify-center font-bold text-xs shadow">SP</div>
+                        </div>
+                        
+                        <!-- Profile Dropdown Menu -->
+                        <div id="profileDropdown" class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-2 space-y-1">
+                            <a href="profile.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+    <i class="fa-solid fa-user text-mint-600"></i> My Profile
+</a>
+                            <a href="downloads.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-download text-mint-600"></i> Downloads
+                            </a>
+                            <a href="updates.html" class="flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <span class="flex items-center gap-2.5"><i class="fa-solid fa-arrows-rotate text-mint-600"></i> Updates</span>
+                                <span id="profileUpdatesCount" class="hidden min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] items-center justify-center">0</span>
+                            </a>
+                            <a href="favorites.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-heart text-mint-600"></i> Favorites
+                            </a>
+                            <a href="settings.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-gear text-mint-600"></i> Settings
+                            </a>
+                            <div class="border-t border-gray-100 dark:border-gray-700 pt-1 mt-1">
+                                <button id="logoutBtn" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition text-left">
+                                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -304,7 +365,11 @@
         </section>
 
         <!-- Updates shortcut -->
-        
+        <section id="updatesShortcutSection" class="mb-8">
+            <a href="updates.html" class="app-card flex items-center justify-between p-4 sm:p-5 hover:border-mint-300">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl bg-mint-50 text-mint-600 flex items-center justify-center">
+                        <i class="fa-solid fa-arrows-rotate"></i>
                     </div>
                     <div>
                         <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-white">App Updates</h3>
@@ -312,7 +377,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    
+                    <span id="updatesShortcutCount" class="hidden px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-[11px] font-black">0 updates</span>
                     <i class="fa-solid fa-chevron-right text-gray-400"></i>
                 </div>
             </a>
@@ -376,7 +441,9 @@
 </li>
 
 <li>
-    
+    <a href="updates.html" class="hover:text-mint-600 transition">
+        Updates
+    </a>
 </li>
 
 <li>
@@ -1598,200 +1665,131 @@ window.handleDownloadClick = async function(appId) {
   <a href="index.html#categoriesSection"><i class="fa-solid fa-layer-group"></i><span>Categories</span></a>
   <a href="index.html#topChartsSection"><i class="fa-solid fa-chart-line"></i><span>Top Charts</span></a>
   <a href="downloads.html"><i class="fa-solid fa-download"></i><span>Downloads</span></a>
-  
+  <a href="updates.html"><i class="fa-solid fa-arrows-rotate"></i><span>Updates</span></a>
   <a href="settings.html"><i class="fa-solid fa-user"></i><span>Profile</span></a>
 </nav>
 
 
 <script>
 (function(){
-  const STORE_KEY='palia_notifications_v1';
-  const SEEN_KEY='palia_seen_app_ids_v1';
-  const POLL_MS=30000;
-
-  function load(key, fallback){
-    try { return JSON.parse(localStorage.getItem(key)||'null') ?? fallback; } catch(e){ return fallback; }
-  }
-  function save(key,val){ try{localStorage.setItem(key,JSON.stringify(val));}catch(e){} }
-
-  function getSupabaseClient(){
-    try{
-      if(window.supabaseClient) return window.supabaseClient;
-      if(window.supabase && typeof window.supabase.from==='function') return window.supabase;
-      if(window._supabaseClient) return window._supabaseClient;
-    }catch(e){}
-    return null;
-  }
-
-  function notifications(){
-    return load(STORE_KEY,[]);
-  }
-
-  function renderDot(){
-    const dot=document.getElementById('paliaNotificationDot');
-    if(!dot) return;
-    const unread=notifications().filter(n=>!n.read).length;
-    dot.classList.toggle('hidden',unread===0);
-    if(unread){
-      dot.className='absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white';
+  function enableAppMode(){
+    if(window.Capacitor || location.protocol === 'capacitor:' || location.protocol === 'ionic:'){
+      document.body.classList.add('capacitor-app');
     }
   }
-
-  function addNotification(type, app){
-    const list=notifications();
-    const id=String(app.id||app.package_name||app.name||Date.now());
-    const title=type==='update'?'App Updated':'New App Added';
-    const text=type==='update'
-      ? `${app.name||'An app'} has a new version available.`
-      : `${app.name||'A new app'} is now available on PaliaAPK HUB.`;
-    if(list.some(n=>n.key===type+'_'+id)) return;
-    list.unshift({
-      key:type+'_'+id, type, title, text,
-      appId:app.id||null, appName:app.name||'App',
-      version:app.version||'', time:Date.now(), read:false
-    });
-    save(STORE_KEY,list.slice(0,50));
-    renderDot();
-  }
-
-  function formatTime(t){
-    const d=new Date(t), now=Date.now(), diff=now-t;
-    if(diff<60000) return 'Just now';
-    if(diff<3600000) return Math.floor(diff/60000)+' min ago';
-    if(diff<86400000) return Math.floor(diff/3600000)+' hr ago';
-    return d.toLocaleDateString();
-  }
-
-  function showPanel(){
-    let box=document.getElementById('paliaNotificationPanel');
-    if(box){box.remove();return;}
-    box=document.createElement('div');
-    box.id='paliaNotificationPanel';
-    box.className='fixed right-4 top-20 z-[99999] w-[340px] max-w-[calc(100vw-2rem)] rounded-2xl bg-white border border-gray-200 shadow-2xl overflow-hidden';
-    const list=notifications();
-    if(!list.length){
-      box.innerHTML='<div class="p-5"><div class="font-bold text-gray-900 text-lg">Notifications</div><div class="text-sm text-gray-500 mt-2">No new app notifications.</div></div>';
-    }else{
-      box.innerHTML='<div class="p-4 border-b flex items-center justify-between"><div class="font-bold text-gray-900">Notifications</div><button id="paliaMarkAllRead" class="text-xs text-green-600 font-semibold">Mark all read</button></div>'+
-        '<div class="max-h-[420px] overflow-y-auto">'+list.map(n=>{
-          const icon=n.type==='update'?'↻':'＋';
-          const bg=n.type==='update'?'bg-indigo-50 text-indigo-600':'bg-amber-50 text-amber-600';
-          return `<div class="px-4 py-3 border-b border-gray-100 ${n.read?'':'bg-gray-50'}">
-            <div class="flex gap-3"><div class="w-9 h-9 rounded-xl ${bg} flex items-center justify-center font-bold">${icon}</div>
-            <div class="min-w-0"><div class="font-semibold text-gray-900">${n.title}</div>
-            <div class="text-sm text-gray-600">${n.text}</div>
-            ${n.version?`<div class="text-xs text-gray-400 mt-1">Version ${n.version} • ${formatTime(n.time)}</div>`:`<div class="text-xs text-gray-400 mt-1">${formatTime(n.time)}</div>`}
-            </div></div></div>`;
-        }).join('')+'</div>';
-    }
-    document.body.appendChild(box);
-    list.forEach(n=>n.read=true); save(STORE_KEY,list); renderDot();
-    const mark=document.getElementById('paliaMarkAllRead');
-    if(mark) mark.onclick=()=>{save(STORE_KEY,list.map(n=>({...n,read:true})));box.remove();renderDot();};
-  }
-
-  async function checkApps(){
-    const client=getSupabaseClient();
-    if(!client || typeof client.from!=='function') return;
-    try{
-      const {data,error}=await client.from('apps').select('*').order('updated_at',{ascending:false}).limit(100);
-      if(error||!Array.isArray(data)) return;
-      const seen=load(SEEN_KEY,[]);
-      if(!seen.length){
-        save(SEEN_KEY,data.map(a=>String(a.id||a.package_name||a.name)));
-        return;
-      }
-      const seenSet=new Set(seen);
-      data.forEach(app=>{
-        const id=String(app.id||app.package_name||app.name);
-        if(!seenSet.has(id)){
-          addNotification('new',app);
-          seenSet.add(id);
-        }else{
-          const marker=String(app.id||app.package_name||app.name)+'_'+String(app.updated_at||app.version||'');
-          const known=load('palia_update_markers_v1',[]);
-          if(app.updated_at && !known.includes(marker)){
-            // First observation of an existing app is recorded, later changes trigger an update.
-            if(known.some(x=>x.startsWith(id+'_'))) addNotification('update',app);
-            known.push(marker); save('palia_update_markers_v1',known.slice(-300));
-          }
-        }
-      });
-      save(SEEN_KEY,Array.from(seenSet).slice(-300));
-    }catch(e){}
-  }
-
-  document.addEventListener('DOMContentLoaded',function(){
-    const bell=document.getElementById('paliaNotificationBtn');
-    if(bell) bell.addEventListener('click',showPanel);
-    renderDot();
-    setTimeout(checkApps,2000);
-    setInterval(checkApps,POLL_MS);
-  });
+  document.addEventListener('DOMContentLoaded', enableAppMode);
+  window.addEventListener('load', enableAppMode);
 })();
 </script>
 
 <script src="native-downloader.js"></script>
 
-<script>
+<script id="paliaHeaderFeatures">
 (function(){
-  function applyTheme(theme){
-    const dark=theme==='dark';
-    document.documentElement.classList.toggle('dark',dark);
-    const icon=document.getElementById('paliaThemeIcon');
-    if(icon) icon.textContent=dark?'☀️':'🌙';
-    const btn=document.getElementById('paliaDarkModeBtn');
-    if(btn) btn.title=dark?'Light mode':'Dark mode';
+  const NKEY='palia_header_notifications_v2';
+  const SKEY='palia_header_seen_apps_v2';
+  const MKEY='palia_header_update_markers_v2';
+
+  function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}}
+  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+  function client(){
+    return window.supabaseClient || window._supabaseClient ||
+      (window.supabase && typeof window.supabase.from==='function' ? window.supabase : null);
   }
 
-  const saved=localStorage.getItem('palia_theme');
-  applyTheme(saved==='dark'?'dark':'light');
+  function dot(){
+    const d=document.getElementById('paliaNotificationDot');
+    if(!d)return;
+    const unread=load(NKEY,[]).filter(x=>!x.read).length;
+    d.classList.toggle('hidden',unread===0);
+  }
+
+  function add(type,a){
+    const id=String(a.id||a.package_name||a.name||Date.now());
+    const list=load(NKEY,[]);
+    const key=type+'_'+id+'_'+String(a.version||a.updated_at||'');
+    if(list.some(x=>x.key===key))return;
+    list.unshift({
+      key,type,name:a.name||'App',
+      version:a.version||'',time:Date.now(),read:false,
+      text:type==='new' ? `${a.name||'A new app'} was added to PaliaAPK HUB.`
+                        : `${a.name||'An app'} has a new version available.`
+    });
+    save(NKEY,list.slice(0,50));dot();
+  }
+
+  async function check(){
+    const c=client(); if(!c)return;
+    try{
+      const r=await c.from('apps').select('*').order('updated_at',{ascending:false}).limit(100);
+      if(r.error||!Array.isArray(r.data))return;
+      const apps=r.data;
+      const seen=load(SKEY,null);
+      const markers=load(MKEY,{});
+      if(seen===null){
+        save(SKEY,apps.map(a=>String(a.id||a.package_name||a.name)));
+        apps.forEach(a=>{markers[String(a.id||a.package_name||a.name)]=String(a.version||a.updated_at||'')});
+        save(MKEY,markers);
+        return;
+      }
+      const set=new Set(seen);
+      for(const a of apps){
+        const id=String(a.id||a.package_name||a.name);
+        const ver=String(a.version||a.updated_at||'');
+        if(!set.has(id)){ add('new',a); set.add(id); }
+        else if(markers[id] && markers[id]!==ver){ add('update',a); }
+        markers[id]=ver;
+      }
+      save(SKEY,Array.from(set).slice(-500)); save(MKEY,markers);
+    }catch(e){}
+  }
+
+  function panel(){
+    let p=document.getElementById('paliaNotificationPanel');
+    if(p){p.remove();return}
+    const list=load(NKEY,[]);
+    p=document.createElement('div');
+    p.id='paliaNotificationPanel';
+    p.className='fixed right-4 top-20 z-[99999] w-[340px] max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden';
+    let body=list.length?list.map(n=>`
+      <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 ${n.read?'':'bg-gray-50 dark:bg-gray-900/40'}">
+        <div class="flex gap-3">
+          <div class="w-9 h-9 rounded-xl ${n.type==='update'?'bg-indigo-50 text-indigo-600':'bg-amber-50 text-amber-600'} flex items-center justify-center">
+            <i class="fa-solid ${n.type==='update'?'fa-arrows-rotate':'fa-plus'}"></i>
+          </div>
+          <div><div class="font-bold text-gray-900 dark:text-white text-sm">${n.type==='update'?'App Updated':'New App Added'}</div>
+          <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">${n.text}</div>
+          ${n.version?`<div class="text-[10px] text-gray-400 mt-1">Version ${n.version}</div>`:''}</div>
+        </div>
+      </div>`).join(''):'<div class="p-5 text-sm text-gray-500">No new notifications.</div>';
+    p.innerHTML=`<div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"><b class="text-gray-900 dark:text-white">Notifications</b><button id="paliaReadAll" class="text-xs text-mint-600 font-bold">Mark all read</button></div>${body}`;
+    document.body.appendChild(p);
+    save(NKEY,list.map(n=>({...n,read:true})));dot();
+    const b=document.getElementById('paliaReadAll');
+    if(b)b.onclick=()=>{save(NKEY,[]);p.remove();dot()};
+  }
+
+  function theme(){
+    const dark=localStorage.getItem('palia_theme')==='dark';
+    document.documentElement.classList.toggle('dark',dark);
+    const i=document.getElementById('paliaThemeIcon');
+    if(i)i.className='fa-solid '+(dark?'fa-sun':'fa-moon')+' text-sm';
+  }
 
   document.addEventListener('DOMContentLoaded',function(){
-    const themeBtn=document.getElementById('paliaDarkModeBtn');
-    if(themeBtn){
-      themeBtn.addEventListener('click',function(){
-        const next=document.documentElement.classList.contains('dark')?'light':'dark';
-        localStorage.setItem('palia_theme',next);
-        applyTheme(next);
-      });
-    }
-
+    theme(); dot();
     const bell=document.getElementById('paliaNotificationBtn');
-    if(bell){
-      bell.addEventListener('click',function(){
-        const dot=document.getElementById('paliaNotificationDot');
-        if(dot) dot.classList.add('hidden');
-        let box=document.getElementById('paliaNotificationPanel');
-        if(box){ box.remove(); return; }
-        box=document.createElement('div');
-        box.id='paliaNotificationPanel';
-        box.className='fixed right-4 top-20 z-[9999] w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white shadow-2xl border border-gray-100 p-4';
-        box.innerHTML='<div class="font-bold text-gray-900 mb-1">Notifications</div><div class="text-sm text-gray-500">No new notifications.</div>';
-        document.body.appendChild(box);
-      });
-    }
+    if(bell)bell.addEventListener('click',panel);
+    const mode=document.getElementById('paliaDarkModeBtn');
+    if(mode)mode.addEventListener('click',function(){
+      localStorage.setItem('palia_theme',document.documentElement.classList.contains('dark')?'light':'dark');
+      theme();
+    });
+    setTimeout(check,1500);
+    setInterval(check,30000);
   });
 })();
 </script>
-
-<!-- SINGLE PaliaAPK HUB header controls -->
-<div id="paliaHeaderControls" class="flex items-center gap-3 ml-auto relative">
-  <button id="paliaNotificationBtn" type="button" aria-label="Notifications"
-    class="relative w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shadow-sm hover:bg-amber-100 transition"
-    title="Notifications">
-    <span class="text-[16px] leading-none">🔔</span>
-    <span id="paliaNotificationDot" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
-  </button>
-  <button id="paliaDarkModeBtn" type="button" aria-label="Toggle dark mode"
-    class="relative w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center shadow-sm hover:bg-indigo-100 transition"
-    title="Dark mode">
-    <span id="paliaThemeIcon" class="text-[17px] leading-none">🌙</span>
-  </button>
-  <a id="paliaLoginBtn" href="user.html"
-    class="h-10 px-4 rounded-xl bg-[#16a34a] text-white font-semibold flex items-center justify-center gap-1.5 shadow-sm hover:bg-[#15803d] transition no-underline">
-    <span class="text-[15px] leading-none">♟</span><span>Login</span>
-  </a>
-</div>
 </body>
 </html>
