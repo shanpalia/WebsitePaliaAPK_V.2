@@ -915,6 +915,14 @@ window.toggleAllCategories = function () {
                                     <span class="text-xs font-semibold text-gray-400">
                                         ${app.version || 'Latest'}
                                     </span>
+                                    ${(() => {
+                                        try {
+                                            const installed = JSON.parse(localStorage.getItem('palia_installed_versions') || '{}');
+                                            return installed[String(app.id)] && String(installed[String(app.id)]) !== String(app.version || '')
+                                                ? '<span class="bg-orange-50 text-orange-600 border border-orange-100 px-2 py-1 rounded-full text-[10px] font-bold">UPDATE AVAILABLE</span>'
+                                                : '';
+                                        } catch (_) { return ''; }
+                                    })()}
                                 </div>
 
                                 <!-- APP NAME -->
@@ -1550,5 +1558,18 @@ setTimeout(() => {
 }, 2000);
         document.addEventListener('DOMContentLoaded', initData);
     </script>
+
+<script id="paliaInstalledVersionHelper">
+window.recordPaliaInstalledVersion = function(app) {
+    if (!app || !app.id) return;
+    try {
+        const versions = JSON.parse(localStorage.getItem('palia_installed_versions') || '{}');
+        versions[String(app.id)] = String(app.version || '');
+        localStorage.setItem('palia_installed_versions', JSON.stringify(versions));
+    } catch (e) {
+        console.warn('Could not save installed app version', e);
+    }
+};
+</script>
 </body>
 </html>

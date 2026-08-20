@@ -1,0 +1,4 @@
+Added profile update checker and slider update badge.
+Profile reads the apps table from Supabase and compares app.version with
+localStorage palia_installed_versions. Slider shows UPDATE AVAILABLE when the
+stored installed version differs from the current Supabase version.
