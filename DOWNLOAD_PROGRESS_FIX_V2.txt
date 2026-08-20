@@ -1,0 +1,9 @@
+V2 fix based on device screenshot:
+- Total size is now shown immediately (example 9.82 MB).
+- The native getProgress() method no longer rejects when DownloadManager temporarily
+  returns no cursor/metadata or a column is unavailable.
+- It falls back to the actual APK file length in Downloads.
+- JS no longer gets stuck at "Updating..." from a transient native progress error.
+- Progress polling remains active every 300ms.
+- queryOk/source are returned for diagnostics without breaking the UI.
+- Header uses the uploaded Android half-logo.

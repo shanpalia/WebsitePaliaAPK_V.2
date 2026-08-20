@@ -351,6 +351,7 @@
                     const status = Number(data.status || 0);
 
                     downloadedAmount.textContent = formatMB(bytes);
+                    if (data.queryOk === false && speedEl) speedEl.textContent = 'Reading download…';
                     totalAmount.textContent = total > 0 ? formatMB(total) : (app.apk_size || 'Calculating...');
 
                     const pct = total > 0 ? Math.min(100, Math.round((bytes / total) * 100)) : 0;
@@ -390,7 +391,7 @@
                     }
                 } catch (e) {
                     console.error('Download progress error:', e);
-                    if (speedEl) speedEl.textContent = 'Updating...';
+                    if (speedEl) speedEl.textContent = 'Retrying...';
                 }
             }
 

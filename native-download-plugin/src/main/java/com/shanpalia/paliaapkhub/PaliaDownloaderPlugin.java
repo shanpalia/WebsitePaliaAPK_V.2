@@ -102,36 +102,39 @@ public class PaliaDownloaderPlugin extends Plugin {
         }
 
         Cursor cursor = null;
+        String filename = prefs().getString(KEY_FILE_PREFIX + id, "");
+        long expectedTotal = prefs().getLong(KEY_TOTAL_PREFIX + id, 0L);
+
         try {
+            long managerBytes = 0L;
+            long managerTotal = 0L;
+            int status = DownloadManager.STATUS_PENDING;
+
             cursor = manager.query(new DownloadManager.Query().setFilterById(id));
-            if (cursor == null || !cursor.moveToFirst()) {
-                call.reject("Download not found");
-                return;
+
+            if (cursor != null && cursor.moveToFirst()) {
+                int statusCol = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                int bytesCol = cursor.getColumnIndex(
+                        DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
+                int totalCol = cursor.getColumnIndex(
+                        DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
+
+                if (statusCol >= 0) status = cursor.getInt(statusCol);
+                if (bytesCol >= 0) managerBytes = Math.max(0L, cursor.getLong(bytesCol));
+                if (totalCol >= 0) managerTotal = Math.max(0L, cursor.getLong(totalCol));
+            } else {
+                // Keep returning a usable result. The JS side can continue polling
+                // and the actual file length can still reveal progress.
+                status = DownloadManager.STATUS_RUNNING;
             }
 
-            int status = cursor.getInt(
-                    cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
-            long managerBytes = cursor.getLong(
-                    cursor.getColumnIndexOrThrow(
-                            DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
-            long managerTotal = cursor.getLong(
-                    cursor.getColumnIndexOrThrow(
-                            DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
-
-            String filename = prefs().getString(KEY_FILE_PREFIX + id, "");
-            long expectedTotal = prefs().getLong(KEY_TOTAL_PREFIX + id, 0L);
-
-            // Some Android/HTTP combinations keep DownloadManager's byte counter at 0
-            // while the destination file is already growing. Read the real file too.
             long fileBytes = 0L;
             if (!filename.isEmpty()) {
                 File file = new File(
                         Environment.getExternalStoragePublicDirectory(
                                 Environment.DIRECTORY_DOWNLOADS),
                         filename);
-                if (file.exists()) {
-                    fileBytes = file.length();
-                }
+                if (file.exists()) fileBytes = Math.max(0L, file.length());
             }
 
             long bytes = Math.max(managerBytes, fileBytes);
@@ -143,17 +146,33 @@ public class PaliaDownloaderPlugin extends Plugin {
             result.put("totalBytes", total);
             result.put("filename", filename);
             result.put("source", fileBytes > managerBytes ? "file" : "download_manager");
+            result.put("queryOk", true);
             call.resolve(result);
 
-            if (status == DownloadManager.STATUS_SUCCESSFUL ||
-                    status == DownloadManager.STATUS_FAILED) {
-                prefs().edit()
-                        .remove(KEY_FILE_PREFIX + id)
-                        .remove(KEY_TOTAL_PREFIX + id)
-                        .apply();
-            }
         } catch (Exception e) {
-            call.reject("Unable to read download progress: " + e.getMessage(), e);
+            // Never turn a temporary progress-read issue into a rejected JS Promise.
+            // Return the best information available so the UI does not get stuck at
+            // "Updating...".
+            long fileBytes = 0L;
+            try {
+                if (!filename.isEmpty()) {
+                    File file = new File(
+                            Environment.getExternalStoragePublicDirectory(
+                                    Environment.DIRECTORY_DOWNLOADS),
+                            filename);
+                    if (file.exists()) fileBytes = Math.max(0L, file.length());
+                }
+            } catch (Exception ignored) {}
+
+            JSObject result = new JSObject();
+            result.put("status", DownloadManager.STATUS_RUNNING);
+            result.put("bytesDownloaded", fileBytes);
+            result.put("totalBytes", expectedTotal);
+            result.put("filename", filename);
+            result.put("source", "file_fallback");
+            result.put("queryOk", false);
+            result.put("error", e.getMessage() == null ? "progress query error" : e.getMessage());
+            call.resolve(result);
         } finally {
             if (cursor != null) cursor.close();
         }
