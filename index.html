@@ -193,65 +193,12 @@
 </style><style id="paliaNotificationColors">
 #paliaHeaderControls{position:relative}
 #paliaNotificationBtn,#paliaDarkModeBtn{position:relative}
+</style><style id="paliaSingleHeaderStyle">
+#paliaHeaderControls{display:flex!important;align-items:center!important;gap:.75rem!important;margin-left:auto!important;position:relative!important}
+#paliaHeaderControls button,#paliaHeaderControls a{flex:none!important;box-sizing:border-box!important}
+#paliaLoginBtn{min-width:84px!important}
 </style></head>
-<body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700"><div id="paliaHeaderControls" class="flex items-center gap-3 ml-auto">
-<button id="paliaNotificationBtn" type="button" aria-label="Notifications" class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shadow-sm hover:bg-amber-100 transition" title="Notifications">🔔</button>
-<button id="paliaDarkModeBtn" type="button" aria-label="Toggle dark mode" class="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center shadow-sm hover:bg-indigo-100 transition" title="Dark mode"><span id="paliaThemeIcon">🌙</span></button>
-<a id="paliaLoginBtn" href="user.html" class="h-10 px-4 rounded-xl bg-[#16a34a] text-white font-semibold flex items-center justify-center gap-1.5 no-underline">♟ <span>Login</span></a>
-</div><!-- PaliaAPK HUB compact header controls -->
-<!-- Header & Navigation -->
-    <nav class="glass sticky top-0 z-50 border-b border-gray-200/80 py-3 transition-all duration-300">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-            
-            <!-- Logo Brand with Hidden Admin Trigger (5 clicks in 2 seconds) -->
-            <div id="adminTriggerLogo" class="flex items-center gap-3 group focus:outline-none cursor-pointer" role="button" aria-label="PaliaAPK HUB Home">
-                <div class="w-[52px] h-[52px] rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-lg shadow-mint-600/10 overflow-hidden">
-<img src="assets/header-android-12-visible.png" alt="Android" class="w-full h-full object-contain" />
-</div>
-                <div>
-                    <h1 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
-                        PaliaAPK <span class="text-mint-600">HUB</span>
-                    </h1>
-                    <p class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Android Store</p>
-                </div>
-            </div>
-
-            <!-- Search Bar with Autocomplete Dropdown -->
-            
-
-                <!-- Authentication & Profile Avatar Dropdown -->
-                <div class="relative" id="userArea">
-                    <button id="loginBtn" class="px-4 h-10 rounded-xl bg-mint-600 hover:bg-mint-700 text-white font-bold text-xs transition shadow-md shadow-mint-600/20 flex items-center gap-2">
-                        <i class="fa-solid fa-user"></i> Login
-                    </button>
-                    
-                    <div id="profileBox" class="hidden relative">
-                        <div id="profileAvatarBtn" class="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
-                            <div id="profileAvatar" class="w-9 h-9 rounded-lg gradient-bg text-white flex items-center justify-center font-bold text-xs shadow">SP</div>
-                        </div>
-                        
-                        <!-- Profile Dropdown Menu -->
-                        <div id="profileDropdown" class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-2 space-y-1">
-                            <a href="profile.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
-    <i class="fa-solid fa-user text-mint-600"></i> My Profile
-</a>
-                            <a href="downloads.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
-                                <i class="fa-solid fa-download text-mint-600"></i> Downloads
-                            </a>
-                            
-                            <a href="favorites.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
-                                <i class="fa-solid fa-heart text-mint-600"></i> Favorites
-                            </a>
-                            <a href="settings.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
-                                <i class="fa-solid fa-gear text-mint-600"></i> Settings
-                            </a>
-                            <div class="border-t border-gray-100 dark:border-gray-700 pt-1 mt-1">
-                                <button id="logoutBtn" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition text-left">
-                                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+<body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
                 </div>
             </div>
         </div>
@@ -1828,5 +1775,23 @@ window.handleDownloadClick = async function(appId) {
 })();
 </script>
 
+<!-- SINGLE PaliaAPK HUB header controls -->
+<div id="paliaHeaderControls" class="flex items-center gap-3 ml-auto relative">
+  <button id="paliaNotificationBtn" type="button" aria-label="Notifications"
+    class="relative w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shadow-sm hover:bg-amber-100 transition"
+    title="Notifications">
+    <span class="text-[16px] leading-none">🔔</span>
+    <span id="paliaNotificationDot" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
+  </button>
+  <button id="paliaDarkModeBtn" type="button" aria-label="Toggle dark mode"
+    class="relative w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center shadow-sm hover:bg-indigo-100 transition"
+    title="Dark mode">
+    <span id="paliaThemeIcon" class="text-[17px] leading-none">🌙</span>
+  </button>
+  <a id="paliaLoginBtn" href="user.html"
+    class="h-10 px-4 rounded-xl bg-[#16a34a] text-white font-semibold flex items-center justify-center gap-1.5 shadow-sm hover:bg-[#15803d] transition no-underline">
+    <span class="text-[15px] leading-none">♟</span><span>Login</span>
+  </a>
+</div>
 </body>
 </html>

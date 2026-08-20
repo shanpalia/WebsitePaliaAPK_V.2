@@ -1,0 +1,3 @@
+Header duplicate fix:
+Exactly one Bell + one Moon + one Login control group is rendered on index.html.
+Removed duplicate Login and Updates header elements.
