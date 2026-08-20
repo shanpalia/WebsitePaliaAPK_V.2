@@ -29,7 +29,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <!-- Capacitor runtime is loaded first; Firebase Authentication bridge comes after it. -->
-<script src="native-google-auth.js"></script>
+
+
     <style>
         .ui-icon {
             display: inline-flex;
@@ -254,7 +255,7 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",
+            apiKey: "AIzaSyBBF8ww2eehUyHINEHhQGOOLzED44Kvy0k",
             authDomain: "shanpalia-apk-hub.firebaseapp.com",
             projectId: "shanpalia-apk-hub",
             storageBucket: "shanpalia-apk-hub.firebasestorage.app",
@@ -432,51 +433,88 @@ async function syncUserToSupabase(user) {
             return messages[code] || error?.message || 'Login failed. Please try again.';
         }
 
-        // Email Login Handler
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Website Firebase Email Login
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            const rememberMe = document.getElementById('rememberMe').checked;
-            const btn = document.getElementById('loginSubmitBtn');
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const remember = document.getElementById('rememberMe').checked;
+    const btn = document.getElementById('loginSubmitBtn');
 
-            if (!email || !password) {
-                showToast('Please enter email and password.');
-                return;
-            }
+    if (!email || !password) {
+        showToast('Please enter email and password.');
+        return;
+    }
 
-            localStorage.setItem('palia_remember_me', rememberMe ? 'true' : 'false');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="ui-spinner" aria-hidden="true"></span> Logging in...';
+    if (!auth || typeof auth.signInWithEmailAndPassword !== 'function') {
+        showToast('Login service is unavailable. Please refresh the page.');
+        console.error('Firebase Auth object is not initialized.');
+        return;
+    }
 
-            try {
-                const persistence = rememberMe
+    btn.disabled = true;
+    btn.innerHTML = '<span class="ui-spinner"></span> Logging in...';
+
+    try {
+        try {
+            await auth.setPersistence(
+                remember
                     ? firebase.auth.Auth.Persistence.LOCAL
-                    : firebase.auth.Auth.Persistence.SESSION;
+                    : firebase.auth.Auth.Persistence.SESSION
+            );
+        } catch (persistenceError) {
+            console.warn('Firebase persistence warning:', persistenceError);
+        }
 
-                await auth.setPersistence(persistence);
-                const credential = await auth.signInWithEmailAndPassword(email, password);
-                const loggedInUser = credential && credential.user ? credential.user : auth.currentUser;
+        const result = await auth.signInWithEmailAndPassword(email, password);
+        const user = result.user;
 
-                if (!loggedInUser) {
-                    throw new Error('Authentication completed but Firebase did not return a user.');
-                }
+        if (!user) throw new Error('Firebase did not return an authenticated user.');
 
-                // Supabase profile sync is optional; it must never block login.
-                try { await syncUserToSupabase(loggedInUser); } catch (_) {}
-
-                showToast('Login successful! Redirecting...', 'success');
-                setTimeout(() => safeRedirect(), 250);
-            } catch (error) {
-                console.error('Email login error:', error);
-                showToast(friendlyAuthError(error));
-                btn.disabled = false;
-                btn.innerHTML = '<span>Login</span><span class="ui-icon">→</span>';
+        // Profile sync is optional; never block a successful website login.
+        if (typeof syncUserToSupabase === 'function') {
+            try {
+                await syncUserToSupabase(user);
+            } catch (syncError) {
+                console.warn('Supabase sync skipped:', syncError);
             }
-        });
+        }
 
-        // Email Signup Handler
+        localStorage.setItem('palia_logged_in', 'true');
+        localStorage.setItem('palia_user_uid', user.uid);
+
+        showToast('Login successful!', 'success');
+
+        setTimeout(() => {
+            try { safeRedirect(); }
+            catch (_) { window.location.href = 'index.html'; }
+        }, 250);
+
+    } catch (error) {
+        console.error('Firebase login failed:', error);
+        let msg = 'Login failed. Please check your email and password.';
+
+        switch (error?.code) {
+            case 'auth/invalid-email': msg='Please enter a valid email address.'; break;
+            case 'auth/user-not-found': msg='No account found with this email.'; break;
+            case 'auth/wrong-password':
+            case 'auth/invalid-credential': msg='Incorrect email or password.'; break;
+            case 'auth/too-many-requests': msg='Too many attempts. Please try again later.'; break;
+            case 'auth/user-disabled': msg='This account has been disabled.'; break;
+            case 'auth/operation-not-allowed': msg='Email/password login is not enabled in Firebase.'; break;
+            case 'auth/network-request-failed': msg='Network error. Check your internet connection.'; break;
+            case 'auth/api-key-not-valid.-please-pass-a-valid-api-key.':
+            case 'auth/invalid-api-key': msg='Firebase configuration is invalid.'; break;
+        }
+
+        showToast(msg);
+        btn.disabled = false;
+        btn.innerHTML = '<span>Login</span><span class="ui-icon">→</span>';
+    }
+});
+
+// Email Signup Handler
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('signupName').value.trim();

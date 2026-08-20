@@ -1,0 +1,8 @@
+Login final v2:
+- Replaced stale Firebase API key with the project key found in google-services.json.
+- Email/password authentication remains Firebase Auth.
+- Supabase profile sync cannot block login.
+- Persistence errors cannot block login.
+- Successful Firebase auth redirects to the requested local page.
+- Removed unnecessary capacitor.js web reference from user.html.
+- Tailwind CDN warning is a production optimization warning and is not the cause of Firebase login failure.

@@ -1,0 +1,6 @@
+PaliaAPK HUB website-only package.
+No Codemagic/Capacitor/native Android build files.
+Firebase handles user authentication.
+Supabase handles app data.
+Homepage has one search bar and notification count/list.
+New app or app update creates a notification; clicking it opens app.html?id=<app id>.
