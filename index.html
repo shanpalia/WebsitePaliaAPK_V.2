@@ -640,6 +640,27 @@ async function recordSiteVisit() {
 
 recordSiteVisit();
 
+
+        // Header Login button: always open the website login page.
+        document.getElementById('loginBtn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            try {
+                localStorage.setItem('redirect_after_login', 'index.html');
+            } catch (_) {}
+            window.location.href = 'user.html';
+        });
+
+        // Dark mode toggle.
+        document.getElementById('darkModeToggle')?.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            try {
+                localStorage.setItem(
+                    'palia_theme',
+                    document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+                );
+            } catch (_) {}
+        });
+
         // Hidden Admin Trigger Logic: 5 clicks on logo within 2 seconds
         let logoClickCount = 0;
         let logoClickTimer = null;
