@@ -786,6 +786,9 @@ async function initData() {
         console.log("TOTAL APPS:", apps?.length || 0);
 
         window.allAppsCache = apps || [];
+        if (window.paliaCompareAppNotifications) {
+            window.paliaCompareAppNotifications(window.allAppsCache);
+        }
         try {
             localStorage.setItem('palia_apps_cache', JSON.stringify(window.allAppsCache));
             localStorage.setItem('palia_apps_cache_time', String(Date.now()));
@@ -1616,5 +1619,208 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 </script>
 
+
+<script id="paliaRealNotifications">
+(function(){
+  const NOTIFY_KEY='palia_real_notifications_v4';
+  const SNAPSHOT_KEY='palia_real_apps_snapshot_v4';
+
+  function read(k,d){
+    try{ const v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }
+    catch(e){ return d; }
+  }
+  function write(k,v){
+    try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){}
+  }
+  function appId(a){ return String(a.id || a.package_name || a.slug || a.name); }
+  function version(a){ return String(a.version || a.updated_at || ''); }
+
+  function unreadCount(){
+    return read(NOTIFY_KEY,[]).filter(n=>!n.read).length;
+  }
+
+  function renderBadge(){
+    const n=unreadCount();
+    const badge=document.getElementById('paliaNotificationCount');
+    const dot=document.getElementById('paliaNotificationDot');
+
+    if(badge){
+      badge.textContent=n>99?'99+':String(n);
+      badge.classList.toggle('hidden',n===0);
+      badge.classList.toggle('flex',n>0);
+    }
+    if(dot) dot.classList.toggle('hidden',n===0);
+  }
+
+  function addNotification(type,app){
+    const list=read(NOTIFY_KEY,[]);
+    const id=appId(app);
+    const ver=version(app);
+    const unique=type+'_'+id+'_'+ver;
+
+    // Prevent duplicate notifications for the same app/version.
+    if(list.some(n=>n.unique===unique)) return;
+
+    list.unshift({
+      unique,
+      type,
+      appId:app.id || null,
+      name:app.name || 'App',
+      version:app.version || '',
+      icon:app.icon_url || app.icon || '',
+      createdAt:Date.now(),
+      read:false
+    });
+
+    write(NOTIFY_KEY,list.slice(0,100));
+    renderBadge();
+  }
+
+  function compareApps(apps){
+    const previous=read(SNAPSHOT_KEY,null);
+    const current={};
+
+    (apps||[]).forEach(app=>{
+      current[appId(app)]={
+        id:app.id || null,
+        name:app.name || 'App',
+        version:version(app),
+        icon_url:app.icon_url || app.icon || ''
+      };
+    });
+
+    // First visit: establish baseline, don't flood the user with all existing apps.
+    if(!previous){
+      write(SNAPSHOT_KEY,current);
+      return;
+    }
+
+    Object.keys(current).forEach(id=>{
+      const now=current[id];
+      const old=previous[id];
+
+      if(!old){
+        addNotification('new',now);
+      }else if(String(old.version)!==String(now.version)){
+        addNotification('update',now);
+      }
+    });
+
+    write(SNAPSHOT_KEY,current);
+    renderBadge();
+  }
+
+  function openNotifications(){
+    let panel=document.getElementById('paliaRealNotificationPanel');
+    if(panel){
+      panel.remove();
+      return;
+    }
+
+    const list=read(NOTIFY_KEY,[]);
+    panel=document.createElement('div');
+    panel.id='paliaRealNotificationPanel';
+    panel.className='fixed right-4 top-20 z-[99999] w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden';
+
+    let html=`
+      <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+        <div class="font-black text-gray-900">Notifications</div>
+        <button id="paliaMarkAllRead" class="text-xs font-bold text-green-600">Mark all read</button>
+      </div>`;
+
+    if(!list.length){
+      html+=`<div class="p-6 text-center text-sm text-gray-500">
+        <i class="fa-regular fa-bell text-2xl mb-2"></i>
+        <div>No notifications yet.</div>
+      </div>`;
+    }else{
+      html+=list.map((n,i)=>`
+        <button type="button" data-notification-index="${i}"
+          class="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-green-50 transition ${n.read?'':'bg-green-50/50'}">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
+              ${n.icon ? `<img src="${n.icon}" class="w-full h-full object-contain" alt="">` :
+                `<i class="fa-solid ${n.type==='update'?'fa-arrows-rotate':'fa-plus'} text-green-600"></i>`}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-bold text-sm text-gray-900 truncate">
+                ${n.type==='new'?'New App Added':'App Updated'}
+              </div>
+              <div class="text-xs text-gray-700 truncate">${n.name}</div>
+              ${n.version?`<div class="text-[10px] text-green-600 font-semibold mt-0.5">Version ${n.version}</div>`:''}
+            </div>
+            ${!n.read?'<span class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>':''}
+          </div>
+        </button>`).join('');
+    }
+
+    panel.innerHTML=html;
+    document.body.appendChild(panel);
+
+    panel.querySelectorAll('[data-notification-index]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const i=Number(btn.dataset.notificationIndex);
+        const notifications=read(NOTIFY_KEY,[]);
+        const n=notifications[i];
+        if(!n)return;
+
+        n.read=true;
+        write(NOTIFY_KEY,notifications);
+        renderBadge();
+
+        // Open the exact app detail page.
+        if(n.appId){
+          window.location.href='app.html?id='+encodeURIComponent(n.appId);
+        }else{
+          window.location.href='app.html';
+        }
+      });
+    });
+
+    const mark=panel.querySelector('#paliaMarkAllRead');
+    if(mark){
+      mark.addEventListener('click',()=>{
+        const notifications=read(NOTIFY_KEY,[]).map(n=>({...n,read:true}));
+        write(NOTIFY_KEY,notifications);
+        renderBadge();
+        panel.remove();
+      });
+    }
+  }
+
+  // Expose this so the existing bell button can call the same real notification panel.
+  window.paliaOpenNotifications=openNotifications;
+  window.paliaCompareAppNotifications=compareApps;
+
+  document.addEventListener('DOMContentLoaded',function(){
+    renderBadge();
+
+    const bell=document.getElementById('paliaNotificationBtn');
+    if(bell){
+      bell.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        openNotifications();
+      });
+    }
+
+    // Home page already fetches apps from Supabase into allAppsCache.
+    // Check after that data has normally been loaded.
+    const check=()=>{
+      if(Array.isArray(window.allAppsCache) && window.allAppsCache.length){
+        compareApps(window.allAppsCache);
+        return true;
+      }
+      return false;
+    };
+
+    let tries=0;
+    const timer=setInterval(()=>{
+      tries++;
+      if(check() || tries>=20) clearInterval(timer);
+    },1000);
+  });
+})();
+</script>
 </body>
 </html>

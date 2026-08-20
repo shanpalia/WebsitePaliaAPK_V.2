@@ -1,0 +1,8 @@
+Real browser notification system:
+- New app added to Supabase apps table -> notification.
+- Existing app version changed -> notification.
+- Unread count on bell.
+- Notification list shows app name, icon and version.
+- Clicking a notification marks it read and opens app.html?id=<app id>.
+- Existing apps are used as the initial baseline so the first load does not spam notifications.
+- Notifications persist in localStorage for the current browser.
