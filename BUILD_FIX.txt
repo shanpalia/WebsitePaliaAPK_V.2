@@ -1,0 +1,6 @@
+Fixed CodeMagic Step 7:
+- Removed obsolete `fileBytes` and `queryOk` grep checks left over from the
+  DownloadManager implementation.
+- Added checks for the new app-owned downloader (`downloadMode`, `PaliaAPK-HUB`).
+- Native downloader itself no longer references Android DownloadManager.
+- XML-safe manifest insertion remains unchanged.

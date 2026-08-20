@@ -55,10 +55,10 @@ workflows:
           grep -q '@CapacitorPlugin(name = "PaliaDownloader")' android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
           grep -q 'getProgress' android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
           grep -q 'expectedTotalBytes' android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
-          grep -q 'fileBytes' android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
-          grep -q 'queryOk' android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
           grep -q 'openInstaller' android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
           grep -q 'app_owned' android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
+          grep -q 'downloadMode' android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
+          grep -q 'PaliaAPK-HUB' android/app/src/main/java/com/shanpalia/paliaapkhub/PaliaDownloaderPlugin.java
           grep -q 'REQUEST_INSTALL_PACKAGES' android/app/src/main/AndroidManifest.xml
           echo "Native APK downloader configured: real progress + installer."
 
