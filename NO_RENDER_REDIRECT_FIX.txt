@@ -1,0 +1,8 @@
+This ZIP keeps the existing Supabase/search/updates project and adds:
+- The same supplied Android header artwork to the left of PaliaAPK HUB.
+- Native app-owned APK downloading for the Android build.
+- The Render URL is used only as the source URL; the WebView does NOT navigate to it.
+- A PaliaAPK HUB in-app download modal shows MB and percentage.
+- The APK is saved under the app's own external-files/PaliaAPK-HUB directory.
+- After completion Android's normal APK installer confirmation opens.
+- Website (non-native) fallback remains a normal download link.

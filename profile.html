@@ -273,11 +273,6 @@
         </section>
 
 
-        <a href="updates.html" class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-700 hover:bg-green-50 hover:text-green-700 transition">
-    <span class="flex items-center gap-3"><i class="fa-solid fa-arrows-rotate text-green-600"></i> App Updates</span>
-    <span id="profilePageUpdateBadge" class="hidden min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-black items-center justify-center"></span>
-</a>
-
         <!-- LOGOUT -->
         <div class="mt-5">
 
@@ -422,9 +417,7 @@
 
                     await auth.signOut();
 
-                    localStorage.removeItem("download_after_login");
-                    localStorage.removeItem("redirect_after_login");
-                    window.location.replace("index.html");
+                    window.location.href = "index.html";
 
                 }
                 catch (error) {

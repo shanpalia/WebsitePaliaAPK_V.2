@@ -62,6 +62,7 @@ html { scroll-behavior: smooth; }
   --topbar-h: 68px;
   --ease: cubic-bezier(.4,0,.2,1);
 }
+
 @media (prefers-reduced-motion: reduce){
   *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }
@@ -1140,7 +1141,7 @@ img{ max-width: 100%; display: block; }
      0. SUPABASE CLIENT (single instance)
      ========================================================== */
   var SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
-  var SUPABASE_ANON_KEY = 'sb_publishable_pXsTbFOseqm5uuA0hzqSzQ_UJxdvQi9';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
 
   var sb = (window.supabase && typeof window.supabase.createClient === 'function')
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -1154,10 +1155,8 @@ img{ max-width: 100%; display: block; }
      ========================================================== */
   var urlParams = new URLSearchParams(window.location.search);
   var appId = urlParams.get('id');
+  var originalVersion = null;
   var appLoaded = false;
-  var originalVersion = '';
-  var originalUpdateAvailable = false;
-  var originalPreviousVersion = null;
  var originalDownloads = 0;
 var loadedApkSizeLabel = null;
 
@@ -1694,11 +1693,9 @@ var telegramMessageId = null;
   var btnCancel = document.getElementById('btnCancel');
 
   function populateForm(data){
-    originalVersion = data.version || '';
-    originalUpdateAvailable = Boolean(data.update_available);
-    originalPreviousVersion = data.previous_version || null;
     document.getElementById('fName').value = data.name || '';
     document.getElementById('fVersion').value = data.version || '';
+    originalVersion = data.version || null;
     document.getElementById('fDeveloper').value = data.developer || '';
     document.getElementById('fPackage').value = data.package_name || '';
 
@@ -1953,11 +1950,9 @@ async function replaceTelegramApk(
       banner_url: finalUrls.banner,
       apk_url: finalUrls.apk,
       screenshots: finalUrls.screenshots,
-      downloads: originalDownloads,
-      telegram_message_id: telegramMessageId || null,
-      updated_at: new Date().toISOString(),
-      previous_version: currentFieldValue('fVersion') !== originalVersion ? originalVersion : originalPreviousVersion,
-      update_available: currentFieldValue('fVersion') !== originalVersion ? true : originalUpdateAvailable
+     downloads: originalDownloads,
+telegram_message_id: telegramMessageId || null,
+updated_at: new Date().toISOString()
     };
   }
 
@@ -2117,6 +2112,17 @@ if (newApkFile) {
                 finalApkSize
             );
 
+        // Mark a real version change as an available update.
+        const newVersion = String(appData.version || '').trim();
+        const oldVersion = String(originalVersion || '').trim();
+        if (newVersion && oldVersion && newVersion !== oldVersion) {
+            payload.previous_version = oldVersion;
+            payload.update_available = true;
+        } else if (!oldVersion) {
+            payload.previous_version = null;
+            payload.update_available = false;
+        }
+
 
         // ============================================
         // 3. TELEGRAM
@@ -2203,9 +2209,6 @@ if (newApkFile) {
         );
 
 
-        // The database trigger is the source of truth for version changes.
-        // It automatically stores the previous version, sets update_available=true,
-        // and creates a real app_notifications row when the version changes.
         const {
             data: updatedApp,
             error: updateError

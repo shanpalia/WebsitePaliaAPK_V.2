@@ -25,12 +25,47 @@
             }
         }
     </script>
-    <!-- Font Awesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase App & Auth Compat CDN -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+   <!-- Firebase App & Auth Compat CDN -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<!-- Capacitor runtime is loaded first; Firebase Authentication bridge comes after it. -->
+<script src="capacitor.js"></script>
+<script src="native-google-auth.js"></script>
     <style>
+        .ui-icon {
+            display: inline-flex;
+            width: 1.1em;
+            height: 1.1em;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            line-height: 1;
+            font-family: Arial, sans-serif;
+        }
+        .ui-arrow-left { font-size: 1.25rem; }
+        .google-glyph {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #4285f4;
+        }
+        .ui-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: ui-spin .7s linear infinite;
+        }
+        @keyframes ui-spin { to { transform: rotate(360deg); } }
+
         /* Smooth transition styles */
         .tab-content {
             transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
@@ -44,7 +79,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <a href="index.html" class="w-10 h-10 rounded-xl bg-mint-50 text-mint-600 flex items-center justify-center hover:bg-mint-100 transition" aria-label="Back to Home">
-                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                    <span class="ui-icon ui-arrow-left" aria-hidden="true">←</span>
                 </a>
                 <a href="index.html" class="flex items-center gap-2">
                     <div class="w-9 h-9 rounded-xl bg-mint-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-mint-500/20">P</div>
@@ -71,7 +106,7 @@
 
             <!-- TOAST NOTIFICATION CONTAINER -->
             <div id="toast" class="hidden mb-4 p-3 rounded-2xl text-xs font-medium flex items-center gap-2 transition-all duration-300">
-                <i id="toastIcon" class="fa-solid text-sm"></i>
+                <span id="toastIcon" class="ui-icon text-sm" aria-hidden="true"></span>
                 <span id="toastMsg"></span>
             </div>
 
@@ -87,7 +122,7 @@
 
             <!-- GOOGLE LOGIN BUTTON (SHARED) -->
             <button id="googleLoginBtn" type="button" class="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold py-3 px-4 rounded-2xl transition flex items-center justify-center gap-3 shadow-sm text-xs mb-6 group">
-                <i class="fa-brands fa-google text-red-500 text-sm group-hover:scale-110 transition-transform"></i> Continue with Google
+                <span class="google-glyph" aria-hidden="true">G</span> Continue with Google
             </button>
 
             <div class="flex items-center my-5">
@@ -104,7 +139,7 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
-                            <i class="fa-solid fa-envelope"></i>
+                            <span class="ui-icon">✉</span>
                         </span>
                       <input
     type="email"
@@ -114,7 +149,7 @@
     autocomplete="off"
     autocorrect="off"
     autocapitalize="none"
-    spellcheck="false"
+    spellcheck="false">
                     </div>
                 </div>
 
@@ -122,16 +157,16 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
-                            <i class="fa-solid fa-lock"></i>
+                            <span class="ui-icon">●</span>
                         </span>
                        <input
     type="password"
     id="loginPassword"
     name="login_password"
     required
-    autocomplete="new-password"
+    autocomplete="new-password">
                         <button type="button" onclick="togglePassword('loginPassword', 'loginEyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 text-xs focus:outline-none">
-                            <i id="loginEyeIcon" class="fa-solid fa-eye"></i>
+                            <span id="loginEyeIcon" class="ui-icon">◉</span>
                         </button>
                     </div>
                 </div>
@@ -146,7 +181,7 @@
 
                 <button type="submit" id="loginSubmitBtn" class="w-full bg-mint-600 hover:bg-mint-700 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-mint-600/20 text-xs flex items-center justify-center gap-2 mt-2">
                     <span>Login</span>
-                    <i class="fa-solid fa-arrow-right"></i>
+                    <span class="ui-icon">→</span>
                 </button>
             </form>
 
@@ -156,7 +191,7 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
-                            <i class="fa-solid fa-user"></i>
+                            <span class="ui-icon">●</span>
                         </span>
                         <input type="text" id="signupName" required class="w-full bg-gray-50/80 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-mint-500 focus:ring-2 focus:ring-mint-500/20 transition" placeholder="Shan Palia">
                     </div>
@@ -166,7 +201,7 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
-                            <i class="fa-solid fa-envelope"></i>
+                            <span class="ui-icon">✉</span>
                         </span>
                         <input type="email" id="signupEmail" required class="w-full bg-gray-50/80 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-mint-500 focus:ring-2 focus:ring-mint-500/20 transition" placeholder="name@example.com">
                     </div>
@@ -176,11 +211,11 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
-                            <i class="fa-solid fa-lock"></i>
+                            <span class="ui-icon">●</span>
                         </span>
                         <input type="password" id="signupPassword" required class="w-full bg-gray-50/80 border border-gray-200 rounded-xl pl-10 pr-10 py-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-mint-500 focus:ring-2 focus:ring-mint-500/20 transition" placeholder="••••••••">
                         <button type="button" onclick="togglePassword('signupPassword', 'signupEyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 text-xs focus:outline-none">
-                            <i id="signupEyeIcon" class="fa-solid fa-eye"></i>
+                            <span id="signupEyeIcon" class="ui-icon">◉</span>
                         </button>
                     </div>
                 </div>
@@ -189,18 +224,18 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Confirm Password</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 text-xs">
-                            <i class="fa-solid fa-lock"></i>
+                            <span class="ui-icon">●</span>
                         </span>
                         <input type="password" id="signupConfirmPassword" required class="w-full bg-gray-50/80 border border-gray-200 rounded-xl pl-10 pr-10 py-3 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-mint-500 focus:ring-2 focus:ring-mint-500/20 transition" placeholder="••••••••">
                         <button type="button" onclick="togglePassword('signupConfirmPassword', 'signupConfirmEyeIcon')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 text-xs focus:outline-none">
-                            <i id="signupConfirmEyeIcon" class="fa-solid fa-eye"></i>
+                            <span id="signupConfirmEyeIcon" class="ui-icon">◉</span>
                         </button>
                     </div>
                 </div>
 
                 <button type="submit" id="signupSubmitBtn" class="w-full bg-mint-600 hover:bg-mint-700 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-mint-600/20 text-xs flex items-center justify-center gap-2 mt-2">
                     <span>Create Account</span>
-                    <i class="fa-solid fa-user-plus"></i>
+                    <span class="ui-icon">+</span>
                 </button>
             </form>
 
@@ -239,7 +274,7 @@
 
 const SUPABASE_URL = "https://ralinnuegsbuvlhwpzln.supabase.co";
 
-const SUPABASE_ANON_KEY = "sb_publishable_pXsTbFOseqm5uuA0hzqSzQ_UJxdvQi9";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE";
 
 const supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
@@ -267,53 +302,9 @@ async function syncUserToSupabase(user) {
         console.log("Firebase user synced to Supabase.");
     }
 }
-// ===============================
-// LOGIN REDIRECT / DOWNLOAD REDIRECT
-// ===============================
-
-const urlParams = new URLSearchParams(window.location.search);
-
-// First priority: APK download saved before login
-let redirectTarget =
-    localStorage.getItem('download_after_login');
-
-// Second priority: URL redirect
-if (!redirectTarget) {
-    redirectTarget = urlParams.get('redirect');
-}
-
-// Third priority: normal slider/app redirect
-if (!redirectTarget) {
-    redirectTarget =
-        localStorage.getItem('redirect_after_login');
-}
-
-// Default destination
-if (!redirectTarget) {
-    redirectTarget = 'index.html';
-}
-
-// Clean old redirects
-localStorage.removeItem('download_after_login');
-localStorage.removeItem('redirect_after_login');
-
-// Decode redirect URL
-if (redirectTarget) {
-    try {
-        redirectTarget = decodeURIComponent(redirectTarget);
-    } catch (e) {
-        console.warn('Redirect decode failed:', e);
-    }
-}
-
-// Handle encoded redirect
-if (redirectTarget) {
-    try {
-        redirectTarget = decodeURIComponent(redirectTarget);
-    } catch (e) {
-        console.warn('Redirect decode failed:', e);
-    }
-}
+        // Parse URL Redirect parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        let redirectTarget = urlParams.get('redirect') || 'index.html';
         
         // Handle nested redirect query structures if any (e.g. download.html?id=XYZ)
         if (window.location.search.includes('redirect=')) {
@@ -332,6 +323,30 @@ if (redirectTarget) {
             auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
         }
 
+        // Safe redirect after authentication. Only allow local pages and preserve the full query.
+        function safeRedirect() {
+            const fallback = 'index.html';
+            let target = redirectTarget || fallback;
+
+            try {
+                target = decodeURIComponent(target);
+            } catch (_) {}
+
+            // Never allow external URLs or javascript/data schemes.
+            if (/^(https?:|javascript:|data:|\/\/)/i.test(target)) {
+                target = fallback;
+            }
+
+            // Keep redirects inside this app.
+            if (target.startsWith('/')) target = target.slice(1);
+            if (target.includes('\\')) target = fallback;
+
+            window.location.replace(target || fallback);
+        }
+
+        // Restore the page target before Firebase emits the initial auth state.
+        restoreGoogleRedirectTarget();
+
         // Auto-redirect if already logged in
         auth.onAuthStateChanged(async (user) => {
 
@@ -339,7 +354,7 @@ if (redirectTarget) {
 
         await syncUserToSupabase(user);
 
-        window.location.href = redirectTarget;
+        safeRedirect();
     }
 
 });
@@ -351,14 +366,17 @@ if (redirectTarget) {
             const toastIcon = document.getElementById('toastIcon');
 
             toastMsg.textContent = message;
+            toast.classList.remove('hidden');
             toast.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'border-red-200', 'bg-mint-50', 'text-mint-700', 'border-mint-200');
 
             if (type === 'success') {
                 toast.classList.add('bg-mint-50', 'text-mint-700', 'border', 'border-mint-200');
-                toastIcon.className = 'fa-solid fa-circle-check text-mint-600 text-sm';
+                toastIcon.className = 'ui-icon text-mint-600 text-sm';
+                toastIcon.textContent = '✓';
             } else {
                 toast.classList.add('bg-red-50', 'text-red-700', 'border', 'border-red-200');
-                toastIcon.className = 'fa-solid fa-triangle-exclamation text-red-600 text-sm';
+                toastIcon.className = 'ui-icon text-red-600 text-sm';
+                toastIcon.textContent = '!';
             }
         }
 
@@ -390,11 +408,31 @@ if (redirectTarget) {
             const icon = document.getElementById(iconId);
             if (input.type === 'password') {
                 input.type = 'text';
-                icon.className = 'fa-solid fa-eye-slash';
+                icon.className = 'ui-icon';
+                icon.textContent = '◉';
             } else {
                 input.type = 'password';
-                icon.className = 'fa-solid fa-eye';
+                icon.className = 'ui-icon';
+                icon.textContent = '◉';
             }
+        }
+
+        function friendlyAuthError(error) {
+            const code = error?.code || '';
+            const messages = {
+                'auth/invalid-credential': 'Email or password is incorrect.',
+                'auth/invalid-login-credentials': 'Email or password is incorrect.',
+                'auth/wrong-password': 'Email or password is incorrect.',
+                'auth/user-not-found': 'No account found with this email.',
+                'auth/email-already-in-use': 'An account already exists with this email.',
+                'auth/invalid-email': 'Please enter a valid email address.',
+                'auth/weak-password': 'Password must be at least 6 characters long.',
+                'auth/too-many-requests': 'Too many attempts. Please try again later.',
+                'auth/popup-closed-by-user': 'Google login was cancelled.',
+                'auth/network-request-failed': 'Network error. Check your internet connection.',
+                'auth/operation-not-allowed': 'This login method is not enabled in Firebase.'
+            };
+            return messages[code] || error?.message || 'Login failed. Please try again.';
         }
 
         // Email Login Handler
@@ -413,18 +451,18 @@ if (redirectTarget) {
             }
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
+            btn.innerHTML = '<span class="ui-spinner" aria-hidden="true"></span> Logging in...';
 
             try {
                 await auth.signInWithEmailAndPassword(email, password);
                 showToast('Login successful! Redirecting...', 'success');
                 setTimeout(() => {
-                    window.location.href = redirectTarget;
+                    safeRedirect();
                 }, 800);
             } catch (error) {
-                showToast(error.message);
+                showToast(friendlyAuthError(error));
                 btn.disabled = false;
-                btn.innerHTML = '<span>Login</span><i class="fa-solid fa-arrow-right"></i>';
+                btn.innerHTML = '<span>Login</span><span class="ui-icon">→</span>';
             }
         });
 
@@ -448,7 +486,7 @@ if (redirectTarget) {
             }
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating account...';
+            btn.innerHTML = '<span class="ui-spinner" aria-hidden="true"></span> Creating account...';
 
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
@@ -457,28 +495,16 @@ if (redirectTarget) {
                 }
                 showToast('Account created successfully! Redirecting...', 'success');
                 setTimeout(() => {
-                    window.location.href = redirectTarget;
+                    safeRedirect();
                 }, 800);
             } catch (error) {
-                showToast(error.message);
+                showToast(friendlyAuthError(error));
                 btn.disabled = false;
-                btn.innerHTML = '<span>Create Account</span><i class="fa-solid fa-user-plus"></i>';
+                btn.innerHTML = '<span>Create Account</span><span class="ui-icon">+</span>';
             }
         });
 
-        // Google Login Handler
-        document.getElementById('googleLoginBtn').addEventListener('click', async () => {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            try {
-                await auth.signInWithPopup(provider);
-                showToast('Google login successful! Redirecting...', 'success');
-                setTimeout(() => {
-                    window.location.href = redirectTarget;
-                }, 800);
-            } catch (error) {
-                showToast(error.message);
-            }
-        });
+
 
         // Forgot Password Handler
         async function handleForgotPassword() {
@@ -493,11 +519,83 @@ if (redirectTarget) {
                 await auth.sendPasswordResetEmail(email);
                 showToast('Password reset link sent to your email.', 'success');
             } catch (error) {
-                showToast(error.message);
+                showToast(friendlyAuthError(error));
             }
         }
-    </script>
-    window.addEventListener("pageshow", function () {
+  
+// ===============================
+// GOOGLE LOGIN - FIREBASE WEB REDIRECT
+// ===============================
+
+// Preserve the page the user was trying to open before leaving for Google.
+function saveGoogleRedirectTarget() {
+    try {
+        sessionStorage.setItem('palia_google_redirect', redirectTarget || 'index.html');
+    } catch (_) {}
+}
+
+function restoreGoogleRedirectTarget() {
+    try {
+        const saved = sessionStorage.getItem('palia_google_redirect');
+        if (saved) {
+            redirectTarget = saved;
+            sessionStorage.removeItem('palia_google_redirect');
+        }
+    } catch (_) {}
+}
+
+// Complete a Firebase Web redirect when Google sends the user back.
+(async function handleGoogleRedirectResult() {
+    try {
+        const result = await auth.getRedirectResult();
+        if (result && result.user) {
+            await syncUserToSupabase(result.user);
+            safeRedirect();
+        }
+    } catch (error) {
+        console.error('Google redirect login error:', error);
+        showToast(friendlyAuthError(error));
+    }
+})();
+
+document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('googleLoginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="ui-spinner" aria-hidden="true"></span> Opening Google...';
+
+    try {
+        const isAndroidApp = !!window.Capacitor &&
+            typeof window.Capacitor.getPlatform === 'function' &&
+            window.Capacitor.getPlatform() === 'android';
+
+        if (isAndroidApp && window.PaliaNativeGoogle) {
+            // Android: native Credential Manager account chooser; no browser redirect.
+            const nativeResult = await window.PaliaNativeGoogle.signIn();
+            const credential = firebase.auth.GoogleAuthProvider.credential(nativeResult.idToken);
+            const result = await auth.signInWithCredential(credential);
+            await syncUserToSupabase(result.user);
+            showToast('Google login successful! Redirecting...', 'success');
+            setTimeout(() => safeRedirect(), 500);
+            return;
+        }
+
+        // Website/PWA fallback: Firebase Web redirect.
+        saveGoogleRedirectTarget();
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        await auth.signInWithRedirect(provider);
+    } catch (error) {
+        console.error('Google Login Error:', error);
+        showToast(friendlyAuthError(error));
+        btn.disabled = false;
+        btn.innerHTML = '<span class="google-glyph" aria-hidden="true">G</span> Continue with Google';
+    }
+});
+
+// ===============================
+// CLEAR LOGIN FIELDS
+// ===============================
+window.addEventListener("pageshow", function () {
 
     const email = document.getElementById("loginEmail");
     const password = document.getElementById("loginPassword");
@@ -506,5 +604,7 @@ if (redirectTarget) {
     if (password) password.value = "";
 
 });
+    </script>
+   
 </body>
 </html>

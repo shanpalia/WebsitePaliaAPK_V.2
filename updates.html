@@ -3,127 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>App Updates - PaliaAPK HUB</title>
+<title>App Updates | PaliaAPK HUB</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-<style>
-body{font-family:Arial,sans-serif;background:#f8fafc;color:#111827}
-.gradient{background:linear-gradient(135deg,#16a34a,#22c55e)}
-.card{box-shadow:0 8px 30px rgba(15,23,42,.07)}
-</style>
+<style>body{font-family:Inter,system-ui,sans-serif;background:#fff;color:#0f172a}.card{border:1px solid #e5e7eb;border-radius:20px;background:#fff;transition:.2s}.card:hover{border-color:#bbf7d0;box-shadow:0 12px 30px rgba(22,163,74,.08)}.mint{color:#16a34a}</style>
 </head>
-<body class="min-h-screen">
-<header class="bg-white border-b border-gray-100 sticky top-0 z-20">
-  <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+<body class="min-h-screen bg-white">
+<header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200">
+  <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
     <a href="index.html" class="flex items-center gap-3">
-      <div class="w-14 h-14 rounded-2xl gradient text-white flex items-center justify-center text-2xl font-black">P</div>
-      <div>
-        <div class="text-2xl font-black text-slate-900">PaliaAPK <span class="text-green-600">HUB</span></div>
-        <div class="text-xs font-bold tracking-widest text-gray-400">APP UPDATES</div>
-      </div>
+      <div class="w-10 h-10 rounded-xl bg-green-600 text-white flex items-center justify-center font-black">P</div>
+      <div><div class="font-black">PaliaAPK <span class="mint">HUB</span></div><div class="text-[10px] uppercase tracking-wider text-gray-400 font-bold">App Updates</div></div>
     </a>
-    <a href="index.html" class="px-5 py-3 rounded-2xl bg-gray-100 font-bold text-gray-800 hover:bg-green-50 hover:text-green-700">
-      <i class="fa-solid fa-house mr-2"></i> Store
-    </a>
+    <a href="index.html" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-green-50 text-sm font-bold"><i class="fa-solid fa-house mr-1"></i> Store</a>
   </div>
 </header>
-
-<main class="max-w-5xl mx-auto px-4 py-8">
-  <div class="flex items-center justify-between gap-4 mb-7">
-    <div>
-      <h1 class="text-4xl font-black">Available Updates</h1>
-      <p class="text-gray-500 mt-2">Apps with a newer version available.</p>
-    </div>
-    <button id="refreshBtn" class="gradient text-white px-5 py-4 rounded-2xl font-bold shadow-lg">
-      <i class="fa-solid fa-rotate mr-2"></i> Refresh
-    </button>
+<main class="max-w-6xl mx-auto px-4 py-8">
+  <div class="flex items-end justify-between gap-4 mb-6">
+    <div><h1 class="text-2xl sm:text-3xl font-black">Available Updates</h1><p class="text-sm text-gray-500 mt-1">Apps that have a newer version available.</p></div>
+    <button id="refreshBtn" class="px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-bold"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button>
   </div>
-
-  <div id="status" class="text-center py-12 text-gray-500">Loading updates...</div>
-  <div id="updatesList" class="grid gap-4"></div>
+  <div id="status" class="text-sm text-gray-500 py-10 text-center">Loading updates...</div>
+  <div id="updatesGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"></div>
 </main>
-
 <script>
-const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_pXsTbFOseqm5uuA0hzqSzQ_UJxdvQi9';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-function esc(value){
-  return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
+const SUPABASE_URL='https://ralinnuegsbuvlhwpzln.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwiaWF0IjoxNzgwMjk1NjQyLCJleHAiOjIwOTU4NzE2NDJ9.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const grid=document.getElementById('updatesGrid'), status=document.getElementById('status');
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 async function loadUpdates(){
-  const status = document.getElementById('status');
-  const list = document.getElementById('updatesList');
-  status.className = 'text-center py-12 text-gray-500';
-  status.textContent = 'Loading updates...';
-  list.innerHTML = '';
-
-  try {
-    // Read the real apps table. No hard-coded/fake update list.
-    const { data, error } = await supabaseClient
-      .from('apps')
-      .select('*');
-
-    if (error) throw error;
-
-    const updates = (data || []).filter(app =>
-      app.update_available === true ||
-      (app.previous_version && app.version &&
-       String(app.previous_version) !== String(app.version))
-    ).sort((a,b) => {
-      const ad = new Date(a.updated_at || a.created_at || 0).getTime();
-      const bd = new Date(b.updated_at || b.created_at || 0).getTime();
-      return bd - ad;
-    });
-
-    if (!updates.length) {
-      status.className = 'text-center py-16 text-gray-500';
-      status.innerHTML = '<i class="fa-solid fa-circle-check text-green-500 text-4xl mb-4"></i><div class="font-bold text-lg">You are up to date</div><div class="text-sm mt-1">No app updates are currently available.</div>';
-      return;
-    }
-
-    status.className = 'mb-4 text-sm font-bold text-gray-500';
-    status.textContent = updates.length + (updates.length === 1 ? ' update available' : ' updates available');
-
-    list.innerHTML = updates.map(app => {
-      const oldV = app.previous_version || '—';
-      const newV = app.version || '—';
-      const date = app.updated_at || app.created_at;
-      const dateText = date ? new Date(date).toLocaleDateString() : '';
-      const icon = app.icon_url || 'assets/icon.png';
-
-      return `
-        <article class="card bg-white border border-gray-100 rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:items-center">
-          <img src="${esc(icon)}" onerror="this.src='assets/icon.png'" class="w-20 h-20 rounded-2xl object-cover border border-gray-100" alt="">
-          <div class="flex-1 min-w-0">
-            <div class="flex flex-wrap items-center gap-2">
-              <h2 class="text-xl font-black truncate">${esc(app.name || 'App')}</h2>
-              <span class="px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-xs font-black">UPDATE AVAILABLE</span>
-            </div>
-            <div class="mt-2 text-sm text-gray-500">
-              <span class="font-bold text-gray-700">v${esc(oldV)}</span>
-              <i class="fa-solid fa-arrow-right mx-2 text-green-500"></i>
-              <span class="font-black text-green-700">v${esc(newV)}</span>
-              ${dateText ? `<span class="ml-3">Updated ${esc(dateText)}</span>` : ''}
-            </div>
-            ${app.category ? `<div class="mt-2 text-xs font-bold text-gray-400">${esc(app.category)}</div>` : ''}
-          </div>
-          <a href="app.html?id=${encodeURIComponent(app.id)}" class="shrink-0 text-center gradient text-white px-6 py-3 rounded-2xl font-black">
-            <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Update
-          </a>
-        </article>`;
-    }).join('');
-  } catch (error) {
-    console.error('Updates load error:', error);
-    status.className = 'text-center py-12 text-red-600';
-    status.innerHTML = '<div class="font-black text-lg">Unable to load updates.</div><div class="text-sm mt-2">' + esc(error.message || 'Supabase error') + '</div><button onclick="loadUpdates()" class="mt-4 px-5 py-3 rounded-xl bg-green-600 text-white font-bold">Try Again</button>';
-  }
+ status.textContent='Loading updates...'; grid.innerHTML='';
+ const {data,error}=await sb.from('apps').select('id,name,developer,icon_url,version,previous_version,update_available,updated_at').eq('update_available',true).order('updated_at',{ascending:false});
+ if(error){
+   console.error('Updates query failed:', error);
+   status.innerHTML='<span class="text-red-600 font-bold">Unable to load updates.</span><br><span class="text-xs">Supabase error: '+esc(error.message||'Unknown error')+'</span>';
+   return;
+ }
+ // Only show genuine table-marked updates. Never create a fake update list.
+ const updates=(data||[]).filter(app=>app.update_available===true);
+ if(!updates.length){status.textContent='No updates available right now.';return;}
+ status.textContent=`${updates.length} app${updates.length===1?'':'s'} with updates`;
+ grid.innerHTML=updates.map(app=>`
+ <article class="card p-4 flex flex-col relative overflow-hidden">
+   <div class="absolute top-3 right-3 px-2 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-black border border-green-100">UPDATE AVAILABLE</div>
+   <div class="flex items-center gap-3 pr-20">
+     <img src="${esc(app.icon_url||'')}" class="w-14 h-14 rounded-xl object-contain bg-gray-50 p-1" alt="${esc(app.name)}">
+     <div class="min-w-0"><h2 class="font-black text-sm truncate">${esc(app.name)}</h2><p class="text-xs text-gray-500 truncate">${esc(app.developer||'ShanPalia')}</p></div>
+   </div>
+   <div class="mt-4 rounded-xl bg-gray-50 border border-gray-100 p-3">
+     <div class="text-[10px] uppercase tracking-wider font-black text-gray-400 mb-2">Version update</div>
+     <div class="flex items-center justify-between gap-2 text-xs font-black">
+       <span class="px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-500">v${esc(app.previous_version||'—')}</span>
+       <i class="fa-solid fa-arrow-right text-green-600"></i>
+       <span class="px-2.5 py-1.5 rounded-lg bg-green-50 border border-green-100 text-green-700">v${esc(app.version||'—')}</span>
+     </div>
+   </div>
+   ${app.updated_at ? `<p class="mt-2 text-[10px] text-gray-400"><i class="fa-regular fa-clock mr-1"></i>Updated ${esc(new Date(app.updated_at).toLocaleDateString())}</p>` : ''}
+   <a href="app.html?id=${encodeURIComponent(app.id)}" class="mt-4 w-full text-center rounded-xl bg-green-600 hover:bg-green-700 text-white py-2.5 text-xs font-black"><i class="fa-solid fa-arrow-up mr-1"></i> Update Now</a>
+ </article>`).join('');
 }
-
-document.getElementById('refreshBtn').addEventListener('click', loadUpdates);
+document.getElementById('refreshBtn').addEventListener('click',loadUpdates);
 loadUpdates();
 </script>
-</body>
-</html>
+</body></html>
