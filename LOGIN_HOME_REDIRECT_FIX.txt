@@ -1,0 +1,6 @@
+Fixed login return navigation:
+- safeRedirect now validates local app targets.
+- Capacitor uses window.location.assign() with an absolute bundled-page URL.
+- Invalid/missing redirect always falls back to index.html.
+- Google native login redirects after Firebase credential sign-in.
+- Email login/signup redirects after Firebase confirms currentUser.

@@ -323,7 +323,9 @@ async function syncUserToSupabase(user) {
             auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
         }
 
-        // Safe redirect after authentication. Only allow local pages and preserve the full query.
+        // Safe, reliable redirect after authentication.
+        // IMPORTANT: use location.href instead of relative replace() because
+        // Capacitor WebView can otherwise retain the user.html document.
         function safeRedirect() {
             const fallback = 'index.html';
             let target = redirectTarget || fallback;
@@ -332,16 +334,25 @@ async function syncUserToSupabase(user) {
                 target = decodeURIComponent(target);
             } catch (_) {}
 
-            // Never allow external URLs or javascript/data schemes.
-            if (/^(https?:|javascript:|data:|\/\/)/i.test(target)) {
+            target = String(target || fallback).trim();
+
+            // Only allow local app pages.
+            if (/^(https?:|javascript:|data:|\/\/)/i.test(target) ||
+                target.includes('\\')) {
                 target = fallback;
             }
 
-            // Keep redirects inside this app.
+            // Strip an accidental leading slash so Capacitor loads the bundled page.
             if (target.startsWith('/')) target = target.slice(1);
-            if (target.includes('\\')) target = fallback;
 
-            window.location.replace(target || fallback);
+            const allowed = /^(index\.html|app\.html|download\.html|downloads\.html|updates\.html|profile\.html|settings\.html|favorites\.html|dashboard\.html)(\?.*)?$/i;
+            if (!allowed.test(target)) {
+                target = fallback;
+            }
+
+            // Force a fresh navigation to the bundled homepage/app page.
+            const destination = new URL(target, window.location.href).href;
+            window.location.assign(destination);
         }
 
         // Restore the page target before Firebase emits the initial auth state.
@@ -457,8 +468,8 @@ async function syncUserToSupabase(user) {
                 await auth.signInWithEmailAndPassword(email, password);
                 showToast('Login successful! Redirecting...', 'success');
                 setTimeout(() => {
-                    safeRedirect();
-                }, 800);
+                    if (auth.currentUser) safeRedirect();
+                }, 500);
             } catch (error) {
                 showToast(friendlyAuthError(error));
                 btn.disabled = false;
@@ -495,8 +506,8 @@ async function syncUserToSupabase(user) {
                 }
                 showToast('Account created successfully! Redirecting...', 'success');
                 setTimeout(() => {
-                    safeRedirect();
-                }, 800);
+                    if (auth.currentUser) safeRedirect();
+                }, 500);
             } catch (error) {
                 showToast(friendlyAuthError(error));
                 btn.disabled = false;
@@ -575,7 +586,7 @@ document.getElementById('googleLoginBtn').addEventListener('click', async () => 
             const result = await auth.signInWithCredential(credential);
             await syncUserToSupabase(result.user);
             showToast('Google login successful! Redirecting...', 'success');
-            setTimeout(() => safeRedirect(), 500);
+            setTimeout(() => safeRedirect(), 250);
             return;
         }
 
