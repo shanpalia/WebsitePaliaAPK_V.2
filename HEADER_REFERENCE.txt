@@ -1,0 +1,5 @@
+Header updated to match the supplied screenshot:
+- compact 40x40 notification bell
+- compact 40x40 moon/dark-mode button
+- green Login button with user icon and Login text
+- rounded light-gray controls and compact spacing

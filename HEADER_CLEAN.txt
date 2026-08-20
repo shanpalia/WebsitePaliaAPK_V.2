@@ -1,0 +1,3 @@
+Header intentionally kept simple:
+Bell + Moon + Login only.
+No Updates button, no red badge, no yellow bell/moon styling.
