@@ -1,0 +1,9 @@
+PaliaAPK HUB notification feature:
+- New app added to the Supabase apps table -> notification appears.
+- Existing app updated (updated_at/version change) -> update notification appears.
+- Bell shows an unread red dot.
+- Bell opens an in-app notification panel.
+- Notifications are stored locally so they remain after refresh.
+- Polling checks every 30 seconds while the page is open.
+- Bell uses amber styling; dark-mode switch uses indigo styling.
+- No Updates header button is added.
