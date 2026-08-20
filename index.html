@@ -328,6 +328,11 @@
                             <a href="favorites.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
                                 <i class="fa-solid fa-heart text-mint-600"></i> Favorites
                             </a>
+                            <a href="profile.html#availableUpdates" id="headerUpdatesLink" class="flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <span class="flex items-center gap-2.5"><i class="fa-solid fa-rotate text-mint-600"></i> App Updates</span>
+                                <span id="headerUpdateCount" class="hidden min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-black items-center justify-center">0</span>
+                            </a>
+
                             <a href="settings.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
                                 <i class="fa-solid fa-gear text-mint-600"></i> Settings
                             </a>
@@ -1571,5 +1576,39 @@ window.recordPaliaInstalledVersion = function(app) {
     }
 };
 </script>
+
+<script id="headerUpdatesCounter">
+document.addEventListener('DOMContentLoaded', async function () {
+  try {
+    const countEl = document.getElementById('headerUpdateCount');
+    if (!countEl) return;
+
+    const client = window.supabaseClient || window._supabaseClient ||
+      (window.supabase && typeof window.supabase.from === 'function' ? window.supabase : null);
+    if (!client) return;
+
+    const { data, error } = await client.from('apps').select('id,version,updated_at');
+    if (error) return;
+
+    const installed = JSON.parse(localStorage.getItem('palia_installed_versions') || '{}');
+    const snapshot = JSON.parse(localStorage.getItem('palia_profile_versions') || '{}');
+
+    let count = 0;
+    (data || []).forEach(app => {
+      const id = String(app.id);
+      const current = String(app.version || app.updated_at || '');
+      if ((installed[id] && installed[id] !== current) ||
+          (snapshot[id] && snapshot[id] !== current)) count++;
+    });
+
+    countEl.textContent = count > 99 ? '99+' : String(count);
+    countEl.classList.toggle('hidden', count === 0);
+    countEl.classList.toggle('flex', count > 0);
+  } catch (e) {
+    console.warn('Header update counter:', e);
+  }
+});
+</script>
+
 </body>
 </html>
