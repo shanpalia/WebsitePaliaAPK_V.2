@@ -62,7 +62,6 @@ html { scroll-behavior: smooth; }
   --topbar-h: 68px;
   --ease: cubic-bezier(.4,0,.2,1);
 }
-
 @media (prefers-reduced-motion: reduce){
   *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }
@@ -1155,7 +1154,6 @@ img{ max-width: 100%; display: block; }
      ========================================================== */
   var urlParams = new URLSearchParams(window.location.search);
   var appId = urlParams.get('id');
-  var originalVersion = null;
   var appLoaded = false;
  var originalDownloads = 0;
 var loadedApkSizeLabel = null;
@@ -1695,7 +1693,6 @@ var telegramMessageId = null;
   function populateForm(data){
     document.getElementById('fName').value = data.name || '';
     document.getElementById('fVersion').value = data.version || '';
-    originalVersion = data.version || null;
     document.getElementById('fDeveloper').value = data.developer || '';
     document.getElementById('fPackage').value = data.package_name || '';
 
@@ -2111,17 +2108,6 @@ if (newApkFile) {
                 finalUrls,
                 finalApkSize
             );
-
-        // Mark a real version change as an available update.
-        const newVersion = String(appData.version || '').trim();
-        const oldVersion = String(originalVersion || '').trim();
-        if (newVersion && oldVersion && newVersion !== oldVersion) {
-            payload.previous_version = oldVersion;
-            payload.update_available = true;
-        } else if (!oldVersion) {
-            payload.previous_version = null;
-            payload.update_available = false;
-        }
 
 
         // ============================================

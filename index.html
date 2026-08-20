@@ -172,21 +172,84 @@
             }
         }
     </style>
-<link rel="stylesheet" href="palia-mobile-app.css">
-<style id="paliaNotificationPanelStyle">
-#paliaNotificationPanel{max-height:70vh;overflow-y:auto}
-</style></head>
+</head>
 <body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
+<!-- PaliaAPK HUB Mobile App Install Prompt -->
+<div id="installAppPrompt"
+     class="hidden fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm items-center justify-center p-4">
 
+    <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
+
+        <div class="p-6 text-center">
+
+            <!-- App Icon -->
+            <div class="mx-auto w-20 h-20 rounded-2xl bg-mint-50 border border-mint-100 p-2 flex items-center justify-center shadow-sm">
+                <img
+                    src="assets/icon.png"
+                    alt="PaliaAPK HUB"
+                    class="w-full h-full object-contain rounded-xl"
+                    onerror="this.style.display='none';"
+                >
+            </div>
+
+            <h2 class="text-xl font-black text-gray-900 mt-4">
+                Get PaliaAPK HUB App
+            </h2>
+
+            <p class="text-sm text-gray-500 mt-2 leading-relaxed">
+                Get a faster and better experience with the PaliaAPK HUB Android app.
+            </p>
+
+            <div class="mt-5 space-y-2 text-left">
+
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <div class="w-8 h-8 rounded-lg bg-mint-50 text-mint-600 flex items-center justify-center">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <span>Fast access to your apps</span>
+                </div>
+
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <div class="w-8 h-8 rounded-lg bg-mint-50 text-mint-600 flex items-center justify-center">
+                        <i class="fa-solid fa-download"></i>
+                    </div>
+                    <span>Easy APK downloads</span>
+                </div>
+
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <div class="w-8 h-8 rounded-lg bg-mint-50 text-mint-600 flex items-center justify-center">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <span>Get update notifications</span>
+                </div>
+
+            </div>
+
+            <button
+                id="installAppBtn"
+                class="w-full mt-6 bg-mint-600 hover:bg-mint-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-mint-600/20">
+                <i class="fa-solid fa-mobile-screen-button mr-2"></i>
+                Install PaliaAPK HUB
+            </button>
+
+            <button
+                id="installLaterBtn"
+                class="w-full mt-2 py-3 text-sm font-semibold text-gray-500 hover:text-gray-800 transition">
+                Continue in Browser
+            </button>
+
+        </div>
+    </div>
+</div>
     <!-- Header & Navigation -->
     <nav class="glass sticky top-0 z-50 border-b border-gray-200/80 py-3 transition-all duration-300">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
             
             <!-- Logo Brand with Hidden Admin Trigger (5 clicks in 2 seconds) -->
             <div id="adminTriggerLogo" class="flex items-center gap-3 group focus:outline-none cursor-pointer" role="button" aria-label="PaliaAPK HUB Home">
-                <div class="w-[52px] h-[52px] rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-lg shadow-mint-600/10 overflow-hidden">
-<img src="assets/header-android-12-visible.png" alt="Android" class="w-full h-full object-contain" />
-</div>
+                <div class="gradient-bg w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg shadow-mint-600/20 group-hover:scale-105 transition-transform">
+                    <span class="text-white font-black text-xl">P</span>
+                </div>
                 <div>
                     <h1 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
                         PaliaAPK <span class="text-mint-600">HUB</span>
@@ -204,28 +267,52 @@
                 </div>
             </div>
 
-            <!-- Right Actions: Search + Notifications + Dark Mode + Profile/Login -->
+            <!-- Right Actions & Controls: Notifications, Dark Mode, Profile/Login -->
             <div class="flex items-center gap-3">
-<button id="paliaNotificationBtn" type="button" aria-label="Notifications"
-                        class="relative w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-100 transition flex items-center justify-center border border-amber-200"
-                        title="Notifications">
-                    <i class="fa-solid fa-bell text-sm"></i>
-                    <span id="paliaNotificationCount" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white"></span>
-                    <span id="paliaNotificationDot" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-[18px] text-center ring-2 ring-white">0</span>
-                </button>
+                
+                <!-- Notification Dropdown -->
+                <div class="relative">
+                    <button id="notificationToggleBtn" class="relative w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                        <i class="fa-solid fa-bell text-sm"></i>
+                        <span id="notificationBadge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow">2</span>
+                    </button>
+                    <div id="notificationDropdown" class="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-3">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 dark:border-gray-700">
+                            <h4 class="font-bold text-xs text-gray-900 dark:text-white uppercase tracking-wider">Notifications</h4>
+                            <span class="text-[10px] text-mint-600 dark:text-mint-400 font-bold cursor-pointer hover:underline" onclick="markNotificationsRead()">Mark read</span>
+                        </div>
+                        <div class="space-y-2 text-xs" id="notificationList">
+                            <div class="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 flex items-start gap-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-shield-check text-xs"></i></div>
+                                <div>
+                                    <p class="font-bold text-gray-800 dark:text-gray-200">Security Update</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">All APK files scanned with zero malware guarantee.</p>
+                                </div>
+                            </div>
+                            <div class="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 flex items-start gap-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-rocket text-xs"></i></div>
+                                <div>
+                                    <p class="font-bold text-gray-800 dark:text-gray-200">New Apps Added</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Nova AI and PaliaCraft Launcher updated.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <button id="paliaDarkModeBtn" type="button" aria-label="Toggle dark mode"
-                        class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition flex items-center justify-center border border-indigo-200"
-                        title="Dark mode">
-                    <i id="paliaThemeIcon" class="fa-solid fa-moon text-sm"></i>
+                <!-- Dark Mode Toggle -->
+                <button id="darkModeToggle" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
                 </button>
-
+                
                 <!-- Authentication & Profile Avatar Dropdown -->
                 <div class="relative" id="userArea">
                     <button id="loginBtn" class="px-4 h-10 rounded-xl bg-mint-600 hover:bg-mint-700 text-white font-bold text-xs transition shadow-md shadow-mint-600/20 flex items-center gap-2">
                         <i class="fa-solid fa-user"></i> Login
                     </button>
-<div id="profileBox" class="hidden relative">
+                    
+                    <div id="profileBox" class="hidden relative">
                         <div id="profileAvatarBtn" class="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
                             <div id="profileAvatar" class="w-9 h-9 rounded-lg gradient-bg text-white flex items-center justify-center font-bold text-xs shadow">SP</div>
                         </div>
@@ -237,10 +324,6 @@
 </a>
                             <a href="downloads.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
                                 <i class="fa-solid fa-download text-mint-600"></i> Downloads
-                            </a>
-                            <a href="updates.html" class="flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
-                                <span class="flex items-center gap-2.5"><i class="fa-solid fa-arrows-rotate text-mint-600"></i> Updates</span>
-                                <span id="profileUpdatesCount" class="hidden min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] items-center justify-center">0</span>
                             </a>
                             <a href="favorites.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
                                 <i class="fa-solid fa-heart text-mint-600"></i> Favorites
@@ -259,26 +342,6 @@
             </div>
         </div>
     </nav>
-
-    <!-- Compact App Search -->
-    <div id="appSearchPanel" class="hidden fixed inset-x-0 top-[73px] z-[60] px-4 sm:px-6">
-        <div class="max-w-2xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-2xl p-3">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
-                <input id="compactSearchInput" type="search" autocomplete="off"
-                       oninput="window.runStoreSearch && window.runStoreSearch(this.value)"
-                       onkeydown="if(event.key==='Enter'){event.preventDefault();window.openFirstStoreSearchResult&&window.openFirstStoreSearchResult();}"
-                       placeholder="Search apps, games, tools..."
-                       class="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400">
-                <button id="closeSearchPanel" type="button"
-                        class="w-8 h-8 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200"
-                        aria-label="Close search">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div id="compactSearchResults" class="mt-2 max-h-80 overflow-y-auto"></div>
-        </div>
-    </div>
 
     <!-- Main Content Area -->
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow">
@@ -359,25 +422,6 @@
             </div>
         </section>
 
-        <!-- Updates shortcut -->
-        <section id="updatesShortcutSection" class="mb-8">
-            <a href="updates.html" class="app-card flex items-center justify-between p-4 sm:p-5 hover:border-mint-300">
-                <div class="flex items-center gap-3">
-                    <div class="w-11 h-11 rounded-xl bg-mint-50 text-mint-600 flex items-center justify-center">
-                        <i class="fa-solid fa-arrows-rotate"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-white">App Updates</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">See apps with a newer version available.</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span id="updatesShortcutCount" class="hidden px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-[11px] font-black">0 updates</span>
-                    <i class="fa-solid fa-chevron-right text-gray-400"></i>
-                </div>
-            </a>
-        </section>
-
         <!-- Apps Listing Section (Filtered by Category / Search) -->
         <section class="mb-12">
             <div class="flex items-center justify-between mb-6">
@@ -436,12 +480,6 @@
 </li>
 
 <li>
-    <a href="updates.html" class="hover:text-mint-600 transition">
-        Updates
-    </a>
-</li>
-
-<li>
     <a href="dmca.html" class="hover:text-mint-600 transition">
         DMCA Policy
     </a>
@@ -489,7 +527,7 @@
     <script type="module">
         // Firebase Config
         const firebaseConfig = {
-            apiKey: "AIzaSyBBF8ww2eehUyHINEHhQGOOLzED44Kvy0k",
+            apiKey: "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",
             authDomain: "shanpalia-apk-hub.firebaseapp.com",
             projectId: "shanpalia-apk-hub",
             storageBucket: "shanpalia-apk-hub.firebasestorage.app",
@@ -498,168 +536,12 @@
         };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-// ==========================================
-// PaliaAPK HUB - PUSH NOTIFICATION SETUP
-// ==========================================
 
-async function setupPushNotifications() {
-
-    // Only run inside Capacitor Android app
-    if (!window.Capacitor) {
-        return;
-    }
-
-    const isNative =
-        typeof window.Capacitor.isNativePlatform === "function"
-            ? window.Capacitor.isNativePlatform()
-            : false;
-
-    if (!isNative) {
-        return;
-    }
-
-    try {
-
-        const PushNotifications =
-            window.Capacitor?.Plugins?.PushNotifications;
-
-        if (!PushNotifications) {
-            console.warn("Push Notifications plugin not available.");
-            return;
-        }
-
-        // Request notification permission
-        let permission =
-            await PushNotifications.checkPermissions();
-
-        if (permission.receive !== "granted") {
-            permission =
-                await PushNotifications.requestPermissions();
-        }
-
-        if (permission.receive !== "granted") {
-            console.warn("Notification permission denied.");
-            return;
-        }
-
-        // Receive FCM token
-        await PushNotifications.addListener(
-            "registration",
-            async (token) => {
-
-                console.log(
-                    "PaliaAPK HUB FCM token:",
-                    token.value
-                );
-
-                await savePushToken(token.value);
-            }
-        );
-
-        // Notification received while app is open
-        await PushNotifications.addListener(
-            "pushNotificationReceived",
-            (notification) => {
-
-                console.log(
-                    "PaliaAPK HUB notification:",
-                    notification
-                );
-            }
-        );
-
-        // User taps notification
-        await PushNotifications.addListener(
-            "pushNotificationActionPerformed",
-            (action) => {
-
-                console.log(
-                    "Notification opened:",
-                    action
-                );
-
-                const data =
-                    action.notification?.data || {};
-
-                if (data.app_id) {
-                    window.location.href =
-                        `app.html?id=${data.app_id}`;
-                }
-            }
-        );
-
-        // Register device with FCM
-        await PushNotifications.register();
-
-        console.log(
-            "PaliaAPK HUB push notifications registered."
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Push notification setup failed:",
-            error
-        );
-    }
-}
-
-
-// ==========================================
-// SAVE FCM TOKEN
-// ==========================================
-
-async function savePushToken(token) {
-
-    if (!token) return;
-
-    try {
-
-        const user =
-            typeof auth !== "undefined"
-                ? auth.currentUser
-                : null;
-
-        const { error } =
-            await supabaseClient
-                .from("push_tokens")
-                .upsert(
-                    {
-                        token: token,
-                        user_id: user ? user.uid : null,
-                        platform: "android",
-                        updated_at: new Date().toISOString()
-                    },
-                    {
-                        onConflict: "token"
-                    }
-                );
-
-        if (error) {
-            console.error(
-                "Push token save error:",
-                error
-            );
-            return;
-        }
-
-        console.log(
-            "PaliaAPK HUB push token saved."
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Push token error:",
-            error
-        );
-    }
-}
         // Supabase Client
         const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
         const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-        
+
         window.allAppsCache = [];
         window.currentCategory = 'All';
         window.currentSearchQuery = '';
@@ -776,94 +658,19 @@ recordSiteVisit();
             }
         });
 
-        // Compact app search
-        const mobileSearchToggle = document.getElementById('mobileSearchToggle');
-        const appSearchPanel = document.getElementById('appSearchPanel');
-        const compactSearchInput = document.getElementById('compactSearchInput');
-        const compactSearchResults = document.getElementById('compactSearchResults');
-        const closeSearchPanel = document.getElementById('closeSearchPanel');
+        // Notifications Dropdown Toggle & Marking Read
+        const notificationToggleBtn = document.getElementById('notificationToggleBtn');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationBadge = document.getElementById('notificationBadge');
 
-        function closeCompactSearch() {
-            appSearchPanel?.classList.add('hidden');
-            if (compactSearchInput) compactSearchInput.value = '';
-            if (compactSearchResults) compactSearchResults.innerHTML = '';
-        }
+        notificationToggleBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notificationDropdown?.classList.toggle('hidden');
+        });
 
-        window.storeSearchMatches = [];
-        window.runStoreSearch = function(query) {
-            if (!compactSearchResults) return;
-            const q = String(query || '').trim().toLowerCase();
-            const apps = Array.isArray(window.allAppsCache) ? window.allAppsCache : [];
-
-            if (!q) {
-                window.storeSearchMatches = [];
-                compactSearchResults.innerHTML =
-                    '<p class="text-xs text-gray-400 text-center py-4">Type an app name, category or developer.</p>';
-                return;
-            }
-
-            const matches = apps.filter(app => {
-                const haystack = [
-                    app?.name, app?.category, app?.description, app?.developer,
-                    app?.package_name, app?.version
-                ].map(v => String(v || '').toLowerCase()).join(' ');
-                return haystack.includes(q);
-            }).slice(0, 20);
-
-            window.storeSearchMatches = matches;
-            if (!matches.length) {
-                compactSearchResults.innerHTML =
-                    '<div class="py-5 text-center"><i class="fa-solid fa-magnifying-glass text-gray-300 text-xl mb-2"></i><p class="text-xs font-bold text-gray-600">No app found</p><p class="text-[11px] text-gray-400 mt-1">Try another app name or category.</p></div>';
-                return;
-            }
-
-            compactSearchResults.innerHTML = matches.map(app => `
-                <button type="button" data-compact-app-id="${escapeHTML(app.id)}"
-                        class="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-mint-50 active:bg-mint-100 text-left transition">
-                    <img src="${escapeHTML(app.icon_url || '')}" alt="${escapeHTML(app.name || 'App')}"
-                         class="w-11 h-11 rounded-xl object-contain bg-gray-100 p-1">
-                    <span class="min-w-0 flex-1">
-                        <span class="block text-sm font-bold text-gray-900 truncate">${escapeHTML(app.name || 'Unknown App')}</span>
-                        <span class="block text-[11px] text-gray-400 truncate">${escapeHTML(app.category || 'App')} • v${escapeHTML(app.version || '1.0')}</span>
-                    </span>
-                    <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
-                </button>
-            `).join('');
+        window.markNotificationsRead = function() {
+            if (notificationBadge) notificationBadge.style.display = 'none';
         };
-
-        window.openFirstStoreSearchResult = function() {
-            const first = window.storeSearchMatches?.[0];
-            if (first?.id) window.openAppDetails?.(first.id);
-        };
-
-        compactSearchResults?.addEventListener('click', (e) => {
-            const item = e.target.closest('[data-compact-app-id]');
-            if (!item) return;
-            const id = item.getAttribute('data-compact-app-id');
-            if (id) window.openAppDetails?.(id);
-        });
-
-        function renderCompactSearchResults(query) {
-            window.runStoreSearch(query);
-        }
-
-        mobileSearchToggle?.addEventListener('click', () => {
-            appSearchPanel?.classList.remove('hidden');
-            setTimeout(() => compactSearchInput?.focus(), 50);
-            renderCompactSearchResults('');
-        });
-
-        closeSearchPanel?.addEventListener('click', closeCompactSearch);
-        compactSearchInput?.addEventListener('input', e => renderCompactSearchResults(e.target.value));
-
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeCompactSearch();
-        });
-
-        document.addEventListener('click', e => {
-            if (!appSearchPanel || appSearchPanel.classList.contains('hidden')) return;
-            if (!appSearchPanel.contains(e.target) && e.target !== mobileSearchToggle) closeCompactSearch();
-        });
 
         // Profile Avatar Dropdown Toggle
         const profileAvatarBtn = document.getElementById('profileAvatarBtn');
@@ -881,26 +688,6 @@ recordSiteVisit();
             const autocomplete = document.getElementById('searchAutocomplete');
             if (autocomplete) autocomplete.classList.add('hidden');
         });
-
-        // ===============================
-        // UPDATE COUNT
-        // ===============================
-        function updateUpdateBadges(apps) {
-            const updates = (apps || []).filter(app => app && app.update_available === true);
-            const count = updates.length;
-            ['updatesNavCount','profileUpdatesCount'].forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                el.textContent = count;
-                el.classList.toggle('hidden', count === 0);
-                el.classList.toggle('flex', count > 0);
-            });
-            const shortcut = document.getElementById('updatesShortcutCount');
-            if (shortcut) {
-                shortcut.textContent = `${count} update${count === 1 ? '' : 's'}`;
-                shortcut.classList.toggle('hidden', count === 0);
-            }
-        }
 
         // Initialize Data from Supabase
        // ===============================
@@ -928,7 +715,6 @@ async function initData() {
         console.log("TOTAL APPS:", apps?.length || 0);
 
         window.allAppsCache = apps || [];
-        updateUpdateBadges(window.allAppsCache);
 
         renderPageData(window.allAppsCache);
 
@@ -1020,65 +806,141 @@ window.toggleAllCategories = function () {
     }
 };
         // Hero Slider with dynamic loop check (< 3 items disables loop)
-        function renderHeroSlider(apps) {
-            const wrapper = document.getElementById('featured-slider');
-            if (!wrapper) return;
+      function renderHeroSlider(apps) {
+    const wrapper = document.getElementById('featured-slider');
+    if (!wrapper) return;
 
-            const shouldLoop = apps.length >= 3;
+    const shouldLoop = apps.length >= 3;
 
-            wrapper.innerHTML = apps.map(app => {
-                const screenshots = app.screenshots && app.screenshots.length > 0 ? app.screenshots : [app.banner_url || app.icon_url, app.icon_url, app.icon_url];
-                const screenshotsHtml = screenshots.slice(0, 3).map(img => `
-                    <div class="w-24 h-44 sm:w-28 sm:h-52 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center p-1">
-                        <img src="${img}" alt="Screenshot" class="w-full h-full hero-img-contain rounded-lg">
-                    </div>
-                `).join('');
+    wrapper.innerHTML = apps.map(app => {
 
-                return `
-                   <div class="swiper-slide relative overflow-hidden p-6 sm:p-10 flex items-center cursor-pointer"
-     onclick="openAppDetails('${app.id}')">
-                        <div class="absolute inset-0 z-0 opacity-10 bg-cover bg-center" style="background-image: url('${app.banner_url || app.icon_url}')"></div>
-                        <div class="relative z-10 flex flex-wrap lg:flex-nowrap justify-between items-center w-full gap-6">
-                            <div class="flex items-start gap-4 max-w-lg">
-                                <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-700 p-2 flex-shrink-0 flex items-center justify-center">
-                                    <img src="${app.icon_url}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-xl">
-                                </div>
-                                <div class="space-y-2">
-                                    <div class="flex items-center gap-2">
-                                        <span class="bg-mint-100 dark:bg-mint-900/40 text-mint-700 dark:text-mint-400 px-2.5 py-0.5 rounded-full text-[11px] font-bold">Featured</span>
-                                        <span class="text-xs font-semibold text-gray-400">${app.version || 'v1.0'}</span>
-                                    </div>
-                                    <h2 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight">${app.name}</h2>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                                        <span>⭐ ${app.rating || '4.9'}</span>
-                                        <span>•</span>
-                                        <span>${app.downloads || '1M+ downloads'}</span>
-                                    </p>
-                                    <div class="pt-1">
-                                       <button onclick="event.stopPropagation(); handleDownloadClick('${app.id}')" class="download-btn text-xs flex items-center gap-2">
-                                            <i class="fa-solid fa-download"></i> Download (${app.apk_size || 'Unknown Size'})
-                                        </button>
-                                    </div>
-                                </div>
+        const bannerImage = app.banner_url || app.icon_url;
+
+        return `
+            <div
+                class="swiper-slide relative overflow-hidden bg-white cursor-pointer"
+                onclick="handleSliderClick('${app.id}')"
+            >
+
+                <div class="min-h-[260px] sm:min-h-[300px] w-full flex items-center p-5 sm:p-8">
+
+                    <!-- LEFT CONTENT -->
+                    <div class="flex-1 min-w-0 pr-4 sm:pr-8">
+
+                        <div class="flex items-start gap-4">
+
+                            <!-- APP ICON -->
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-gray-200 shadow-md p-2 flex-shrink-0 flex items-center justify-center">
+                                <img
+                                    src="${app.icon_url || ''}"
+                                    alt="${app.name || 'App'}"
+                                    class="w-full h-full object-contain rounded-xl"
+                                >
                             </div>
-                            <div class="hidden sm:flex gap-3">
-                                ${screenshotsHtml}
+
+                            <div class="min-w-0">
+
+                                <!-- FEATURED + VERSION -->
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="bg-mint-50 text-mint-700 border border-mint-100 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                                        FEATURED
+                                    </span>
+
+                                    <span class="text-xs font-semibold text-gray-400">
+                                        ${app.version || 'Latest'}
+                                    </span>
+                                </div>
+
+                                <!-- APP NAME -->
+                                <h2 class="text-xl sm:text-3xl font-black text-gray-900 leading-tight truncate">
+                                    ${app.name || 'Unknown App'}
+                                </h2>
+
+                                <!-- INFO -->
+                                <div class="flex flex-wrap items-center gap-2 mt-2 text-xs text-gray-500">
+                                    <span>⭐ ${app.rating || '4.9'}</span>
+                                    <span>•</span>
+                                    <span>${app.downloads || 'New'}</span>
+                                </div>
+
+                                <!-- BUTTON -->
+                                <div class="mt-4">
+                                    <button
+                                        onclick="event.stopPropagation(); handleDownloadClick('${app.id}')"
+                                        class="download-btn inline-flex items-center gap-2 text-xs sm:text-sm"
+                                    >
+                                        <i class="fa-solid fa-download"></i>
+                                        Download
+                                    </button>
+                                </div>
+
                             </div>
                         </div>
-                    </div>
-                `;
-            }).join('');
 
-            if (typeof Swiper !== 'undefined') {
-                new Swiper('.heroSwiper', {
-                    loop: shouldLoop,
-                    autoplay: { delay: 5000, disableOnInteraction: false },
-                    pagination: { el: '.swiper-pagination', clickable: true },
-                    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }
-                });
-            }
+                    </div>
+
+
+                    <!-- RIGHT BANNER -->
+                    <div class="w-[42%] sm:w-[45%] max-w-[480px] flex-shrink-0">
+
+                        <div class="w-full aspect-[16/8] bg-gray-50 rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex items-center justify-center">
+
+                            <img
+                                src="${bannerImage}"
+                                alt="${app.name || 'App Banner'}"
+                                class="w-full h-full object-contain"
+                                loading="lazy"
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+
+    }).join('');
+
+
+    // Initialize Swiper
+    if (typeof Swiper !== 'undefined') {
+
+        const existingSwiper =
+            document.querySelector('.heroSwiper')?.swiper;
+
+        if (existingSwiper) {
+            existingSwiper.destroy(true, true);
         }
 
+        new Swiper('.heroSwiper', {
+            loop: shouldLoop,
+
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false
+            },
+
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true
+            },
+
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev'
+            },
+
+            observer: true,
+            observeParents: true,
+
+            slidesPerView: 1,
+
+            spaceBetween: 0
+        });
+    }
+}
         // Render Categories Section
         window.renderCategoriesSection = function(appsArray) {
             const container = document.getElementById('categoriesContainer');
@@ -1373,6 +1235,29 @@ if (appsSection) {
     `;
 }).join('');
 };
+        window.handleSliderClick = function(appId) {
+
+    if (!appId) {
+        console.error("Slider App ID missing");
+        return;
+    }
+
+    const user = auth.currentUser;
+
+    if (user) {
+        // User already logged in
+        window.location.href = `app.html?id=${encodeURIComponent(appId)}`;
+    } else {
+        // Save slider destination
+        localStorage.setItem(
+            'redirect_after_login',
+            `app.html?id=${encodeURIComponent(appId)}`
+        );
+
+        // Send user to login
+        window.location.href = 'user.html';
+    }
+};
         // ===============================
 // OPEN APP DETAILS
 // ===============================
@@ -1386,100 +1271,42 @@ window.openAppDetails = function(appId) {
     window.location.href = `app.html?id=${encodeURIComponent(appId)}`;
 };
         // Live Search & Autocomplete
-        // One-time setup: search both the full app list and the compact search panel.
-        let liveSearchReady = false;
-        function normalizeSearch(value) {
-            return String(value ?? '').trim().toLowerCase();
-        }
-
-        function getSearchMatches(query, limit = 8) {
-            const q = normalizeSearch(query);
-            const apps = Array.isArray(window.allAppsCache) ? window.allAppsCache : [];
-            if (!q) return [];
-            return apps.filter(app => {
-                const name = normalizeSearch(app?.name);
-                const category = normalizeSearch(app?.category);
-                const description = normalizeSearch(app?.description);
-                const developer = normalizeSearch(app?.developer);
-                const packageName = normalizeSearch(app?.package_name);
-                return name.includes(q) || category.includes(q) || description.includes(q) || developer.includes(q) || packageName.includes(q);
-            }).slice(0, limit);
-        }
-
         function setupLiveSearch() {
-            if (liveSearchReady) return;
-
             const searchInput = document.getElementById('searchInput');
             const autocomplete = document.getElementById('searchAutocomplete');
             if (!searchInput || !autocomplete) return;
 
-            liveSearchReady = true;
-
-            const updateSearch = () => {
-                const q = searchInput.value;
+            searchInput.addEventListener('input', (e) => {
+                const q = e.target.value;
                 window.currentSearchQuery = q;
-                window.filterAndRenderApps?.();
+                filterAndRenderApps();
 
-                const trimmed = normalizeSearch(q);
-                if (!trimmed) {
-                    autocomplete.innerHTML = '';
+                if (!q.trim()) {
                     autocomplete.classList.add('hidden');
                     return;
                 }
 
-                const matches = getSearchMatches(trimmed, 8);
-                if (!matches.length) {
-                    autocomplete.innerHTML = `
-                        <div class="p-4 text-center text-xs text-gray-500">
-                            No apps found for <strong>${escapeHTML(q)}</strong>
-                        </div>`;
-                    autocomplete.classList.remove('hidden');
+                const matches = (window.allAppsCache || []).filter(app => app.name.toLowerCase().includes(q.toLowerCase()) || app.category.toLowerCase().includes(q.toLowerCase())).slice(0, 5);
+
+                if (matches.length === 0) {
+                    autocomplete.classList.add('hidden');
                     return;
                 }
 
                 autocomplete.innerHTML = matches.map(app => `
-                    <button type="button"
-                            data-search-app-id="${escapeHTML(app.id)}"
-                            class="w-full p-3 flex items-center gap-3 text-left hover:bg-mint-50 dark:hover:bg-gray-700/50 cursor-pointer transition">
-                        <img src="${escapeHTML(app.icon_url || '')}"
-                             class="w-9 h-9 rounded-lg hero-img-contain bg-gray-100 dark:bg-gray-700 p-1"
-                             alt="${escapeHTML(app.name || 'App')}">
-                        <span class="min-w-0">
-                            <span class="block font-bold text-xs text-gray-900 dark:text-white truncate">${escapeHTML(app.name || 'Unknown App')}</span>
-                            <span class="block text-[10px] text-gray-400 truncate">${escapeHTML(app.category || 'App')} • ⭐ ${escapeHTML(app.rating || '4.9')}</span>
-                        </span>
-                    </button>
+                    <div onclick="window.location.href='app.html?id=${app.id}'" class="p-3 flex items-center gap-3 hover:bg-mint-50 dark:hover:bg-gray-700/50 cursor-pointer transition">
+                        <img src="${app.icon_url}" class="w-9 h-9 rounded-lg hero-img-contain bg-gray-100 dark:bg-gray-700 p-1">
+                        <div>
+                            <h5 class="font-bold text-xs text-gray-900 dark:text-white">${app.name}</h5>
+                            <p class="text-[10px] text-gray-400">${app.category} • ⭐ ${app.rating || '4.9'}</p>
+                        </div>
+                    </div>
                 `).join('');
+
                 autocomplete.classList.remove('hidden');
-            };
-
-            searchInput.addEventListener('input', updateSearch);
-            searchInput.addEventListener('search', updateSearch);
-            searchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    updateSearch();
-                    const first = autocomplete.querySelector('[data-search-app-id]');
-                    if (first) first.click();
-                }
-                if (e.key === 'Escape') {
-                    autocomplete.classList.add('hidden');
-                    searchInput.blur();
-                }
-            });
-
-            autocomplete.addEventListener('click', (e) => {
-                const item = e.target.closest('[data-search-app-id]');
-                if (!item) return;
-                const appId = item.getAttribute('data-search-app-id');
-                if (appId) window.openAppDetails?.(appId);
-                autocomplete.classList.add('hidden');
             });
         }
 
- // ===============================
-// HOMEPAGE DOWNLOAD - LOGIN REQUIRED
-// ===============================
 window.handleDownloadClick = async function(appId) {
 
     if (!appId) {
@@ -1501,53 +1328,47 @@ window.handleDownloadClick = async function(appId) {
             return;
         }
 
-        // Create APK URL
         let downloadUrl = "";
 
         if (app.telegram_message_id) {
-
             downloadUrl =
                 `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
-
-        } else if (app.apk_url) {
-
+        }
+        else if (app.apk_url) {
             downloadUrl = app.apk_url;
-
-        } else {
-
+        }
+        else {
             alert("APK download is currently unavailable.");
             return;
         }
 
-        // ===============================
         // CHECK LOGIN
-        // ===============================
-
         const user =
             typeof auth !== "undefined"
                 ? auth.currentUser
                 : null;
 
-        // ===============================
         // NOT LOGGED IN
-        // ===============================
-
         if (!user) {
-            // Never send an unauthenticated user directly to the APK URL.
-            // After login, return to the app details page.
-            const returnUrl =
-                "app.html?id=" + encodeURIComponent(app.id) + "&download=1";
+
+            localStorage.setItem(
+                "download_after_login",
+                downloadUrl
+            );
+
+            localStorage.setItem(
+                "download_app_id",
+                String(app.id)
+            );
 
             window.location.href =
-                "user.html?redirect=" + encodeURIComponent(returnUrl);
+                "user.html?redirect=" +
+                encodeURIComponent(downloadUrl);
 
             return;
         }
 
-        // ===============================
-        // LOGGED IN
-        // ===============================
-
+        // LOGGED IN → SAVE HISTORY
         const { error: historyError } =
             await supabaseClient
                 .from("downloads")
@@ -1567,20 +1388,8 @@ window.handleDownloadClick = async function(appId) {
             );
         }
 
-        // Direct download
-        if (window.paliaNativeAndroid?.()) {
-            const filename = (app.name || 'PaliaAPK-HUB-App').replace(/[^A-Za-z0-9._ -]/g, '_') + '.apk';
-            const result = await window.startPaliaApkDownload?.(downloadUrl, filename, 0);
-            if (!result?.downloadId) throw new Error('Native downloader unavailable');
-            return;
-        }
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = (app.name || 'PaliaAPK-HUB-App').replace(/[^A-Za-z0-9._ -]/g, '_') + '.apk';
-        a.rel = 'noopener';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        // DIRECT DOWNLOAD
+        window.location.href = downloadUrl;
 
     } catch (error) {
 
@@ -1592,338 +1401,88 @@ window.handleDownloadClick = async function(appId) {
         alert("Unable to start download.");
     }
 };
+// ============================================
+// MOBILE APP INSTALL PROMPT
+// ============================================
 
-        // Share Website Feature (Native Android API, Desktop Clipboard, Fallback Dialog)
-        window.triggerShareWebsite = function() {
-            const shareData = {
-                title: 'PaliaAPK HUB',
-                text: 'Download Safe & Verified Android APKs from PaliaAPK HUB.',
-                url: 'https://shanpalia.github.io/WebsitePaliaAPK_V.2/'
-            };
+function showPaliaAPKInstallPrompt() {
 
-            if (navigator.share) {
-                navigator.share(shareData).catch(() => {});
-            } else if (navigator.clipboard) {
-                navigator.clipboard.writeText(shareData.url).then(() => {
-                    alert('Website link copied to clipboard!');
-                }).catch(() => {
-                    prompt('Copy link:', shareData.url);
-                });
-            } else {
-                prompt('Copy link:', shareData.url);
-            }
-        };
+    // Only show on mobile devices
+    const isMobile =
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-        // Firebase Auth State UI & Avatar Management
-        auth.onAuthStateChanged((user) => {
-            const loginBtn = document.getElementById('loginBtn');
-            const profileBox = document.getElementById('profileBox');
-            const profileAvatar = document.getElementById('profileAvatar');
-            const logoutBtn = document.getElementById('logoutBtn');
+    if (!isMobile) {
+        return;
+    }
 
-            if (user) {
-                loginBtn?.classList.add('hidden');
-                profileBox?.classList.remove('hidden');
-                const name = user.displayName || user.email.split('@')[0];
-                if (profileAvatar) profileAvatar.textContent = name.substring(0, 2).toUpperCase();
-                
-                if (logoutBtn) {
-                    logoutBtn.onclick = () => {
-                        auth.signOut().then(() => {
-                            window.location.href = 'index.html';
-                        });
-                    };
-                }
+    // Don't show again if user already dismissed it recently
+    const dismissedUntil =
+        localStorage.getItem("paliaapk_install_dismissed_until");
 
-                // Check if returning from login redirect
-                const redirectUrl = localStorage.getItem('redirect_after_login');
-                if (redirectUrl) {
-                    localStorage.removeItem('redirect_after_login');
-                    window.location.href = redirectUrl;
-                }
-            } else {
-                loginBtn?.classList.remove('hidden');
-                profileBox?.classList.add('hidden');
-                if (loginBtn) {
-                    loginBtn.onclick = () => {
-                        window.location.href = 'user.html';
-                    };
-                }
-            }
-        });
+    if (dismissedUntil &&
+        Date.now() < Number(dismissedUntil)) {
+        return;
+    }
 
+    const prompt =
+        document.getElementById("installAppPrompt");
+
+    if (!prompt) {
+        return;
+    }
+
+    prompt.classList.remove("hidden");
+    prompt.classList.add("flex");
+}
+
+
+// Install button
+document.getElementById("installAppBtn")?.addEventListener("click", function () {
+
+    /*
+     * IMPORTANT:
+     * Replace this URL with your actual PaliaAPK HUB APK download URL.
+     */
+ document.getElementById("installAppBtn")?.addEventListener("click", function () {
+
+    const apkUrl =
+        "https://paliaapk-telegram-api.onrender.com/download-apk/17";
+
+    window.location.href = apkUrl;
+});
+    if (!apkUrl || apkUrl === "YOUR_PALIAAPK_HUB_APK_URL") {
+        alert("PaliaAPK HUB APK download link is not configured yet.");
+        return;
+    }
+
+    window.location.href = apkUrl;
+});
+
+
+// Continue in browser
+document.getElementById("installLaterBtn")?.addEventListener("click", function () {
+
+    const prompt =
+        document.getElementById("installAppPrompt");
+
+    if (prompt) {
+        prompt.classList.add("hidden");
+        prompt.classList.remove("flex");
+    }
+
+    // Don't show again for 7 days
+    localStorage.setItem(
+        "paliaapk_install_dismissed_until",
+        Date.now() + (7 * 24 * 60 * 60 * 1000)
+    );
+});
+
+
+// Show after 2 seconds
+setTimeout(() => {
+    showPaliaAPKInstallPrompt();
+}, 2000);
         document.addEventListener('DOMContentLoaded', initData);
     </script>
-
-<nav id="mobileAppNav" aria-label="App navigation">
-  <a href="index.html" class="active"><i class="fa-solid fa-house"></i><span>Home</span></a>
-  <a href="index.html#categoriesSection"><i class="fa-solid fa-layer-group"></i><span>Categories</span></a>
-  <a href="index.html#topChartsSection"><i class="fa-solid fa-chart-line"></i><span>Top Charts</span></a>
-  <a href="downloads.html"><i class="fa-solid fa-download"></i><span>Downloads</span></a>
-  <a href="updates.html"><i class="fa-solid fa-arrows-rotate"></i><span>Updates</span></a>
-  <a href="settings.html"><i class="fa-solid fa-user"></i><span>Profile</span></a>
-</nav>
-
-
-<script>
-(function(){
-  function enableAppMode(){
-    if(window.Capacitor || location.protocol === 'capacitor:' || location.protocol === 'ionic:'){
-      document.body.classList.add('capacitor-app');
-    }
-  }
-  document.addEventListener('DOMContentLoaded', enableAppMode);
-  window.addEventListener('load', enableAppMode);
-})();
-</script>
-
-
-<script id="paliaHeaderFeatures">
-(function(){
-  const NKEY='palia_header_notifications_v3';
-  const SKEY='palia_header_seen_apps_v3';
-  const MKEY='palia_header_update_markers_v3';
-
-  function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v===null||v===undefined?d:v}catch(e){return d}}
-  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-  function client(){
-    return window.supabaseClient || window._supabaseClient ||
-      (window.supabase && typeof window.supabase.from==='function'?window.supabase:null);
-  }
-
-  function renderCount(){
-    const el=document.getElementById('paliaNotificationDot');
-    if(!el)return;
-    const unread=load(NKEY,[]).filter(n=>!n.read).length;
-    el.textContent=unread>99?'99+':String(unread);
-    el.classList.toggle('hidden',unread===0);
-  }
-
-  function addNotification(type,a){
-    const id=String(a.id||a.package_name||a.name||Date.now());
-    const version=String(a.version||a.updated_at||'');
-    const list=load(NKEY,[]);
-    const key=type+'_'+id+'_'+version;
-    if(list.some(x=>x.key===key))return;
-    list.unshift({
-      key,type,appId:a.id||null,name:a.name||'App',
-      version:a.version||'',time:Date.now(),read:false,
-      text:type==='new'
-        ? `${a.name||'A new app'} was added to PaliaAPK HUB.`
-        : `${a.name||'An app'} has a new version available.`
-    });
-    save(NKEY,list.slice(0,100));
-    renderCount();
-  }
-
-  function esc(s){
-    return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
-  function openApp(id){
-    if(!id)return;
-    window.location.href='app.html?id='+encodeURIComponent(id);
-  }
-
-  function showPanel(){
-    let p=document.getElementById('paliaNotificationPanel');
-    if(p){p.remove();return;}
-    const list=load(NKEY,[]);
-    p=document.createElement('div');
-    p.id='paliaNotificationPanel';
-    p.className='fixed right-4 top-20 z-[99999] w-[360px] max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden';
-
-    const rows=list.length?list.map((n,i)=>`
-      <button type="button" data-notification-index="${i}" class="w-full text-left px-4 py-3 border-b border-gray-100 dark:border-gray-700 ${n.read?'bg-white dark:bg-gray-800':'bg-gray-50 dark:bg-gray-900/40'} hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-        <div class="flex gap-3">
-          <div class="w-9 h-9 shrink-0 rounded-xl ${n.type==='update'?'bg-indigo-50 text-indigo-600':'bg-amber-50 text-amber-600'} flex items-center justify-center">
-            <i class="fa-solid ${n.type==='update'?'fa-arrows-rotate':'fa-plus'}"></i>
-          </div>
-          <div class="min-w-0">
-            <div class="font-bold text-gray-900 dark:text-white text-sm">${n.type==='update'?'App Updated':'New App Added'}</div>
-            <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">${esc(n.text)}</div>
-            ${n.version?`<div class="text-[10px] text-gray-400 mt-1">Version ${esc(n.version)}</div>`:''}
-          </div>
-        </div>
-      </button>`).join(''):'<div class="p-6 text-center text-sm text-gray-500">No new notifications.</div>';
-
-    p.innerHTML=`<div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-      <b class="text-gray-900 dark:text-white">Notifications</b>
-      <button id="paliaReadAll" class="text-xs text-mint-600 font-bold">Mark all read</button>
-    </div>${rows}`;
-    document.body.appendChild(p);
-
-    const next=list.map(n=>({...n,read:true}));
-    save(NKEY,next); renderCount();
-
-    p.querySelectorAll('[data-notification-index]').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const n=list[Number(btn.dataset.notificationIndex)];
-        if(n?.appId) openApp(n.appId);
-      });
-    });
-    document.getElementById('paliaReadAll')?.addEventListener('click',()=>{
-      save(NKEY,[]); p.remove(); renderCount();
-    });
-  }
-
-  async function checkApps(){
-    const c=client(); if(!c)return;
-    try{
-      const {data,error}=await c.from('apps').select('*').order('updated_at',{ascending:false}).limit(200);
-      if(error||!Array.isArray(data))return;
-
-      let seen=load(SKEY,null);
-      let markers=load(MKEY,{});
-      if(seen===null){
-        seen=data.map(a=>String(a.id||a.package_name||a.name));
-        data.forEach(a=>{
-          const id=String(a.id||a.package_name||a.name);
-          markers[id]=String(a.version||a.updated_at||'');
-        });
-        save(SKEY,seen); save(MKEY,markers);
-        renderCount();
-        return;
-      }
-
-      const set=new Set(seen);
-      for(const a of data){
-        const id=String(a.id||a.package_name||a.name);
-        const version=String(a.version||a.updated_at||'');
-        if(!set.has(id)){
-          addNotification('new',a);
-          set.add(id);
-        }else if(markers[id] && markers[id]!==version){
-          addNotification('update',a);
-        }
-        markers[id]=version;
-      }
-      save(SKEY,Array.from(set).slice(-1000));
-      save(MKEY,markers);
-    }catch(e){console.warn('Notification check failed',e)}
-  }
-
-  function theme(){
-    const dark=localStorage.getItem('palia_theme')==='dark';
-    document.documentElement.classList.toggle('dark',dark);
-    const i=document.getElementById('paliaThemeIcon');
-    if(i)i.className='fa-solid '+(dark?'fa-sun':'fa-moon')+' text-sm';
-  }
-
-  document.addEventListener('DOMContentLoaded',()=>{
-    theme(); renderCount();
-    document.getElementById('paliaNotificationBtn')?.addEventListener('click',showPanel);
-    document.getElementById('paliaDarkModeBtn')?.addEventListener('click',()=>{
-      localStorage.setItem('palia_theme',document.documentElement.classList.contains('dark')?'light':'dark');
-      theme();
-    });
-    setTimeout(checkApps,1500);
-    setInterval(checkApps,30000);
-  });
-})();
-</script>
-
-<script id="paliaWebsiteNotifications">
-(function(){
-  const KEY='palia_web_notifications_v3';
-  const SNAP='palia_web_apps_snapshot_v3';
-
-  function load(k,d){try{const x=JSON.parse(localStorage.getItem(k));return x??d}catch(e){return d}}
-  function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-  function client(){
-    return window.supabaseClient || window._supabaseClient ||
-      (window.supabase && typeof window.supabase.from==='function' ? window.supabase : null);
-  }
-  function count(){
-    const dot=document.getElementById('paliaNotificationDot');
-    const badge=document.getElementById('paliaNotificationCount');
-    const n=load(KEY,[]).filter(x=>!x.read).length;
-    if(dot) dot.classList.toggle('hidden',n===0);
-    if(badge){
-      badge.textContent=n>99?'99+':String(n);
-      badge.classList.toggle('hidden',n===0);
-    }
-  }
-  function key(a){return String(a.id||a.package_name||a.name)}
-  function add(type,a){
-    const list=load(KEY,[]);
-    const k=type+'_'+key(a)+'_'+String(a.version||a.updated_at||'');
-    if(list.some(x=>x.key===k))return;
-    list.unshift({
-      key:k,type:type,appId:a.id||null,name:a.name||'App',
-      version:a.version||'',time:Date.now(),read:false,
-      text:type==='new'?'New app added to PaliaAPK HUB.':'A new version is available.'
-    });
-    save(KEY,list.slice(0,50));count();
-  }
-  function openApp(n){
-    if(!n.appId)return;
-    localStorage.setItem('palia_notification_target',String(n.appId));
-    window.location.href='app.html?id='+encodeURIComponent(n.appId);
-  }
-  function panel(){
-    let p=document.getElementById('paliaNotificationPanel');
-    if(p){p.remove();return}
-    const list=load(KEY,[]);
-    p=document.createElement('div');
-    p.id='paliaNotificationPanel';
-    p.className='fixed right-4 top-20 z-[99999] w-[350px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden';
-    let rows=list.length?list.map((n,i)=>`
-      <button type="button" data-notify-index="${i}" class="w-full text-left px-4 py-3 border-b border-gray-100 ${n.read?'':'bg-gray-50'} hover:bg-gray-100 transition">
-        <div class="flex gap-3">
-          <div class="w-9 h-9 rounded-xl ${n.type==='update'?'bg-indigo-50 text-indigo-600':'bg-amber-50 text-amber-600'} flex items-center justify-center">
-            <i class="fa-solid ${n.type==='update'?'fa-arrows-rotate':'fa-plus'}"></i>
-          </div>
-          <div class="min-w-0">
-            <div class="font-bold text-gray-900 text-sm">${n.type==='update'?'App Updated':'New App Added'}</div>
-            <div class="text-xs text-gray-600 mt-1">${n.name} — ${n.text}</div>
-            ${n.version?`<div class="text-[10px] text-gray-400 mt-1">Version ${n.version}</div>`:''}
-          </div>
-        </div>
-      </button>`).join(''):'<div class="p-5 text-sm text-gray-500">No notifications yet.</div>';
-    p.innerHTML=`<div class="p-4 border-b flex items-center justify-between"><b class="text-gray-900">Notifications</b><button id="paliaReadAll" class="text-xs text-green-600 font-bold">Mark all read</button></div>${rows}`;
-    document.body.appendChild(p);
-
-    p.querySelectorAll('[data-notify-index]').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const i=Number(btn.dataset.notifyIndex);
-        const item=list[i];
-        list[i]={...item,read:true};
-        save(KEY,list);
-        count();
-        openApp(list[i]);
-      });
-    });
-    const all=document.getElementById('paliaReadAll');
-    if(all)all.onclick=()=>{save(KEY,list.map(x=>({...x,read:true})));count();p.remove()};
-  }
-
-  async function poll(){
-    const c=client();if(!c)return;
-    try{
-      const r=await c.from('apps').select('id,name,version,updated_at').order('updated_at',{ascending:false}).limit(200);
-      if(r.error||!Array.isArray(r.data))return;
-      const current=r.data;
-      const old=load(SNAP,null);
-      const map={};current.forEach(a=>map[key(a)]=String(a.version||a.updated_at||''));
-      if(old===null){save(SNAP,map);return}
-      current.forEach(a=>{
-        const id=key(a), ver=String(a.version||a.updated_at||'');
-        if(!(id in old)) add('new',a);
-        else if(old[id]!==ver) add('update',a);
-      });
-      save(SNAP,map);count();
-    }catch(e){console.warn('Notification check failed',e)}
-  }
-
-  document.addEventListener('DOMContentLoaded',()=>{
-    count();
-    const bell=document.getElementById('paliaNotificationBtn');
-    if(bell)bell.addEventListener('click',panel);
-    setTimeout(poll,1500);
-    setInterval(poll,30000);
-  });
-})();
-</script>
 </body>
 </html>
