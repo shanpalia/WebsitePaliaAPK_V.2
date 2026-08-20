@@ -282,27 +282,23 @@ const supabaseClient = window.supabase.createClient(
 );
 
 async function syncUserToSupabase(user) {
-
     if (!user) return;
-
-    const { error } = await supabaseClient
-        .from("users")
-        .upsert({
-            id: user.uid,
-            email: user.email || null,
-            name: user.displayName || null,
-            last_login_at: new Date().toISOString()
-        }, {
-            onConflict: "id"
-        });
-
-    if (error) {
-        console.error("User sync error:", error);
-    } else {
-        console.log("Firebase user synced to Supabase.");
+    try {
+        if (!supabaseClient) return;
+        const { error } = await supabaseClient
+            .from("users")
+            .upsert({
+                id: user.uid,
+                email: user.email || null,
+                name: user.displayName || null,
+                last_login_at: new Date().toISOString()
+            }, { onConflict: "id" });
+        if (error) console.warn("User sync warning:", error);
+    } catch (e) {
+        console.warn("User sync skipped:", e);
     }
 }
-        // Parse URL Redirect parameters
+// Parse URL Redirect parameters
         const urlParams = new URLSearchParams(window.location.search);
         let redirectTarget = urlParams.get('redirect') || 'index.html';
         
@@ -351,9 +347,7 @@ async function syncUserToSupabase(user) {
         auth.onAuthStateChanged(async (user) => {
 
     if (user) {
-
-        await syncUserToSupabase(user);
-
+        syncUserToSupabase(user).catch(()=>{});
         safeRedirect();
     }
 
@@ -439,27 +433,38 @@ async function syncUserToSupabase(user) {
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
+            const password = document.getElementById('loginPassword').value;
             const rememberMe = document.getElementById('rememberMe').checked;
             const btn = document.getElementById('loginSubmitBtn');
 
-            localStorage.setItem('palia_remember_me', rememberMe ? 'true' : 'false');
-            if (rememberMe) {
-                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-            } else {
-                await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+            if (!email || !password) {
+                showToast('Please enter email and password.');
+                return;
             }
 
+            localStorage.setItem('palia_remember_me', rememberMe ? 'true' : 'false');
             btn.disabled = true;
             btn.innerHTML = '<span class="ui-spinner" aria-hidden="true"></span> Logging in...';
 
             try {
+                // Persistence failure must never block authentication.
+                try {
+                    await auth.setPersistence(
+                        rememberMe
+                            ? firebase.auth.Auth.Persistence.LOCAL
+                            : firebase.auth.Auth.Persistence.SESSION
+                    );
+                } catch (persistenceError) {
+                    console.warn('Auth persistence warning:', persistenceError);
+                }
+
                 await auth.signInWithEmailAndPassword(email, password);
                 showToast('Login successful! Redirecting...', 'success');
-                setTimeout(() => {
-                    safeRedirect();
-                }, 800);
+
+                // Firebase auth state is the source of truth; give it a moment to settle.
+                setTimeout(() => safeRedirect(), 350);
             } catch (error) {
+                console.error('Email login error:', error);
                 showToast(friendlyAuthError(error));
                 btn.disabled = false;
                 btn.innerHTML = '<span>Login</span><span class="ui-icon">→</span>';

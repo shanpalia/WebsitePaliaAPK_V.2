@@ -173,7 +173,9 @@
         }
     </style>
 <link rel="stylesheet" href="palia-mobile-app.css">
-</head>
+<style id="paliaNotificationPanelStyle">
+#paliaNotificationPanel{max-height:70vh;overflow-y:auto}
+</style></head>
 <body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
 
     <!-- Header & Navigation -->
@@ -204,19 +206,11 @@
 
             <!-- Right Actions: Search + Notifications + Dark Mode + Profile/Login -->
             <div class="flex items-center gap-3">
-                <button id="mobileSearchToggle"
-                        type="button"
-                        class="w-10 h-10 rounded-xl bg-gray-100 text-gray-600 hover:bg-mint-50 hover:text-mint-600 transition flex items-center justify-center border border-gray-200"
-                        aria-label="Search apps"
-                        title="Search apps">
-                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
-                </button>
-
-                <button id="paliaNotificationBtn" type="button" aria-label="Notifications"
+<button id="paliaNotificationBtn" type="button" aria-label="Notifications"
                         class="relative w-10 h-10 rounded-xl bg-amber-50 text-amber-600 hover:bg-amber-100 transition flex items-center justify-center border border-amber-200"
                         title="Notifications">
                     <i class="fa-solid fa-bell text-sm"></i>
-                    <span id="paliaNotificationDot" class="hidden absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
+                    <span id="paliaNotificationDot" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-[18px] text-center ring-2 ring-white">0</span>
                 </button>
 
                 <button id="paliaDarkModeBtn" type="button" aria-label="Toggle dark mode"
@@ -1686,88 +1680,127 @@ window.handleDownloadClick = async function(appId) {
 
 <script id="paliaHeaderFeatures">
 (function(){
-  const NKEY='palia_header_notifications_v2';
-  const SKEY='palia_header_seen_apps_v2';
-  const MKEY='palia_header_update_markers_v2';
+  const NKEY='palia_header_notifications_v3';
+  const SKEY='palia_header_seen_apps_v3';
+  const MKEY='palia_header_update_markers_v3';
 
-  function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}}
+  function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v===null||v===undefined?d:v}catch(e){return d}}
   function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-
   function client(){
     return window.supabaseClient || window._supabaseClient ||
-      (window.supabase && typeof window.supabase.from==='function' ? window.supabase : null);
+      (window.supabase && typeof window.supabase.from==='function'?window.supabase:null);
   }
 
-  function dot(){
-    const d=document.getElementById('paliaNotificationDot');
-    if(!d)return;
-    const unread=load(NKEY,[]).filter(x=>!x.read).length;
-    d.classList.toggle('hidden',unread===0);
+  function renderCount(){
+    const el=document.getElementById('paliaNotificationDot');
+    if(!el)return;
+    const unread=load(NKEY,[]).filter(n=>!n.read).length;
+    el.textContent=unread>99?'99+':String(unread);
+    el.classList.toggle('hidden',unread===0);
   }
 
-  function add(type,a){
+  function addNotification(type,a){
     const id=String(a.id||a.package_name||a.name||Date.now());
+    const version=String(a.version||a.updated_at||'');
     const list=load(NKEY,[]);
-    const key=type+'_'+id+'_'+String(a.version||a.updated_at||'');
+    const key=type+'_'+id+'_'+version;
     if(list.some(x=>x.key===key))return;
     list.unshift({
-      key,type,name:a.name||'App',
+      key,type,appId:a.id||null,name:a.name||'App',
       version:a.version||'',time:Date.now(),read:false,
-      text:type==='new' ? `${a.name||'A new app'} was added to PaliaAPK HUB.`
-                        : `${a.name||'An app'} has a new version available.`
+      text:type==='new'
+        ? `${a.name||'A new app'} was added to PaliaAPK HUB.`
+        : `${a.name||'An app'} has a new version available.`
     });
-    save(NKEY,list.slice(0,50));dot();
+    save(NKEY,list.slice(0,100));
+    renderCount();
   }
 
-  async function check(){
-    const c=client(); if(!c)return;
-    try{
-      const r=await c.from('apps').select('*').order('updated_at',{ascending:false}).limit(100);
-      if(r.error||!Array.isArray(r.data))return;
-      const apps=r.data;
-      const seen=load(SKEY,null);
-      const markers=load(MKEY,{});
-      if(seen===null){
-        save(SKEY,apps.map(a=>String(a.id||a.package_name||a.name)));
-        apps.forEach(a=>{markers[String(a.id||a.package_name||a.name)]=String(a.version||a.updated_at||'')});
-        save(MKEY,markers);
-        return;
-      }
-      const set=new Set(seen);
-      for(const a of apps){
-        const id=String(a.id||a.package_name||a.name);
-        const ver=String(a.version||a.updated_at||'');
-        if(!set.has(id)){ add('new',a); set.add(id); }
-        else if(markers[id] && markers[id]!==ver){ add('update',a); }
-        markers[id]=ver;
-      }
-      save(SKEY,Array.from(set).slice(-500)); save(MKEY,markers);
-    }catch(e){}
+  function esc(s){
+    return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  function panel(){
+  function openApp(id){
+    if(!id)return;
+    window.location.href='app.html?id='+encodeURIComponent(id);
+  }
+
+  function showPanel(){
     let p=document.getElementById('paliaNotificationPanel');
-    if(p){p.remove();return}
+    if(p){p.remove();return;}
     const list=load(NKEY,[]);
     p=document.createElement('div');
     p.id='paliaNotificationPanel';
-    p.className='fixed right-4 top-20 z-[99999] w-[340px] max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden';
-    let body=list.length?list.map(n=>`
-      <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 ${n.read?'':'bg-gray-50 dark:bg-gray-900/40'}">
+    p.className='fixed right-4 top-20 z-[99999] w-[360px] max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden';
+
+    const rows=list.length?list.map((n,i)=>`
+      <button type="button" data-notification-index="${i}" class="w-full text-left px-4 py-3 border-b border-gray-100 dark:border-gray-700 ${n.read?'bg-white dark:bg-gray-800':'bg-gray-50 dark:bg-gray-900/40'} hover:bg-gray-100 dark:hover:bg-gray-700 transition">
         <div class="flex gap-3">
-          <div class="w-9 h-9 rounded-xl ${n.type==='update'?'bg-indigo-50 text-indigo-600':'bg-amber-50 text-amber-600'} flex items-center justify-center">
+          <div class="w-9 h-9 shrink-0 rounded-xl ${n.type==='update'?'bg-indigo-50 text-indigo-600':'bg-amber-50 text-amber-600'} flex items-center justify-center">
             <i class="fa-solid ${n.type==='update'?'fa-arrows-rotate':'fa-plus'}"></i>
           </div>
-          <div><div class="font-bold text-gray-900 dark:text-white text-sm">${n.type==='update'?'App Updated':'New App Added'}</div>
-          <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">${n.text}</div>
-          ${n.version?`<div class="text-[10px] text-gray-400 mt-1">Version ${n.version}</div>`:''}</div>
+          <div class="min-w-0">
+            <div class="font-bold text-gray-900 dark:text-white text-sm">${n.type==='update'?'App Updated':'New App Added'}</div>
+            <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">${esc(n.text)}</div>
+            ${n.version?`<div class="text-[10px] text-gray-400 mt-1">Version ${esc(n.version)}</div>`:''}
+          </div>
         </div>
-      </div>`).join(''):'<div class="p-5 text-sm text-gray-500">No new notifications.</div>';
-    p.innerHTML=`<div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between"><b class="text-gray-900 dark:text-white">Notifications</b><button id="paliaReadAll" class="text-xs text-mint-600 font-bold">Mark all read</button></div>${body}`;
+      </button>`).join(''):'<div class="p-6 text-center text-sm text-gray-500">No new notifications.</div>';
+
+    p.innerHTML=`<div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+      <b class="text-gray-900 dark:text-white">Notifications</b>
+      <button id="paliaReadAll" class="text-xs text-mint-600 font-bold">Mark all read</button>
+    </div>${rows}`;
     document.body.appendChild(p);
-    save(NKEY,list.map(n=>({...n,read:true})));dot();
-    const b=document.getElementById('paliaReadAll');
-    if(b)b.onclick=()=>{save(NKEY,[]);p.remove();dot()};
+
+    const next=list.map(n=>({...n,read:true}));
+    save(NKEY,next); renderCount();
+
+    p.querySelectorAll('[data-notification-index]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const n=list[Number(btn.dataset.notificationIndex)];
+        if(n?.appId) openApp(n.appId);
+      });
+    });
+    document.getElementById('paliaReadAll')?.addEventListener('click',()=>{
+      save(NKEY,[]); p.remove(); renderCount();
+    });
+  }
+
+  async function checkApps(){
+    const c=client(); if(!c)return;
+    try{
+      const {data,error}=await c.from('apps').select('*').order('updated_at',{ascending:false}).limit(200);
+      if(error||!Array.isArray(data))return;
+
+      let seen=load(SKEY,null);
+      let markers=load(MKEY,{});
+      if(seen===null){
+        seen=data.map(a=>String(a.id||a.package_name||a.name));
+        data.forEach(a=>{
+          const id=String(a.id||a.package_name||a.name);
+          markers[id]=String(a.version||a.updated_at||'');
+        });
+        save(SKEY,seen); save(MKEY,markers);
+        renderCount();
+        return;
+      }
+
+      const set=new Set(seen);
+      for(const a of data){
+        const id=String(a.id||a.package_name||a.name);
+        const version=String(a.version||a.updated_at||'');
+        if(!set.has(id)){
+          addNotification('new',a);
+          set.add(id);
+        }else if(markers[id] && markers[id]!==version){
+          addNotification('update',a);
+        }
+        markers[id]=version;
+      }
+      save(SKEY,Array.from(set).slice(-1000));
+      save(MKEY,markers);
+    }catch(e){console.warn('Notification check failed',e)}
   }
 
   function theme(){
@@ -1777,17 +1810,15 @@ window.handleDownloadClick = async function(appId) {
     if(i)i.className='fa-solid '+(dark?'fa-sun':'fa-moon')+' text-sm';
   }
 
-  document.addEventListener('DOMContentLoaded',function(){
-    theme(); dot();
-    const bell=document.getElementById('paliaNotificationBtn');
-    if(bell)bell.addEventListener('click',panel);
-    const mode=document.getElementById('paliaDarkModeBtn');
-    if(mode)mode.addEventListener('click',function(){
+  document.addEventListener('DOMContentLoaded',()=>{
+    theme(); renderCount();
+    document.getElementById('paliaNotificationBtn')?.addEventListener('click',showPanel);
+    document.getElementById('paliaDarkModeBtn')?.addEventListener('click',()=>{
       localStorage.setItem('palia_theme',document.documentElement.classList.contains('dark')?'light':'dark');
       theme();
     });
-    setTimeout(check,1500);
-    setInterval(check,30000);
+    setTimeout(checkApps,1500);
+    setInterval(checkApps,30000);
   });
 })();
 </script>
