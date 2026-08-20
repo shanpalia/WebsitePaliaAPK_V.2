@@ -1,0 +1,7 @@
+V3: Android DownloadManager progress is now event-driven.
+The native PaliaDownloader plugin starts a 250ms watcher immediately after enqueue.
+It emits Capacitor `downloadProgress` events containing status, bytesDownloaded,
+totalBytes, filename and source. The web download page subscribes BEFORE enqueueing,
+updates the visible progress from native events, and keeps a 1-second query fallback.
+This is intended to fix the device case where Android DownloadManager downloads the APK
+successfully but the in-app progress remains 0 MB / 0%.

@@ -1,0 +1,11 @@
+PaliaAPK HUB now downloads APKs directly inside the app's native downloader.
+Android DownloadManager is no longer used for the APK download.
+
+Flow:
+PaliaAPK HUB button -> native HTTP download -> app-owned PaliaAPK-HUB folder ->
+live progress events -> download complete -> Android installer.
+
+The APK is stored in the app's external files area, not the public Downloads
+queue. The user sees the download progress inside PaliaAPK HUB. Android's
+installer confirmation still appears at the final installation step, as required
+by Android for normal APK installation.

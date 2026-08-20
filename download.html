@@ -343,9 +343,8 @@
                 finalBtn.classList.add('hidden');
             }
 
-            async function pollProgress(downloadId) {
+            async function pollProgressData(data) {
                 try {
-                    const data = await window.getPaliaApkDownloadProgress(downloadId);
                     const bytes = Number(data.bytesDownloaded || 0);
                     const total = Number(data.totalBytes || 0);
                     const status = Number(data.status || 0);
@@ -410,6 +409,16 @@
                 return Math.round(n * mult);
             }
 
+            async function pollProgress(downloadId) {
+                try {
+                    const data = await window.getPaliaApkDownloadProgress(downloadId);
+                    await pollProgressData(data);
+                } catch (e) {
+                    console.error('Download progress query error:', e);
+                    if (speedEl) speedEl.textContent = 'Retrying...';
+                }
+            }
+
             finalBtn.onclick = async function() {
                 if (!downloadUrl) {
                     alert('APK download URL is not available for this app.');
@@ -424,6 +433,23 @@
                 lastTime = Date.now();
 
                 try {
+                    // Native Android now pushes DownloadManager progress events every 250ms.
+                    // Register before enqueueing so the first bytes are never missed.
+                    if (window.listenPaliaApkDownloadProgress) {
+                        try {
+                            if (window._paliaProgressListener) {
+                                await window._paliaProgressListener.remove();
+                            }
+                            window._paliaProgressListener =
+                                await window.listenPaliaApkDownloadProgress(async function (data) {
+                                    if (!data || Number(data.downloadId || 0) !== Number(window._paliaCurrentDownloadId || 0)) return;
+                                    await pollProgressData(data);
+                                });
+                        } catch (listenerErr) {
+                            console.warn('Native progress listener unavailable; using query fallback.', listenerErr);
+                        }
+                    }
+
                     const expectedTotalBytes = parseSizeToBytes(app.apk_size);
                     totalAmount.textContent = expectedTotalBytes > 0
                         ? formatMB(expectedTotalBytes)
@@ -438,9 +464,10 @@
                     );
                     const id = Number(result.downloadId);
                     if (!id) throw new Error('Android DownloadManager did not return a download ID');
+                    window._paliaCurrentDownloadId = id;
 
                     setStatus('Downloading APK', 'Downloading inside PaliaAPK HUB…', 'fa-download');
-                    pollTimer = setInterval(() => pollProgress(id), 300);
+                    pollTimer = setInterval(() => pollProgress(id), 1000);
                     await pollProgress(id);
                 } catch (err) {
                     console.error('Native download error:', err);

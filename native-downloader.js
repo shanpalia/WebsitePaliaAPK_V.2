@@ -57,4 +57,12 @@
     }
     return await p.openInstaller({ filename: String(filename) });
   };
+  window.listenPaliaApkDownloadProgress = async function (callback) {
+    const p = await getNativePlugin();
+    if (!p || typeof p.addListener !== "function") {
+      throw new Error("Native download progress listener is not registered.");
+    }
+    return await p.addListener("downloadProgress", callback);
+  };
+
 })();
