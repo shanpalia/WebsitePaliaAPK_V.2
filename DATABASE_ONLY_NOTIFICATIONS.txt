@@ -1,0 +1,6 @@
+Notifications are generated ONLY from actual rows returned by the live Supabase public.apps query.
+No fake/hard-coded app is inserted.
+First successful DB fetch creates only a baseline and does not notify.
+A later new DB row creates New App Added.
+A later version change on an existing DB row creates App Updated.
+Clicking a notification opens app.html?id=<actual apps.id>.

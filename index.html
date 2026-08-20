@@ -786,6 +786,9 @@ async function initData() {
         console.log("TOTAL APPS:", apps?.length || 0);
 
         window.allAppsCache = apps || [];
+        if (window.processDatabaseAppsForNotifications) {
+            window.processDatabaseAppsForNotifications(window.allAppsCache);
+        }
         if (window.paliaCompareAppNotifications) {
             window.paliaCompareAppNotifications(window.allAppsCache);
         }
@@ -1620,205 +1623,159 @@ document.addEventListener('DOMContentLoaded', async function () {
 </script>
 
 
-<script id="paliaRealNotifications">
+
+
+<script id="paliaDatabaseNotifications">
 (function(){
-  const NOTIFY_KEY='palia_real_notifications_v4';
-  const SNAPSHOT_KEY='palia_real_apps_snapshot_v4';
+  const SNAP='palia_db_apps_snapshot_v5';
+  const NOTIFY='palia_db_notifications_v5';
 
-  function read(k,d){
-    try{ const v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }
-    catch(e){ return d; }
-  }
-  function write(k,v){
-    try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){}
-  }
-  function appId(a){ return String(a.id || a.package_name || a.slug || a.name); }
-  function version(a){ return String(a.version || a.updated_at || ''); }
+  const read=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
+  const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+  const id=a=>String(a.id);
+  const ver=a=>String(a.version || '');
+  const actualRow=a=>a && a.id != null && a.name;
 
-  function unreadCount(){
-    return read(NOTIFY_KEY,[]).filter(n=>!n.read).length;
-  }
-
-  function renderBadge(){
-    const n=unreadCount();
-    const badge=document.getElementById('paliaNotificationCount');
-    const dot=document.getElementById('paliaNotificationDot');
-
-    if(badge){
-      badge.textContent=n>99?'99+':String(n);
-      badge.classList.toggle('hidden',n===0);
-      badge.classList.toggle('flex',n>0);
-    }
-    if(dot) dot.classList.toggle('hidden',n===0);
+  function renderCount(){
+    const list=read(NOTIFY,[]);
+    const n=list.filter(x=>!x.read).length;
+    const b=document.getElementById('paliaNotificationCount');
+    const d=document.getElementById('paliaNotificationDot');
+    if(b){b.textContent=n>99?'99+':String(n);b.classList.toggle('hidden',n===0);b.classList.toggle('flex',n>0)}
+    if(d)d.classList.toggle('hidden',n===0);
   }
 
-  function addNotification(type,app){
-    const list=read(NOTIFY_KEY,[]);
-    const id=appId(app);
-    const ver=version(app);
-    const unique=type+'_'+id+'_'+ver;
+  // IMPORTANT: notifications can ONLY be generated from rows returned by
+  // the live Supabase apps query. No hard-coded/fake app data is used.
+  window.processDatabaseAppsForNotifications=function(apps){
+    if(!Array.isArray(apps)) return;
+    const rows=apps.filter(actualRow);
+    if(!rows.length) return;
 
-    // Prevent duplicate notifications for the same app/version.
-    if(list.some(n=>n.unique===unique)) return;
-
-    list.unshift({
-      unique,
-      type,
-      appId:app.id || null,
-      name:app.name || 'App',
-      version:app.version || '',
-      icon:app.icon_url || app.icon || '',
-      createdAt:Date.now(),
-      read:false
-    });
-
-    write(NOTIFY_KEY,list.slice(0,100));
-    renderBadge();
-  }
-
-  function compareApps(apps){
-    const previous=read(SNAPSHOT_KEY,null);
+    const previous=read(SNAP,null);
     const current={};
 
-    (apps||[]).forEach(app=>{
-      current[appId(app)]={
-        id:app.id || null,
-        name:app.name || 'App',
-        version:version(app),
-        icon_url:app.icon_url || app.icon || ''
+    rows.forEach(a=>{
+      current[id(a)]={
+        id:a.id,
+        name:a.name,
+        version:ver(a),
+        icon_url:a.icon_url || '',
+        updated_at:a.updated_at || null
       };
     });
 
-    // First visit: establish baseline, don't flood the user with all existing apps.
-    if(!previous){
-      write(SNAPSHOT_KEY,current);
+    // First successful live DB read establishes the baseline only.
+    if(previous===null){
+      save(SNAP,current);
+      renderCount();
       return;
     }
 
-    Object.keys(current).forEach(id=>{
-      const now=current[id];
-      const old=previous[id];
+    const notifications=read(NOTIFY,[]);
 
+    rows.forEach(a=>{
+      const key=id(a);
+      const old=previous[key];
+      const currentVersion=ver(a);
+
+      // New row actually returned by Supabase.
       if(!old){
-        addNotification('new',now);
-      }else if(String(old.version)!==String(now.version)){
-        addNotification('update',now);
+        const unique='db_new_'+key+'_'+currentVersion;
+        if(!notifications.some(n=>n.unique===unique)){
+          notifications.unshift({
+            unique,type:'new',
+            appId:a.id,name:a.name,version:a.version||'',
+            icon:a.icon_url||'',createdAt:Date.now(),read:false,
+            source:'supabase.apps'
+          });
+        }
+      }
+      // Existing row whose DB version actually changed.
+      else if(String(old.version)!==currentVersion){
+        const unique='db_update_'+key+'_'+currentVersion;
+        if(!notifications.some(n=>n.unique===unique)){
+          notifications.unshift({
+            unique,type:'update',
+            appId:a.id,name:a.name,version:a.version||'',
+            icon:a.icon_url||'',createdAt:Date.now(),read:false,
+            source:'supabase.apps'
+          });
+        }
       }
     });
 
-    write(SNAPSHOT_KEY,current);
-    renderBadge();
-  }
+    save(NOTIFY,notifications.slice(0,100));
+    save(SNAP,current);
+    renderCount();
+  };
 
-  function openNotifications(){
-    let panel=document.getElementById('paliaRealNotificationPanel');
-    if(panel){
-      panel.remove();
-      return;
-    }
+  function openPanel(){
+    let p=document.getElementById('paliaDatabaseNotificationPanel');
+    if(p){p.remove();return}
 
-    const list=read(NOTIFY_KEY,[]);
-    panel=document.createElement('div');
-    panel.id='paliaRealNotificationPanel';
-    panel.className='fixed right-4 top-20 z-[99999] w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden';
+    const list=read(NOTIFY,[]);
+    p=document.createElement('div');
+    p.id='paliaDatabaseNotificationPanel';
+    p.className='fixed right-4 top-20 z-[99999] w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden';
 
-    let html=`
-      <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-        <div class="font-black text-gray-900">Notifications</div>
-        <button id="paliaMarkAllRead" class="text-xs font-bold text-green-600">Mark all read</button>
-      </div>`;
+    let html='<div class="px-4 py-3 border-b flex items-center justify-between"><b class="text-gray-900">Notifications</b><button id="paliaDbReadAll" class="text-xs font-bold text-green-600">Mark all read</button></div>';
 
     if(!list.length){
-      html+=`<div class="p-6 text-center text-sm text-gray-500">
-        <i class="fa-regular fa-bell text-2xl mb-2"></i>
-        <div>No notifications yet.</div>
-      </div>`;
+      html+='<div class="p-6 text-center text-sm text-gray-500">No notifications from the apps table.</div>';
     }else{
       html+=list.map((n,i)=>`
-        <button type="button" data-notification-index="${i}"
-          class="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-green-50 transition ${n.read?'':'bg-green-50/50'}">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-xl bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
-              ${n.icon ? `<img src="${n.icon}" class="w-full h-full object-contain" alt="">` :
-                `<i class="fa-solid ${n.type==='update'?'fa-arrows-rotate':'fa-plus'} text-green-600"></i>`}
+        <button type="button" data-db-notification="${i}"
+          class="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-green-50 ${n.read?'':'bg-green-50/40'}">
+          <div class="flex gap-3 items-center">
+            <div class="w-11 h-11 rounded-xl border bg-white flex items-center justify-center overflow-hidden shrink-0">
+              ${n.icon?`<img src="${n.icon}" class="w-full h-full object-contain" alt="">`:`<i class="fa-solid ${n.type==='new'?'fa-plus':'fa-arrows-rotate'} text-green-600"></i>`}
             </div>
-            <div class="flex-1 min-w-0">
-              <div class="font-bold text-sm text-gray-900 truncate">
-                ${n.type==='new'?'New App Added':'App Updated'}
-              </div>
+            <div class="min-w-0 flex-1">
+              <div class="font-bold text-sm text-gray-900">${n.type==='new'?'New App Added':'App Updated'}</div>
               <div class="text-xs text-gray-700 truncate">${n.name}</div>
-              ${n.version?`<div class="text-[10px] text-green-600 font-semibold mt-0.5">Version ${n.version}</div>`:''}
+              <div class="text-[10px] text-green-600 font-semibold">${n.version?'Version '+n.version:''}</div>
             </div>
-            ${!n.read?'<span class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>':''}
+            ${n.read?'':'<span class="w-2 h-2 bg-red-500 rounded-full"></span>'}
           </div>
         </button>`).join('');
     }
 
-    panel.innerHTML=html;
-    document.body.appendChild(panel);
+    p.innerHTML=html;
+    document.body.appendChild(p);
 
-    panel.querySelectorAll('[data-notification-index]').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const i=Number(btn.dataset.notificationIndex);
-        const notifications=read(NOTIFY_KEY,[]);
-        const n=notifications[i];
-        if(!n)return;
+    p.querySelectorAll('[data-db-notification]').forEach(btn=>{
+      btn.onclick=()=>{
+        const i=Number(btn.dataset.dbNotification);
+        const items=read(NOTIFY,[]);
+        if(!items[i])return;
+        items[i].read=true;
+        save(NOTIFY,items);
+        renderCount();
 
-        n.read=true;
-        write(NOTIFY_KEY,notifications);
-        renderBadge();
-
-        // Open the exact app detail page.
-        if(n.appId){
-          window.location.href='app.html?id='+encodeURIComponent(n.appId);
-        }else{
-          window.location.href='app.html';
-        }
-      });
+        // The ID came from the actual Supabase apps row.
+        window.location.href='app.html?id='+encodeURIComponent(items[i].appId);
+      };
     });
 
-    const mark=panel.querySelector('#paliaMarkAllRead');
-    if(mark){
-      mark.addEventListener('click',()=>{
-        const notifications=read(NOTIFY_KEY,[]).map(n=>({...n,read:true}));
-        write(NOTIFY_KEY,notifications);
-        renderBadge();
-        panel.remove();
-      });
-    }
+    const all=p.querySelector('#paliaDbReadAll');
+    if(all)all.onclick=()=>{
+      save(NOTIFY,read(NOTIFY,[]).map(n=>({...n,read:true})));
+      renderCount();
+      p.remove();
+    };
   }
 
-  // Expose this so the existing bell button can call the same real notification panel.
-  window.paliaOpenNotifications=openNotifications;
-  window.paliaCompareAppNotifications=compareApps;
-
-  document.addEventListener('DOMContentLoaded',function(){
-    renderBadge();
-
+  document.addEventListener('DOMContentLoaded',()=>{
+    renderCount();
     const bell=document.getElementById('paliaNotificationBtn');
     if(bell){
-      bell.addEventListener('click',function(e){
+      bell.addEventListener('click',e=>{
         e.preventDefault();
         e.stopPropagation();
-        openNotifications();
+        openPanel();
       });
     }
-
-    // Home page already fetches apps from Supabase into allAppsCache.
-    // Check after that data has normally been loaded.
-    const check=()=>{
-      if(Array.isArray(window.allAppsCache) && window.allAppsCache.length){
-        compareApps(window.allAppsCache);
-        return true;
-      }
-      return false;
-    };
-
-    let tries=0;
-    const timer=setInterval(()=>{
-      tries++;
-      if(check() || tries>=20) clearInterval(timer);
-    },1000);
   });
 })();
 </script>
