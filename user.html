@@ -323,9 +323,7 @@ async function syncUserToSupabase(user) {
             auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
         }
 
-        // Safe, reliable redirect after authentication.
-        // Website/PWA: always return to the homepage unless a valid local page
-        // was explicitly requested before login.
+        // Safe redirect after authentication. Only allow local pages and preserve the full query.
         function safeRedirect() {
             const fallback = 'index.html';
             let target = redirectTarget || fallback;
@@ -334,30 +332,16 @@ async function syncUserToSupabase(user) {
                 target = decodeURIComponent(target);
             } catch (_) {}
 
-            target = String(target || fallback).trim();
-
-            // Never leave this website or execute a URL scheme.
-            if (/^(https?:|javascript:|data:|\/\/)/i.test(target) ||
-                target.includes('\\')) {
+            // Never allow external URLs or javascript/data schemes.
+            if (/^(https?:|javascript:|data:|\/\/)/i.test(target)) {
                 target = fallback;
             }
 
+            // Keep redirects inside this app.
             if (target.startsWith('/')) target = target.slice(1);
+            if (target.includes('\\')) target = fallback;
 
-            // Only permit pages that belong to this website.
-            const allowed = /^(index\.html|app\.html|download\.html|downloads\.html|updates\.html|profile\.html|settings\.html|favorites\.html)(\?.*)?$/i;
-            if (!allowed.test(target)) {
-                target = fallback;
-            }
-
-            // Clear stale login redirect state so the next login doesn't
-            // unexpectedly return to an old page.
-            try {
-                sessionStorage.removeItem('palia_google_redirect');
-                localStorage.removeItem('redirect_after_login');
-            } catch (_) {}
-
-            window.location.href = target;
+            window.location.replace(target || fallback);
         }
 
         // Restore the page target before Firebase emits the initial auth state.
@@ -473,8 +457,8 @@ async function syncUserToSupabase(user) {
                 await auth.signInWithEmailAndPassword(email, password);
                 showToast('Login successful! Redirecting...', 'success');
                 setTimeout(() => {
-                    if (auth.currentUser) safeRedirect();
-                }, 300);
+                    safeRedirect();
+                }, 800);
             } catch (error) {
                 showToast(friendlyAuthError(error));
                 btn.disabled = false;
@@ -511,8 +495,8 @@ async function syncUserToSupabase(user) {
                 }
                 showToast('Account created successfully! Redirecting...', 'success');
                 setTimeout(() => {
-                    if (auth.currentUser) safeRedirect();
-                }, 300);
+                    safeRedirect();
+                }, 800);
             } catch (error) {
                 showToast(friendlyAuthError(error));
                 btn.disabled = false;
@@ -591,7 +575,7 @@ document.getElementById('googleLoginBtn').addEventListener('click', async () => 
             const result = await auth.signInWithCredential(credential);
             await syncUserToSupabase(result.user);
             showToast('Google login successful! Redirecting...', 'success');
-            setTimeout(() => safeRedirect(), 250);
+            setTimeout(() => safeRedirect(), 500);
             return;
         }
 

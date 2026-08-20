@@ -182,9 +182,9 @@
             
             <!-- Logo Brand with Hidden Admin Trigger (5 clicks in 2 seconds) -->
             <div id="adminTriggerLogo" class="flex items-center gap-3 group focus:outline-none cursor-pointer" role="button" aria-label="PaliaAPK HUB Home">
-                <div class="w-[52px] h-[52px] rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-lg shadow-mint-600/10 group-hover:scale-105 transition-transform overflow-hidden">
-                    <img src="assets/header-android-12-visible.png" alt="Android" class="w-full h-full object-contain" />
-                </div>
+                <div class="w-[52px] h-[52px] rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-lg shadow-mint-600/10 overflow-hidden">
+<img src="assets/header-android-12-visible.png" alt="Android" class="w-full h-full object-contain" />
+</div>
                 <div>
                     <h1 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
                         PaliaAPK <span class="text-mint-600">HUB</span>
@@ -1565,93 +1565,13 @@ window.handleDownloadClick = async function(appId) {
             );
         }
 
-        // Native Android: download directly inside PaliaAPK HUB.
-        // The Render endpoint may still be the source URL, but it is fetched
-        // by the native downloader; the browser/WebView never navigates to it.
+        // Direct download
         if (window.paliaNativeAndroid?.()) {
-            const sizeBytes = (() => {
-                const s = String(app.apk_size || '').trim().toUpperCase();
-                const m = s.match(/([\d.]+)\s*(GB|GIB|MB|MIB|KB|KIB|B)?/);
-                if (!m) return 0;
-                const mult = {
-                    GB:1000*1000*1000,GIB:1024*1024*1024,
-                    MB:1000*1000,MIB:1024*1024,
-                    KB:1000,KIB:1024,B:1
-                }[m[2] || 'B'] || 1;
-                return Math.round(Number(m[1]) * mult);
-            })();
-
-            let listener = null;
-            try {
-                listener = await window.listenPaliaApkDownloadProgress?.(async (data) => {
-                    if (!data || !window._paliaCurrentDownloadId ||
-                        Number(data.downloadId) !== Number(window._paliaCurrentDownloadId)) return;
-
-                    const modal = document.getElementById('paliaInAppDownload');
-                    if (!modal) return;
-                    const bytes = Number(data.bytesDownloaded || 0);
-                    const total = Number(data.totalBytes || sizeBytes || 0);
-                    const pct = total > 0 ? Math.min(100, Math.round(bytes * 100 / total)) : 0;
-                    const mb = n => (n / 1048576).toFixed(2) + ' MB';
-                    modal.querySelector('[data-palia-progress]').style.width = pct + '%';
-                    modal.querySelector('[data-palia-percent]').textContent = pct + '%';
-                    modal.querySelector('[data-palia-bytes]').textContent =
-                        mb(bytes) + (total ? ' / ' + mb(total) : '');
-                    modal.querySelector('[data-palia-status]').textContent =
-                        data.status === 8 ? 'Download complete' : 'Downloading inside PaliaAPK HUB…';
-
-                    if (data.status === 8) {
-                        try { await window.openPaliaApkInstaller?.(data.filename); } catch (e) {
-                            console.error('Installer:', e);
-                        }
-                    }
-                });
-
-                const filename = (app.name || 'PaliaAPK-HUB-App')
-                    .replace(/[^A-Za-z0-9._ -]/g, '_') + '.apk';
-
-                const modal = document.createElement('div');
-                modal.id = 'paliaInAppDownload';
-                modal.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4';
-                modal.innerHTML = `
-                  <div class="w-full max-w-sm rounded-3xl bg-white shadow-2xl p-6">
-                    <div class="flex items-center gap-3 mb-5">
-                      <img src="assets/header-android-12-visible.png" class="w-14 h-14 rounded-2xl object-contain border border-gray-100" alt="Android">
-                      <div class="min-w-0">
-                        <div class="font-black text-gray-900 truncate">${app.name || 'APK Download'}</div>
-                        <div data-palia-status class="text-xs text-mint-600 font-bold">Starting download…</div>
-                      </div>
-                    </div>
-                    <div class="h-3 rounded-full bg-gray-100 overflow-hidden">
-                      <div data-palia-progress class="h-full rounded-full bg-mint-600 transition-all duration-200" style="width:0%"></div>
-                    </div>
-                    <div class="flex justify-between mt-3 text-xs font-bold text-gray-600">
-                      <span data-palia-bytes>0 MB</span><span data-palia-percent>0%</span>
-                    </div>
-                    <p class="text-[11px] text-gray-400 mt-4 text-center">Downloading directly inside PaliaAPK HUB. Please keep the app open.</p>
-                  </div>`;
-                document.body.appendChild(modal);
-
-                const result = await window.startPaliaApkDownload?.(
-                    downloadUrl, filename, sizeBytes);
-                if (!result?.downloadId) {
-                    modal.remove();
-                    if (listener?.remove) await listener.remove();
-                    window.location.href = downloadUrl;
-                    return;
-                }
-                window._paliaCurrentDownloadId = Number(result.downloadId);
-            } catch (nativeError) {
-                console.error('Native APK download:', nativeError);
-                if (listener?.remove) await listener.remove();
-                const modal = document.getElementById('paliaInAppDownload');
-                modal?.remove();
-                alert('Unable to start in-app download. Please try again.');
-            }
+            const filename = (app.name || 'PaliaAPK-HUB-App').replace(/[^A-Za-z0-9._ -]/g, '_') + '.apk';
+            const result = await window.startPaliaApkDownload?.(downloadUrl, filename, 0);
+            if (!result?.downloadId) throw new Error('Native downloader unavailable');
             return;
         }
-
-        // Website fallback: normal download link, without changing the native app flow.
         const a = document.createElement('a');
         a.href = downloadUrl;
         a.download = (app.name || 'PaliaAPK-HUB-App').replace(/[^A-Za-z0-9._ -]/g, '_') + '.apk';
@@ -1717,10 +1637,7 @@ window.handleDownloadClick = async function(appId) {
                 const redirectUrl = localStorage.getItem('redirect_after_login');
                 if (redirectUrl) {
                     localStorage.removeItem('redirect_after_login');
-                    // Only follow local website pages; never send the user away.
-                    if (/^(index\.html|app\.html|download\.html|downloads\.html|updates\.html|profile\.html|settings\.html|favorites\.html)(\?.*)?$/i.test(redirectUrl)) {
-                        window.location.href = redirectUrl;
-                    }
+                    window.location.href = redirectUrl;
                 }
             } else {
                 loginBtn?.classList.remove('hidden');

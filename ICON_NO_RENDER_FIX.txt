@@ -1,0 +1,1 @@
+Same Android artwork is now used instead of P in the homepage header. On Android, APK downloads use the native PaliaAPK HUB downloader and do not navigate the WebView to the Render source URL. Browser website fallback uses an anchor download.
