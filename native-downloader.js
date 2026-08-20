@@ -17,28 +17,44 @@
     return null;
   }
 
-  window.startPaliaApkDownload = async function (url, filename) {
+  window.startPaliaApkDownload = async function (url, filename, expectedTotalBytes) {
     if (!url) throw new Error("Download URL is missing");
     if (!isAndroidApp()) {
-      const a=document.createElement("a");
-      a.href=url; a.download=filename||"PaliaAPK-HUB-App.apk"; a.rel="noopener";
-      document.body.appendChild(a); a.click(); a.remove();
-      return {fallback:true};
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename || "PaliaAPK-HUB-App.apk";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      return { fallback: true };
     }
-    const p=await getNativePlugin();
-    if (!p || typeof p.download!=="function") throw new Error("Native downloader is not registered.");
-    return await p.download({url:String(url),filename:filename||"PaliaAPK-HUB-App.apk"});
+
+    const p = await getNativePlugin();
+    if (!p || typeof p.download !== "function") {
+      throw new Error("Native downloader is not registered.");
+    }
+
+    return await p.download({
+      url: String(url),
+      filename: filename || "PaliaAPK-HUB-App.apk",
+      expectedTotalBytes: Number(expectedTotalBytes || 0)
+    });
   };
 
   window.getPaliaApkDownloadProgress = async function (downloadId) {
-    const p=await getNativePlugin();
-    if (!p || typeof p.getProgress!=="function") throw new Error("Native progress API is not registered.");
-    return await p.getProgress({downloadId:Number(downloadId)});
+    const p = await getNativePlugin();
+    if (!p || typeof p.getProgress !== "function") {
+      throw new Error("Native progress API is not registered.");
+    }
+    return await p.getProgress({ downloadId: Number(downloadId) });
   };
 
   window.openPaliaApkInstaller = async function (filename) {
-    const p=await getNativePlugin();
-    if (!p || typeof p.openInstaller!=="function") throw new Error("Native installer API is not registered.");
-    return await p.openInstaller({filename:String(filename)});
+    const p = await getNativePlugin();
+    if (!p || typeof p.openInstaller !== "function") {
+      throw new Error("Native installer API is not registered.");
+    }
+    return await p.openInstaller({ filename: String(filename) });
   };
 })();

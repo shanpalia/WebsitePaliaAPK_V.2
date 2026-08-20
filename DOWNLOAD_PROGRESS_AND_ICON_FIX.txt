@@ -1,0 +1,11 @@
+Uses the user's uploaded Android half-logo in the PaliaAPK HUB header.
+Header tile is enlarged and image padding removed.
+
+Download progress fix:
+- Native Android reads both DownloadManager bytes and the actual APK file length.
+- Expected total bytes from apps.apk_size are passed to native Android.
+- UI shows total size immediately.
+- UI polls every 300ms.
+- Temporary progress-query failures no longer hide/reset the progress UI.
+- Download stays inside Android; browser is not used.
+- Completion opens Android's normal APK installer confirmation.

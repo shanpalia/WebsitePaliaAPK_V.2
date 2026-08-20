@@ -390,7 +390,23 @@
                     }
                 } catch (e) {
                     console.error('Download progress error:', e);
+                    if (speedEl) speedEl.textContent = 'Updating...';
                 }
+            }
+
+            function parseSizeToBytes(value) {
+                if (value == null) return 0;
+                const s = String(value).trim().toUpperCase().replace(/,/g, '');
+                const m = s.match(/([\d.]+)\s*(GB|GIB|MB|MIB|KB|KIB|B)?/);
+                if (!m) return 0;
+                const n = Number(m[1]);
+                const unit = m[2] || 'B';
+                const mult = {
+                    'GB': 1000*1000*1000, 'GIB': 1024*1024*1024,
+                    'MB': 1000*1000, 'MIB': 1024*1024,
+                    'KB': 1000, 'KIB': 1024, 'B': 1
+                }[unit] || 1;
+                return Math.round(n * mult);
             }
 
             finalBtn.onclick = async function() {
@@ -407,12 +423,23 @@
                 lastTime = Date.now();
 
                 try {
-                    const result = await window.startPaliaApkDownload(downloadUrl, filename);
+                    const expectedTotalBytes = parseSizeToBytes(app.apk_size);
+                    totalAmount.textContent = expectedTotalBytes > 0
+                        ? formatMB(expectedTotalBytes)
+                        : (app.apk_size || 'Calculating...');
+                    downloadedAmount.textContent = '0 MB';
+                    percent.textContent = '0%';
+                    progressBar.style.width = '0%';
+                    speedEl.textContent = 'Connecting...';
+
+                    const result = await window.startPaliaApkDownload(
+                        downloadUrl, filename, expectedTotalBytes
+                    );
                     const id = Number(result.downloadId);
                     if (!id) throw new Error('Android DownloadManager did not return a download ID');
 
-                    setStatus('Downloading APK', 'Download is running inside Android. You can keep using the app.', 'fa-download');
-                    pollTimer = setInterval(() => pollProgress(id), 500);
+                    setStatus('Downloading APK', 'Downloading inside PaliaAPK HUB…', 'fa-download');
+                    pollTimer = setInterval(() => pollProgress(id), 300);
                     await pollProgress(id);
                 } catch (err) {
                     console.error('Native download error:', err);
