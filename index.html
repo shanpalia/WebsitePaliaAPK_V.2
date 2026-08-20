@@ -173,8 +173,42 @@
         }
     </style>
 <link rel="stylesheet" href="palia-mobile-app.css">
+
+<style id="paliaHeaderControlsStyle">
+  #paliaHeaderControls{z-index:60}
+  html.dark body{background:#0f172a!important;color:#e5e7eb}
+  html.dark .bg-white{background:#111827!important}
+  html.dark .bg-gray-50{background:#0f172a!important}
+  html.dark .bg-gray-100{background:#1f2937!important}
+  html.dark .text-gray-900{color:#f9fafb!important}
+  html.dark .text-gray-800{color:#f3f4f6!important}
+  html.dark .text-gray-700{color:#e5e7eb!important}
+  html.dark .text-gray-600{color:#d1d5db!important}
+</style>
+
 </head>
 <body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
+
+<!-- PaliaAPK HUB header controls -->
+<div id="paliaHeaderControls" class="flex items-center gap-2 ml-auto">
+  <button id="paliaNotificationBtn" type="button"
+    aria-label="Notifications"
+    class="relative w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
+    title="Notifications">
+    <span class="text-xl">🔔</span>
+    <span id="paliaNotificationDot"
+      class="hidden absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500"></span>
+  </button>
+
+  <button id="paliaDarkModeBtn" type="button"
+    aria-label="Toggle dark mode"
+    class="w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
+    title="Dark mode">
+    <span id="paliaThemeIcon" class="text-xl">🌙</span>
+  </button>
+</div>
+
+
 
     <!-- Header & Navigation -->
     <nav class="glass sticky top-0 z-50 border-b border-gray-200/80 py-3 transition-all duration-300">
@@ -1676,5 +1710,48 @@ window.handleDownloadClick = async function(appId) {
 </script>
 
 <script src="native-downloader.js"></script>
+
+<script>
+(function(){
+  function applyTheme(theme){
+    const dark=theme==='dark';
+    document.documentElement.classList.toggle('dark',dark);
+    const icon=document.getElementById('paliaThemeIcon');
+    if(icon) icon.textContent=dark?'☀️':'🌙';
+    const btn=document.getElementById('paliaDarkModeBtn');
+    if(btn) btn.title=dark?'Light mode':'Dark mode';
+  }
+
+  const saved=localStorage.getItem('palia_theme');
+  applyTheme(saved==='dark'?'dark':'light');
+
+  document.addEventListener('DOMContentLoaded',function(){
+    const themeBtn=document.getElementById('paliaDarkModeBtn');
+    if(themeBtn){
+      themeBtn.addEventListener('click',function(){
+        const next=document.documentElement.classList.contains('dark')?'light':'dark';
+        localStorage.setItem('palia_theme',next);
+        applyTheme(next);
+      });
+    }
+
+    const bell=document.getElementById('paliaNotificationBtn');
+    if(bell){
+      bell.addEventListener('click',function(){
+        const dot=document.getElementById('paliaNotificationDot');
+        if(dot) dot.classList.add('hidden');
+        let box=document.getElementById('paliaNotificationPanel');
+        if(box){ box.remove(); return; }
+        box=document.createElement('div');
+        box.id='paliaNotificationPanel';
+        box.className='fixed right-4 top-20 z-[9999] w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white shadow-2xl border border-gray-100 p-4';
+        box.innerHTML='<div class="font-bold text-gray-900 mb-1">Notifications</div><div class="text-sm text-gray-500">No new notifications.</div>';
+        document.body.appendChild(box);
+      });
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

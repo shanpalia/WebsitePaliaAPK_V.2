@@ -1,0 +1,8 @@
+Fixed:
+1. Removed capacitor.js direct script references from all HTML pages. capacitor.js is generated
+   by Capacitor for native builds and should not be requested by the GitHub Pages website.
+2. Restored a notification bell in the homepage header.
+3. Restored a dark/light mode switch; preference is saved in localStorage as palia_theme.
+4. Added a small notification panel and theme handling without requiring Tailwind.
+The Tailwind CDN warning is informational, not a runtime failure. The website can still work;
+it can be eliminated later by bundling Tailwind locally.
