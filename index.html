@@ -1625,157 +1625,75 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
 
+
+
 <script id="paliaDatabaseNotifications">
-(function(){
-  const SNAP='palia_db_apps_snapshot_v5';
-  const NOTIFY='palia_db_notifications_v5';
+(() => {
+  const READ_KEY='palia_db_notification_reads_v6';
+  const client=()=>window.supabaseClient||window._supabaseClient||
+    (window.supabase&&typeof window.supabase.from==='function'?window.supabase:null);
+  const read=()=>{try{return JSON.parse(localStorage.getItem(READ_KEY)||'{}')}catch(_){return{}}};
+  const save=v=>{try{localStorage.setItem(READ_KEY,JSON.stringify(v))}catch(_){}};
 
-  const read=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
-  const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-  const id=a=>String(a.id);
-  const ver=a=>String(a.version || '');
-  const actualRow=a=>a && a.id != null && a.name;
+  async function getRows(){
+    const c=client();
+    if(!c) throw new Error('Supabase client is not initialized');
+    const {data,error}=await c.from('apps')
+      .select('id,name,version,icon_url,updated_at,created_at')
+      .order('updated_at',{ascending:false});
+    if(error) throw error;
+    return Array.isArray(data)?data:[];
+  }
 
-  function renderCount(){
-    const list=read(NOTIFY,[]);
-    const n=list.filter(x=>!x.read).length;
+  function make(row){
+    return {
+      key:String(row.id)+'|'+String(row.version||'')+'|'+String(row.updated_at||row.created_at||''),
+      id:row.id,name:row.name||'App',version:row.version||'',
+      icon:row.icon_url||'',updatedAt:row.updated_at||row.created_at||''
+    };
+  }
+
+  function count(items){
+    const r=read(), n=items.filter(x=>!r[x.key]).length;
     const b=document.getElementById('paliaNotificationCount');
     const d=document.getElementById('paliaNotificationDot');
     if(b){b.textContent=n>99?'99+':String(n);b.classList.toggle('hidden',n===0);b.classList.toggle('flex',n>0)}
     if(d)d.classList.toggle('hidden',n===0);
   }
 
-  // IMPORTANT: notifications can ONLY be generated from rows returned by
-  // the live Supabase apps query. No hard-coded/fake app data is used.
-  window.processDatabaseAppsForNotifications=function(apps){
-    if(!Array.isArray(apps)) return;
-    const rows=apps.filter(actualRow);
-    if(!rows.length) return;
-
-    const previous=read(SNAP,null);
-    const current={};
-
-    rows.forEach(a=>{
-      current[id(a)]={
-        id:a.id,
-        name:a.name,
-        version:ver(a),
-        icon_url:a.icon_url || '',
-        updated_at:a.updated_at || null
-      };
-    });
-
-    // First successful live DB read establishes the baseline only.
-    if(previous===null){
-      save(SNAP,current);
-      renderCount();
-      return;
-    }
-
-    const notifications=read(NOTIFY,[]);
-
-    rows.forEach(a=>{
-      const key=id(a);
-      const old=previous[key];
-      const currentVersion=ver(a);
-
-      // New row actually returned by Supabase.
-      if(!old){
-        const unique='db_new_'+key+'_'+currentVersion;
-        if(!notifications.some(n=>n.unique===unique)){
-          notifications.unshift({
-            unique,type:'new',
-            appId:a.id,name:a.name,version:a.version||'',
-            icon:a.icon_url||'',createdAt:Date.now(),read:false,
-            source:'supabase.apps'
-          });
-        }
-      }
-      // Existing row whose DB version actually changed.
-      else if(String(old.version)!==currentVersion){
-        const unique='db_update_'+key+'_'+currentVersion;
-        if(!notifications.some(n=>n.unique===unique)){
-          notifications.unshift({
-            unique,type:'update',
-            appId:a.id,name:a.name,version:a.version||'',
-            icon:a.icon_url||'',createdAt:Date.now(),read:false,
-            source:'supabase.apps'
-          });
-        }
-      }
-    });
-
-    save(NOTIFY,notifications.slice(0,100));
-    save(SNAP,current);
-    renderCount();
-  };
-
-  function openPanel(){
-    let p=document.getElementById('paliaDatabaseNotificationPanel');
-    if(p){p.remove();return}
-
-    const list=read(NOTIFY,[]);
-    p=document.createElement('div');
-    p.id='paliaDatabaseNotificationPanel';
-    p.className='fixed right-4 top-20 z-[99999] w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden';
-
-    let html='<div class="px-4 py-3 border-b flex items-center justify-between"><b class="text-gray-900">Notifications</b><button id="paliaDbReadAll" class="text-xs font-bold text-green-600">Mark all read</button></div>';
-
-    if(!list.length){
-      html+='<div class="p-6 text-center text-sm text-gray-500">No notifications from the apps table.</div>';
-    }else{
-      html+=list.map((n,i)=>`
-        <button type="button" data-db-notification="${i}"
-          class="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-green-50 ${n.read?'':'bg-green-50/40'}">
-          <div class="flex gap-3 items-center">
-            <div class="w-11 h-11 rounded-xl border bg-white flex items-center justify-center overflow-hidden shrink-0">
-              ${n.icon?`<img src="${n.icon}" class="w-full h-full object-contain" alt="">`:`<i class="fa-solid ${n.type==='new'?'fa-plus':'fa-arrows-rotate'} text-green-600"></i>`}
-            </div>
-            <div class="min-w-0 flex-1">
-              <div class="font-bold text-sm text-gray-900">${n.type==='new'?'New App Added':'App Updated'}</div>
-              <div class="text-xs text-gray-700 truncate">${n.name}</div>
-              <div class="text-[10px] text-green-600 font-semibold">${n.version?'Version '+n.version:''}</div>
-            </div>
-            ${n.read?'':'<span class="w-2 h-2 bg-red-500 rounded-full"></span>'}
-          </div>
-        </button>`).join('');
-    }
-
-    p.innerHTML=html;
-    document.body.appendChild(p);
-
-    p.querySelectorAll('[data-db-notification]').forEach(btn=>{
-      btn.onclick=()=>{
-        const i=Number(btn.dataset.dbNotification);
-        const items=read(NOTIFY,[]);
-        if(!items[i])return;
-        items[i].read=true;
-        save(NOTIFY,items);
-        renderCount();
-
-        // The ID came from the actual Supabase apps row.
-        window.location.href='app.html?id='+encodeURIComponent(items[i].appId);
-      };
-    });
-
-    const all=p.querySelector('#paliaDbReadAll');
-    if(all)all.onclick=()=>{
-      save(NOTIFY,read(NOTIFY,[]).map(n=>({...n,read:true})));
-      renderCount();
-      p.remove();
-    };
+  async function openBell(){
+    const bell=document.getElementById('paliaNotificationBtn');
+    if(bell)bell.disabled=true;
+    try{
+      const items=(await getRows()).map(make);
+      const r=read();
+      let p=document.getElementById('paliaDbNotificationPanel');
+      if(p)p.remove();
+      p=document.createElement('div');
+      p.id='paliaDbNotificationPanel';
+      p.className='fixed right-4 top-20 z-[99999] w-[380px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden';
+      let h='<div class="px-4 py-3 border-b flex items-center justify-between"><b>Notifications</b><span class="text-xs text-gray-500">Live from Apps table</span></div>';
+      if(!items.length) h+='<div class="p-6 text-center text-sm text-gray-500">No apps found in the database.</div>';
+      else h+=items.map((n,i)=>'<button type="button" data-db-notification-index="'+i+'" class="w-full text-left px-4 py-3 border-b hover:bg-green-50 '+(r[n.key]?'':'bg-green-50/40')+'"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-xl border bg-white overflow-hidden flex items-center justify-center shrink-0">'+(n.icon?'<img src="'+n.icon.replace(/"/g,'&quot;')+'" class="w-full h-full object-contain" alt="">':'<i class="fa-brands fa-android text-green-600 text-xl"></i>')+'</div><div class="flex-1 min-w-0"><div class="font-bold text-sm truncate">'+String(n.name).replace(/</g,'&lt;')+'</div><div class="text-xs text-green-600 font-semibold">'+(n.version?'Version '+String(n.version).replace(/</g,'&lt;'):'From apps table')+'</div></div>'+(!r[n.key]?'<span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>':'')+'</div></button>').join('');
+      p.innerHTML=h; document.body.appendChild(p);
+      p.querySelectorAll('[data-db-notification-index]').forEach(b=>{
+        b.onclick=()=>{const n=items[Number(b.dataset.dbNotificationIndex)]; if(!n)return; const m=read();m[n.key]=true;save(m);count(items);window.location.href='app.html?id='+encodeURIComponent(n.id)}
+      });
+      count(items);
+    }catch(e){
+      console.error('Database notifications:',e);
+      let p=document.getElementById('paliaDbNotificationPanel');if(p)p.remove();
+      p=document.createElement('div');p.id='paliaDbNotificationPanel';
+      p.className='fixed right-4 top-20 z-[99999] w-[380px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-red-200 shadow-2xl p-4';
+      p.innerHTML='<div class="font-bold text-red-600">Unable to load notifications</div><div class="text-xs text-gray-500 mt-1">'+String(e.message||e).replace(/</g,'&lt;')+'</div>';
+      document.body.appendChild(p);
+    }finally{if(bell)bell.disabled=false}
   }
 
-  document.addEventListener('DOMContentLoaded',()=>{
-    renderCount();
+  document.addEventListener('DOMContentLoaded',async()=>{
     const bell=document.getElementById('paliaNotificationBtn');
-    if(bell){
-      bell.addEventListener('click',e=>{
-        e.preventDefault();
-        e.stopPropagation();
-        openPanel();
-      });
-    }
+    if(bell)bell.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openBell()});
+    try{count((await getRows()).map(make))}catch(e){console.warn('Notification count:',e.message||e)}
   });
 })();
 </script>
