@@ -1,0 +1,31 @@
+{
+  "name": "paliaapk-hub-telegram-upload-api",
+  "version": "1.0.0",
+  "description": "Production-ready Telegram MTProto APK upload API for PaliaAPK HUB built from scratch with Express, Multer, and official telegram package.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "express",
+    "telegram",
+    "mtproto",
+    "multer",
+    "upload",
+    "paliaapk"
+  ],
+  "author": "PaliaAPK HUB",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "input": "^1.0.1",
+    "multer": "^1.4.5-lts.1",
+    "telegram": "^2.26.15"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

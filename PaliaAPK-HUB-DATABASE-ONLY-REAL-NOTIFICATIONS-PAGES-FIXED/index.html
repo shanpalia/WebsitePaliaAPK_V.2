@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaliaAPK HUB | Premium Android Store & Verified APKs</title>
+    
+    <!-- SEO & Performance Meta Tags -->
+    <meta name="description" content="Download verified, secure, and latest Android APKs, games, and tools on PaliaAPK HUB. Fast downloads, 100% safe, and zero malware guaranteed.">
+    <meta name="theme-color" content="#16a34a">
+    
+    <!-- Preload Critical Assets -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Font Inter & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        mint: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 30px rgba(0,0,0,.06)',
+                        'hover-card': '0 20px 40px rgba(22, 163, 74, 0.12)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
+    <!-- Firebase App & Auth Compat CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --primary: #16a34a;
+            --primary-light: #22c55e;
+            --bg: #ffffff;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e5e7eb;
+        }
+
+        .dark {
+            --bg: #0b0f19;
+            --card: #131b2e;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #1e293b;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+        .dark .glass {
+            background: rgba(19, 27, 46, 0.92);
+            border-color: #1e293b !important;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+        }
+
+        .app-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,.04);
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(22, 163, 74, 0.1);
+            border-color: #bbf7d0;
+        }
+
+        .hero-card {
+            background: var(--card);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .download-btn {
+            background: #16a34a;
+            color: #fff;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+        }
+        .download-btn:hover {
+            background: #15803d;
+        }
+
+        .hero-img-contain {
+            object-fit: contain;
+            background-color: rgba(0,0,0,0.02);
+        }
+
+        /* Play Store Category Card Styles & Ripple Effect */
+        .category-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            flex-shrink: 0;
+            width: 130px;
+        }
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(22, 163, 74, 0.12);
+            border-color: #bbf7d0;
+        }
+        .category-ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(0);
+            animation: category-ripple-anim 0.6s linear;
+            pointer-events: none;
+        }
+        @keyframes category-ripple-anim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
+<!-- PaliaAPK HUB Mobile App Install Prompt -->
+<div id="installAppPrompt"
+     class="hidden fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm items-center justify-center p-4">
+
+    <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
+
+        <div class="p-6 text-center">
+
+            <!-- App Icon -->
+            <div class="mx-auto w-20 h-20 rounded-2xl bg-mint-50 border border-mint-100 p-2 flex items-center justify-center shadow-sm">
+                <img
+                    src="assets/icon.png"
+                    alt="PaliaAPK HUB"
+                    class="w-full h-full object-contain rounded-xl"
+                    onerror="this.style.display='none';"
+                >
+            </div>
+
+            <h2 class="text-xl font-black text-gray-900 mt-4">
+                Get PaliaAPK HUB App
+            </h2>
+
+            <p class="text-sm text-gray-500 mt-2 leading-relaxed">
+                Get a faster and better experience with the PaliaAPK HUB Android app.
+            </p>
+
+            <div class="mt-5 space-y-2 text-left">
+
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <div class="w-8 h-8 rounded-lg bg-mint-50 text-mint-600 flex items-center justify-center">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <span>Fast access to your apps</span>
+                </div>
+
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <div class="w-8 h-8 rounded-lg bg-mint-50 text-mint-600 flex items-center justify-center">
+                        <i class="fa-solid fa-download"></i>
+                    </div>
+                    <span>Easy APK downloads</span>
+                </div>
+
+                <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <div class="w-8 h-8 rounded-lg bg-mint-50 text-mint-600 flex items-center justify-center">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <span>Get update notifications</span>
+                </div>
+
+            </div>
+
+            <button
+                id="installAppBtn"
+                class="w-full mt-6 bg-mint-600 hover:bg-mint-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-mint-600/20">
+                <i class="fa-solid fa-mobile-screen-button mr-2"></i>
+                Install PaliaAPK HUB
+            </button>
+
+            <button
+                id="installLaterBtn"
+                class="w-full mt-2 py-3 text-sm font-semibold text-gray-500 hover:text-gray-800 transition">
+                Continue in Browser
+            </button>
+
+        </div>
+    </div>
+</div>
+    <!-- Header & Navigation -->
+    <nav class="glass sticky top-0 z-50 border-b border-gray-200/80 py-3 transition-all duration-300">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+            
+            <!-- Logo Brand with Hidden Admin Trigger (5 clicks in 2 seconds) -->
+            <div id="adminTriggerLogo" class="flex items-center gap-3 group focus:outline-none cursor-pointer" role="button" aria-label="PaliaAPK HUB Home">
+                <div class="bg-white w-11 h-11 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg shadow-mint-600/20 group-hover:scale-105 transition-transform">
+                    <img src="assets/android-half-logo.png" alt="Android" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h1 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
+                        PaliaAPK <span class="text-mint-600">HUB</span>
+                    </h1>
+                    <p class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Android Store</p>
+                </div>
+            </div>
+
+            <!-- Search Bar with Autocomplete Dropdown -->
+            <div class="hidden md:flex flex-1 max-w-lg mx-4 relative">
+                <div class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full w-full px-4 py-2.5 flex items-center relative">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
+                    <input type="text" id="searchInput" placeholder="Search apps, games, tools..." class="bg-transparent outline-none w-full ml-3 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400">
+                    <div id="searchAutocomplete" class="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700"></div>
+                </div>
+            </div>
+
+            <!-- Right Actions & Controls: Notifications, Dark Mode, Profile/Login -->
+            <div class="flex items-center gap-3">
+                
+                <!-- Notification Dropdown -->
+                <div class="relative">
+                    <button id="notificationToggleBtn" class="relative w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                        <i class="fa-solid fa-bell text-sm"></i>
+                        <span id="notificationBadge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow">2</span>
+                    </button>
+                    <div id="notificationDropdown" class="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-3">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 dark:border-gray-700">
+                            <h4 class="font-bold text-xs text-gray-900 dark:text-white uppercase tracking-wider">Notifications</h4>
+                            <span class="text-[10px] text-mint-600 dark:text-mint-400 font-bold cursor-pointer hover:underline" onclick="markNotificationsRead()">Mark read</span>
+                        </div>
+                        <div class="space-y-2 text-xs" id="notificationList">
+                            <div class="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 flex items-start gap-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-shield-check text-xs"></i></div>
+                                <div>
+                                    <p class="font-bold text-gray-800 dark:text-gray-200">Security Update</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">All APK files scanned with zero malware guarantee.</p>
+                                </div>
+                            </div>
+                            <div class="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 flex items-start gap-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-rocket text-xs"></i></div>
+                                <div>
+                                    <p class="font-bold text-gray-800 dark:text-gray-200">New Apps Added</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Nova AI and PaliaCraft Launcher updated.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dark Mode Toggle -->
+                <button id="darkModeToggle" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                </button>
+                
+                <!-- Authentication & Profile Avatar Dropdown -->
+                <div class="relative" id="userArea">
+                    <button id="loginBtn" class="px-4 h-10 rounded-xl bg-mint-600 hover:bg-mint-700 text-white font-bold text-xs transition shadow-md shadow-mint-600/20 flex items-center gap-2">
+                        <i class="fa-solid fa-user"></i> Login
+                    </button>
+                    
+                    <div id="profileBox" class="hidden relative">
+                        <div id="profileAvatarBtn" class="flex items-center gap-2 cursor-pointer p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800">
+                            <div id="profileAvatar" class="w-9 h-9 rounded-lg gradient-bg text-white flex items-center justify-center font-bold text-xs shadow">SP</div>
+                        </div>
+                        
+                        <!-- Profile Dropdown Menu -->
+                        <div id="profileDropdown" class="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-2 space-y-1">
+                            <a href="profile.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+    <i class="fa-solid fa-user text-mint-600"></i> My Profile
+</a>
+                            <a href="downloads.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-download text-mint-600"></i> Downloads
+                            </a>
+                            <a href="favorites.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-heart text-mint-600"></i> Favorites
+                            </a>
+                            <a href="profile.html#availableUpdates" id="headerUpdatesLink" class="flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <span class="flex items-center gap-2.5"><i class="fa-solid fa-rotate text-mint-600"></i> App Updates</span>
+                                <span id="headerUpdateCount" class="hidden min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-black items-center justify-center">0</span>
+                            </a>
+
+                            <a href="settings.html" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-mint-50 dark:hover:bg-mint-900/30 hover:text-mint-600 transition">
+                                <i class="fa-solid fa-gear text-mint-600"></i> Settings
+                            </a>
+                            <div class="border-t border-gray-100 dark:border-gray-700 pt-1 mt-1">
+                                <button id="logoutBtn" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition text-left">
+                                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow">
+        
+        <!-- Hero Slider Section -->
+        <section class="hero-card relative mb-8">
+            <div class="swiper heroSwiper w-full">
+                <div class="swiper-wrapper" id="featured-slider">
+                    <!-- Dynamic Slider Items populated from Supabase -->
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-next text-mint-600"></div>
+                <div class="swiper-button-prev text-mint-600"></div>
+            </div>
+        </section>
+
+        <!-- Categories Section (Placed directly below Hero Slider and above Apps) -->
+        <section id="categoriesSection" class="mb-12"" id="categoriesSection">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Categories</h3>
+                
+                <!-- Desktop & Tablet Navigation Arrows -->
+                <div class="hidden sm:flex items-center gap-2">
+                    <button id="categoryPrevBtn" onclick="scrollCategories(-1)" class="w-11 h-11 rounded-full bg-white dark:bg-gray-800 text-mint-600 dark:text-mint-400 shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-mint-600 hover:text-white transition-all transform hover:scale-105">
+                        <i class="fa-solid fa-chevron-left text-sm"></i>
+                    </button>
+                    <button id="categoryNextBtn" onclick="scrollCategories(1)" class="w-11 h-11 rounded-full bg-white dark:bg-gray-800 text-mint-600 dark:text-mint-400 shadow-md border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-mint-600 hover:text-white transition-all transform hover:scale-105">
+                        <i class="fa-solid fa-chevron-right text-sm"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Horizontal Scrolling Categories Container -->
+            <div id="categoriesContainer"
+     class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+</div>
+
+            <!-- View All Categories CTA Button -->
+            <div class="mt-6 text-center">
+               <button
+    id="viewAllCategoriesBtn"
+    onclick="toggleAllCategories()"
+    class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-mint-50 hover:bg-mint-100 text-mint-700 font-bold text-xs transition border border-mint-200 shadow-sm"
+>
+    <span id="viewAllCategoriesText">View All Categories</span>
+    <i id="viewAllCategoriesIcon" class="fa-solid fa-chevron-down text-[10px]"></i>
+</button>
+            </div>
+        </section>
+
+        <!-- Featured Collections Section -->
+        <section id="topChartsSection" class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Featured Collections</h3>
+            </div>
+            <div id="featuredCollectionsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Injected via Supabase data -->
+            </div>
+        </section>
+
+        <!-- Top Charts Section -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Top Charts</h3>
+            </div>
+            <div id="topChartsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Injected via Supabase data -->
+            </div>
+        </section>
+
+        <!-- Recently Updated Section -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">Recently Updated</h3>
+            </div>
+            <div id="recentlyUpdatedGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Injected via Supabase data -->
+            </div>
+        </section>
+
+        <!-- Apps Listing Section (Filtered by Category / Search) -->
+        <section class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="sectionHeading" class="text-xl font-black tracking-tight text-gray-900 dark:text-white uppercase">All Apps</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="triggerShareWebsite()" class="px-3.5 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 dark:hover:bg-mint-900/30 text-gray-700 dark:text-gray-300 hover:text-mint-600 font-bold text-xs transition flex items-center gap-2 border border-gray-200 dark:border-gray-700">
+                        <i class="fa-solid fa-share-nodes"></i> Share Store
+                    </button>
+                </div>
+            </div>
+            <div id="appsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Dynamic App Cards -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 py-12 mt-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="gradient-bg w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"><img src="assets/android-half-logo.png" alt="Android" class="w-full h-full object-contain"></div>
+                        <span class="font-black text-base text-gray-900 dark:text-white">PaliaAPK HUB</span>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Your ultimate destination for verified, secure, and fast Android app downloads.</p>
+                    <div class="flex items-center gap-3 text-gray-600 dark:text-gray-300">
+                        <a href="https://t.me/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="Telegram"><i class="fa-brands fa-telegram text-xs"></i></a>
+                        <a href="https://github.com/ShanPalia" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="GitHub"><i class="fa-brands fa-github text-xs"></i></a>
+                        <a href="https://facebook.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="Facebook"><i class="fa-brands fa-facebook text-xs"></i></a>
+                        <a href="https://instagram.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="Instagram"><i class="fa-brands fa-instagram text-xs"></i></a>
+                        <a href="https://youtube.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="YouTube"><i class="fa-brands fa-youtube text-xs"></i></a>
+                        <a href="https://x.com/" target="_blank" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-mint-600 hover:text-white transition" aria-label="X"><i class="fa-brands fa-x-twitter text-xs"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">Quick Links</h4>
+                    <ul class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                        <li>
+    <a href="index.html" class="hover:text-mint-600 transition">
+        Home
+    </a>
+</li>
+
+<li>
+    <a href="index.html#categoriesSection" class="hover:text-mint-600 transition">
+        Categories
+    </a>
+</li>
+
+<li>
+    <a href="index.html#topChartsSection" class="hover:text-mint-600 transition">
+        Top Charts
+    </a>
+</li>
+
+<li>
+    <a href="dmca.html" class="hover:text-mint-600 transition">
+        DMCA Policy
+    </a>
+</li>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">Legal & Safety</h4>
+                    <ul class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                        <li><a href="privacy.html" class="hover:text-mint-600 transition">Privacy Policy</a></li>
+                        <li><a href="terms.html" class="hover:text-mint-600 transition">Terms of Service</a></li>
+                        <li><a href="security.html" class="hover:text-mint-600 transition">Security Check</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">📤 Share Website</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Share PaliaAPK HUB with your friends and help them discover safe and verified Android APKs.</p>
+                    <button onclick="triggerShareWebsite()" class="w-full bg-mint-600 hover:bg-mint-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-md shadow-mint-600/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-share-nodes"></i> Share Website
+                    </button>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xs uppercase tracking-wider text-gray-900 dark:text-white mb-3">Newsletter</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Subscribe for latest verified updates & app releases.</p>
+                    <form onsubmit="event.preventDefault(); alert('Subscribed successfully!');" class="flex gap-2">
+                        <input type="email" placeholder="Your email..." required class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-2 rounded-xl text-xs w-full outline-none text-gray-800 dark:text-gray-200">
+                        <button type="submit" class="bg-mint-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-mint-700 transition">Join</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-100 dark:border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+                <p>&copy; 2026 PaliaAPK HUB. All rights reserved. • Developed with ❤️ by <a href="https://github.com/ShanPalia" target="_blank" class="text-mint-600 dark:text-mint-400 font-bold hover:underline">ShanPalia</a></p>
+                <p class="flex items-center gap-1.5 font-medium">
+                    <span>👨‍💻 Developed by</span>
+                    <a href="https://github.com/ShanPalia" target="_blank" class="text-mint-600 dark:text-mint-400 font-bold hover:underline">ShanPalia</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <!-- Main Logic Script -->
+    <script type="module">
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",
+            authDomain: "shanpalia-apk-hub.firebaseapp.com",
+            projectId: "shanpalia-apk-hub",
+            storageBucket: "shanpalia-apk-hub.firebasestorage.app",
+            messagingSenderId: "270953807883",
+            appId: "1:270953807883:web:c900f4409938f16477870e"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        // Keep the homepage UI synchronized with Firebase Authentication.
+        // Firebase auth state persists across the login page -> homepage navigation.
+        auth.onAuthStateChanged((user) => {
+            const loginBtn = document.getElementById('loginBtn');
+            const profileBox = document.getElementById('profileBox');
+            const profileAvatar = document.getElementById('profileAvatar');
+
+            if (user) {
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (profileBox) profileBox.classList.remove('hidden');
+
+                if (profileAvatar) {
+                    const displayName = user.displayName || user.email || 'User';
+                    const initials = displayName
+                        .split(/[\s@._-]+/)
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map(x => x[0].toUpperCase())
+                        .join('');
+                    profileAvatar.textContent = initials || 'U';
+                    profileAvatar.title = user.email || '';
+                }
+
+                localStorage.setItem('palia_logged_in', 'true');
+                localStorage.setItem('palia_user_uid', user.uid);
+            } else {
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (profileBox) profileBox.classList.add('hidden');
+                localStorage.removeItem('palia_logged_in');
+                localStorage.removeItem('palia_user_uid');
+            }
+        });
+
+
+        // Supabase Client
+        const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_pXsTbFOseqm5uuA0hzqSzQ_UJxdvQi9';
+        const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+        window.allAppsCache = [];
+        window.currentCategory = 'All';
+        window.currentSearchQuery = '';
+
+        // Exact 10 requested categories + All
+      const defaultCategoriesConfig = [
+    { name: 'All', icon: 'fa-fire' },
+    { name: 'AI', icon: 'fa-robot' },
+    { name: 'Social', icon: 'fa-comments' },
+    { name: 'Games', icon: 'fa-gamepad' },
+    { name: 'Tools', icon: 'fa-screwdriver-wrench' },
+    { name: 'Music', icon: 'fa-music' },
+    { name: 'Video', icon: 'fa-play' },
+    { name: 'Photography', icon: 'fa-camera' },
+    { name: 'Education', icon: 'fa-graduation-cap' },
+    { name: 'Business', icon: 'fa-briefcase' },
+
+    { name: 'Finance', icon: 'fa-wallet' },
+    { name: 'News', icon: 'fa-newspaper' },
+    { name: 'Entertainment', icon: 'fa-film' },
+    { name: 'Shopping', icon: 'fa-cart-shopping' },
+    { name: 'Travel', icon: 'fa-plane' },
+    { name: 'Food & Drink', icon: 'fa-utensils' },
+    { name: 'Lifestyle', icon: 'fa-heart' },
+    { name: 'Productivity', icon: 'fa-list-check' },
+    { name: 'Communication', icon: 'fa-message' },
+    { name: 'Security', icon: 'fa-shield-halved' },
+
+    { name: 'Weather', icon: 'fa-cloud-sun' },
+    { name: 'Sports', icon: 'fa-futbol' },
+    { name: 'Books', icon: 'fa-book' },
+    { name: 'Kids', icon: 'fa-child' },
+    { name: 'Health & Fitness', icon: 'fa-dumbbell' },
+    { name: 'Maps & Navigation', icon: 'fa-map-location-dot' },
+    { name: 'Photo Editing', icon: 'fa-image' },
+    { name: 'Video Editing', icon: 'fa-video' },
+    { name: 'Developer', icon: 'fa-code' },
+    { name: 'Internet', icon: 'fa-globe' },
+
+    { name: 'Browser', icon: 'fa-compass' },
+    { name: 'File Manager', icon: 'fa-folder-open' },
+    { name: 'Cloud Storage', icon: 'fa-cloud' },
+    { name: 'VPN', icon: 'fa-user-shield' },
+    { name: 'Launcher', icon: 'fa-mobile-screen-button' },
+    { name: 'Customization', icon: 'fa-palette' },
+    { name: 'Wallpaper', icon: 'fa-image' },
+    { name: 'Keyboard', icon: 'fa-keyboard' },
+    { name: 'Messaging', icon: 'fa-comment-dots' },
+    { name: 'Calling', icon: 'fa-phone' },
+
+    { name: 'Health', icon: 'fa-heart-pulse' },
+    { name: 'Fitness', icon: 'fa-person-running' },
+    { name: 'Utilities', icon: 'fa-toolbox' },
+    { name: 'OCR', icon: 'fa-file-lines' },
+    { name: 'Translation', icon: 'fa-language' },
+    { name: 'Audio', icon: 'fa-headphones' },
+    { name: 'Streaming', icon: 'fa-tv' },
+    { name: 'Remote Control', icon: 'fa-computer-mouse' },
+    { name: 'Developer Tools', icon: 'fa-terminal' },
+    { name: 'Other', icon: 'fa-layer-group' }
+];
+
+
+// ===============================
+// SITE VISIT TRACKING
+// ===============================
+
+async function recordSiteVisit() {
+
+    if (!supabaseClient) {
+        console.error("Supabase is not configured.");
+        return;
+    }
+
+    try {
+
+        const { error } = await supabaseClient
+            .from("site_visits")
+            .insert({
+                page: window.location.pathname
+            });
+
+        if (error) {
+            console.error("Site Visit Error:", error);
+            return;
+        }
+
+        console.log("Site visit recorded successfully.");
+
+    } catch (error) {
+
+        console.error("Site Visit Tracking Error:", error);
+
+    }
+}
+
+recordSiteVisit();
+
+
+        // Header Login button: always open the website login page.
+        document.getElementById('loginBtn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            try {
+                if (!localStorage.getItem('redirect_after_login')) {
+                    localStorage.setItem('redirect_after_login', 'index.html');
+                }
+            } catch (_) {}
+            window.location.href = 'user.html';
+        });
+
+        // Dark mode toggle.
+        document.getElementById('darkModeToggle')?.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            try {
+                localStorage.setItem(
+                    'palia_theme',
+                    document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+                );
+            } catch (_) {}
+        });
+
+        // Hidden Admin Trigger Logic: 5 clicks on logo within 2 seconds
+        let logoClickCount = 0;
+        let logoClickTimer = null;
+        const adminTriggerLogo = document.getElementById('adminTriggerLogo');
+        adminTriggerLogo?.addEventListener('click', () => {
+            logoClickCount++;
+            if (logoClickCount === 1) {
+                logoClickTimer = setTimeout(() => {
+                    logoClickCount = 0;
+                }, 2000);
+            }
+            if (logoClickCount >= 5) {
+                clearTimeout(logoClickTimer);
+                logoClickCount = 0;
+                window.location.href = 'admin.html';
+            }
+        });
+
+        // Notifications Dropdown Toggle & Marking Read
+        const notificationToggleBtn = document.getElementById('notificationToggleBtn');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationBadge = document.getElementById('notificationBadge');
+
+        notificationToggleBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notificationDropdown?.classList.toggle('hidden');
+        });
+
+        window.markNotificationsRead = function() {
+            if (notificationBadge) notificationBadge.style.display = 'none';
+        };
+
+        // Profile Avatar Dropdown Toggle
+        const profileAvatarBtn = document.getElementById('profileAvatarBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        profileAvatarBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown?.classList.toggle('hidden');
+        });
+
+
+        document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await auth.signOut();
+                window.location.reload();
+            } catch (err) {
+                console.error('Logout failed:', err);
+            }
+        });
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            notificationDropdown?.classList.add('hidden');
+            profileDropdown?.classList.add('hidden');
+            const autocomplete = document.getElementById('searchAutocomplete');
+            if (autocomplete) autocomplete.classList.add('hidden');
+        });
+
+        // Initialize Data from Supabase
+       // ===============================
+// LOAD APPS FROM SUPABASE
+// ===============================
+async function initData() {
+
+    if (!supabaseClient) {
+        console.error("Supabase client not initialized");
+        return;
+    }
+
+    try {
+
+        const { data: apps, error } = await supabaseClient
+            .from("apps")
+            .select("*");
+
+        if (error) {
+            console.error("SUPABASE APPS ERROR:", error);
+            throw error;
+        }
+
+        console.log("SUPABASE APPS:", apps);
+        console.log("TOTAL APPS:", apps?.length || 0);
+
+        window.allAppsCache = apps || [];
+        if (window.processDatabaseAppsForNotifications) {
+            window.processDatabaseAppsForNotifications(window.allAppsCache);
+        }
+        if (window.paliaCompareAppNotifications) {
+            window.paliaCompareAppNotifications(window.allAppsCache);
+        }
+        try {
+            localStorage.setItem('palia_apps_cache', JSON.stringify(window.allAppsCache));
+            localStorage.setItem('palia_apps_cache_time', String(Date.now()));
+        } catch (cacheError) {
+            console.warn('Could not cache apps locally:', cacheError);
+        }
+
+        renderPageData(window.allAppsCache);
+
+    } catch (err) {
+
+        console.error("FAILED TO LOAD APPS FROM SUPABASE:", err);
+
+        // IMPORTANT:
+        // Don't show fake fallback apps.
+        window.allAppsCache = [];
+
+        const appsGrid = document.getElementById("appsGrid");
+
+        if (appsGrid) {
+            appsGrid.innerHTML = `
+                <div class="col-span-full py-16 text-center">
+                    <div class="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+
+                    <p class="text-sm font-bold text-red-600">
+                        Unable to load apps from Supabase
+                    </p>
+
+                    <p class="text-xs text-gray-500 mt-2">
+                        Check browser console for the exact error.
+                    </p>
+                </div>
+            `;
+        }
+    }
+}
+        function loadFallbacks() {
+            window.allAppsCache = [
+                { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300'], featured: true, top_chart: true, recently_updated: true },
+                { id: 2, name: 'CyberShield Browser', category: 'Tools', downloads: '850K', rating: 4.8, size: '32 MB', version: 'v1.5', icon_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150', banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800', screenshots: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300'], featured: true, top_chart: true, recently_updated: false },
+                { id: 3, name: 'Nova AI Assistant', category: 'AI', downloads: '2.5M', rating: 4.9, size: '64 MB', version: 'v3.0', icon_url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=150', banner_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', screenshots: ['https://images.unsplash.com/photo-1677442136019-21780efad99a?w=300'], featured: false, top_chart: true, recently_updated: true }
+            ];
+            renderPageData(window.allAppsCache);
+        }
+
+        function renderPageData(apps) {
+            const featuredApps = apps.filter(a => a.featured || a.is_featured);
+            renderHeroSlider(featuredApps.length > 0 ? featuredApps : apps);
+            renderCategoriesSection(apps);
+            renderFeaturedCollections(apps);
+            renderTopCharts(apps);
+            renderRecentlyUpdated(apps);
+            filterAndRenderApps();
+            setupCategoryScrollListeners();
+            setupLiveSearch();
+        }
+// ===============================
+// VIEW ALL CATEGORIES
+// ===============================
+
+window.showAllCategories = false;
+
+window.toggleAllCategories = function () {
+
+    window.showAllCategories = !window.showAllCategories;
+
+    renderCategoriesSection(window.allAppsCache);
+
+    const text = document.getElementById("viewAllCategoriesText");
+    const icon = document.getElementById("viewAllCategoriesIcon");
+
+    if (window.showAllCategories) {
+
+        text.textContent = "Show Less Categories";
+
+        icon.className = "fa-solid fa-chevron-up text-[10px]";
+
+        // नीचे categories तक smooth scroll
+        setTimeout(() => {
+            document.getElementById("categoriesContainer")
+                ?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+        }, 100);
+
+    } else {
+
+        text.textContent = "View All Categories";
+
+        icon.className = "fa-solid fa-chevron-down text-[10px]";
+
+    }
+};
+        // Hero Slider with dynamic loop check (< 3 items disables loop)
+      function renderHeroSlider(apps) {
+    const wrapper = document.getElementById('featured-slider');
+    if (!wrapper) return;
+
+    const shouldLoop = apps.length >= 3;
+
+    wrapper.innerHTML = apps.map(app => {
+
+        const bannerImage = app.banner_url || app.icon_url;
+
+        return `
+            <div
+                class="swiper-slide relative overflow-hidden bg-white cursor-pointer"
+                onclick="handleSliderClick('${app.id}')"
+            >
+
+                <div class="min-h-[260px] sm:min-h-[300px] w-full flex items-center p-5 sm:p-8">
+
+                    <!-- LEFT CONTENT -->
+                    <div class="flex-1 min-w-0 pr-4 sm:pr-8">
+
+                        <div class="flex items-start gap-4">
+
+                            <!-- APP ICON -->
+                            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-gray-200 shadow-md p-2 flex-shrink-0 flex items-center justify-center">
+                                <img
+                                    src="${app.icon_url || ''}"
+                                    alt="${app.name || 'App'}"
+                                    class="w-full h-full object-contain rounded-xl"
+                                >
+                            </div>
+
+                            <div class="min-w-0">
+
+                                <!-- FEATURED + VERSION -->
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="bg-mint-50 text-mint-700 border border-mint-100 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                                        FEATURED
+                                    </span>
+
+                                    <span class="text-xs font-semibold text-gray-400">
+                                        ${app.version || 'Latest'}
+                                    </span>
+                                    ${(() => {
+                                        try {
+                                            const installed = JSON.parse(localStorage.getItem('palia_installed_versions') || '{}');
+                                            return installed[String(app.id)] && String(installed[String(app.id)]) !== String(app.version || '')
+                                                ? '<span class="bg-orange-50 text-orange-600 border border-orange-100 px-2 py-1 rounded-full text-[10px] font-bold">UPDATE AVAILABLE</span>'
+                                                : '';
+                                        } catch (_) { return ''; }
+                                    })()}
+                                </div>
+
+                                <!-- APP NAME -->
+                                <h2 class="text-xl sm:text-3xl font-black text-gray-900 leading-tight truncate">
+                                    ${app.name || 'Unknown App'}
+                                </h2>
+
+                                <!-- INFO -->
+                                <div class="flex flex-wrap items-center gap-2 mt-2 text-xs text-gray-500">
+                                    <span>⭐ ${app.rating || '4.9'}</span>
+                                    <span>•</span>
+                                    <span>${app.downloads || 'New'}</span>
+                                </div>
+
+                                <!-- BUTTON -->
+                                <div class="mt-4">
+                                    <button
+                                        onclick="event.stopPropagation(); handleDownloadClick('${app.id}')"
+                                        class="download-btn inline-flex items-center gap-2 text-xs sm:text-sm"
+                                    >
+                                        <i class="fa-solid fa-download"></i>
+                                        Download
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <!-- RIGHT BANNER -->
+                    <div class="w-[42%] sm:w-[45%] max-w-[480px] flex-shrink-0">
+
+                        <div class="w-full aspect-[16/8] bg-gray-50 rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex items-center justify-center">
+
+                            <img
+                                src="${bannerImage}"
+                                alt="${app.name || 'App Banner'}"
+                                class="w-full h-full object-contain"
+                                loading="lazy"
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+
+    }).join('');
+
+
+    // Initialize Swiper
+    if (typeof Swiper !== 'undefined') {
+
+        const existingSwiper =
+            document.querySelector('.heroSwiper')?.swiper;
+
+        if (existingSwiper) {
+            existingSwiper.destroy(true, true);
+        }
+
+        new Swiper('.heroSwiper', {
+            loop: shouldLoop,
+
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false
+            },
+
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true
+            },
+
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev'
+            },
+
+            observer: true,
+            observeParents: true,
+
+            slidesPerView: 1,
+
+            spaceBetween: 0
+        });
+    }
+}
+        // Render Categories Section
+        window.renderCategoriesSection = function(appsArray) {
+            const container = document.getElementById('categoriesContainer');
+            if (!container) return;
+
+           const categoriesToShow = window.showAllCategories
+    ? defaultCategoriesConfig
+    : defaultCategoriesConfig.slice(0, 10);
+
+container.innerHTML = categoriesToShow.map(catConfig => {
+                const matchedCount = catConfig.name === 'All' 
+                    ? (appsArray || []).length 
+                    : (appsArray || []).filter(a => a.category && a.category.toLowerCase() === catConfig.name.toLowerCase()).length;
+                
+                const isSelected = window.currentCategory.toLowerCase() === catConfig.name.toLowerCase();
+
+               const cardClasses = isSelected
+    ? "category-card snap-start p-4 rounded-2xl bg-mint-50 text-mint-700 border-2 border-mint-200 shadow-md shadow-mint-100 flex flex-col items-center justify-center gap-2 cursor-pointer transform -translate-y-1"
+    : "category-card snap-start p-4 rounded-2xl bg-white dark:bg-gray-800/90 hover:bg-mint-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-200/80 dark:border-gray-700/80 flex flex-col items-center justify-center gap-2 cursor-pointer shadow-sm";
+
+               const iconBoxClasses = isSelected
+    ? "w-11 h-11 rounded-xl bg-mint-100 text-mint-600 flex items-center justify-center text-base"
+    : "w-11 h-11 rounded-xl bg-mint-50 dark:bg-mint-900/40 text-mint-600 dark:text-mint-400 flex items-center justify-center text-base";
+                const countTextClasses = isSelected
+                    ? "text-[11px] text-white/90 font-medium mt-0.5"
+                    : "text-[11px] text-gray-400 font-medium mt-0.5";
+
+                return `
+                    <div onclick="handleCategoryCardClick(event, '${catConfig.name}')" data-category-name="${catConfig.name}" class="${cardClasses}">
+                        <div class="${iconBoxClasses}">
+                            <i class="fa-solid ${catConfig.icon}"></i>
+                        </div>
+                        <div class="text-center w-full">
+                            <h4 class="font-bold text-xs truncate max-w-[110px]">${catConfig.name}</h4>
+                            <p class="${countTextClasses}">${matchedCount} Apps</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            setTimeout(updateCategoryArrowVisibility, 50);
+        };
+
+        window.handleCategoryCardClick = function(event, categoryName) {
+            const card = event.currentTarget;
+            const circle = document.createElement('span');
+            const diameter = Math.max(card.clientWidth, card.clientHeight);
+            const radius = diameter / 2;
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - card.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${event.clientY - card.getBoundingClientRect().top - radius}px`;
+            circle.classList.add('category-ripple');
+            
+            const existingRipple = card.getElementsByClassName('category-ripple')[0];
+            if (existingRipple) existingRipple.remove();
+            card.appendChild(circle);
+
+            window.currentCategory = categoryName;
+
+console.log('CATEGORY CLICKED:', categoryName);
+
+renderCategoriesSection(window.allAppsCache);
+filterAndRenderApps();
+
+const appsSection = document.getElementById('appsGrid');
+
+if (appsSection) {
+    appsSection.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+        };
+
+        window.scrollCategories = function(direction) {
+            const container = document.getElementById('categoriesContainer');
+            if (!container) return;
+            container.scrollBy({ left: direction * 300, behavior: 'smooth' });
+            setTimeout(updateCategoryArrowVisibility, 300);
+        };
+
+        function updateCategoryArrowVisibility() {
+            const container = document.getElementById('categoriesContainer');
+            const prevBtn = document.getElementById('categoryPrevBtn');
+            const nextBtn = document.getElementById('categoryNextBtn');
+            if (!container || !prevBtn || !nextBtn) return;
+
+            const scrollLeft = container.scrollLeft;
+            const maxScrollLeft = container.scrollWidth - container.clientWidth;
+
+            if (scrollLeft <= 5) {
+                prevBtn.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                prevBtn.classList.remove('opacity-0', 'pointer-events-none');
+            }
+
+            if (scrollLeft >= maxScrollLeft - 5) {
+                nextBtn.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                nextBtn.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function setupCategoryScrollListeners() {
+            const container = document.getElementById('categoriesContainer');
+            if (!container) return;
+            container.addEventListener('scroll', updateCategoryArrowVisibility);
+            container.addEventListener('wheel', (evt) => {
+                if (evt.deltaY !== 0) {
+                    evt.preventDefault();
+                    container.scrollLeft += evt.deltaY;
+                }
+            }, { passive: false });
+            window.addEventListener('resize', updateCategoryArrowVisibility);
+        }
+
+        // Render Featured Collections
+        function renderFeaturedCollections(apps) {
+            const grid = document.getElementById('featuredCollectionsGrid');
+            if (!grid) return;
+            const items = apps.slice(0, 3);
+            grid.innerHTML = items.map(app => `
+                <div class="app-card p-4 flex items-center gap-4 cursor-pointer" onclick="window.location.href='app.html?id=${app.id}'">
+                    <div class="w-16 h-16 rounded-xl bg-gray-50 dark:bg-gray-800 p-2 flex items-center justify-center shrink-0">
+                        <img src="${app.icon_url}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-bold text-mint-600 dark:text-mint-400 bg-mint-50 dark:bg-mint-900/30 px-2 py-0.5 rounded-full">Collection</span>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white mt-1 truncate">${app.name}</h4>
+                        <p class="text-xs text-gray-400 mt-0.5">⭐ ${app.rating || '4.9'} • ${app.downloads || '1M+ downloads'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Top Charts
+        function renderTopCharts(apps) {
+            const grid = document.getElementById('topChartsGrid');
+            if (!grid) return;
+            const items = apps.slice(0, 3);
+            grid.innerHTML = items.map((app, index) => `
+                <div class="app-card p-4 flex items-center gap-4 cursor-pointer" onclick="window.location.href='app.html?id=${app.id}'">
+                    <span class="text-xl font-black text-mint-600 w-6 text-center">#${index + 1}</span>
+                    <div class="w-16 h-16 rounded-xl bg-gray-50 dark:bg-gray-800 p-2 flex items-center justify-center shrink-0">
+                        <img src="${app.icon_url}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-gray-900 dark:text-white truncate">${app.name}</h4>
+                        <p class="text-xs text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Recently Updated
+        function renderRecentlyUpdated(apps) {
+            const grid = document.getElementById('recentlyUpdatedGrid');
+            if (!grid) return;
+            const items = apps.slice(0, 6);
+            grid.innerHTML = items.map(app => `
+               <div class="app-card p-3.5 flex flex-col justify-between cursor-pointer"
+     onclick="openAppDetails('${app.id}')">
+                    <div>
+                        <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                            <img src="${app.icon_url || ''}" alt="${app.name}" class="w-full h-full hero-img-contain rounded-lg">
+                        </div>
+                        <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">${app.name}</h5>
+                        <p class="text-[10px] text-gray-400 mt-0.5">${app.category || 'App'} • ⭐ ${app.rating || '4.9'}</p>
+                    </div>
+                   <button onclick="event.stopPropagation(); handleDownloadClick('${app.id}')"
+                   class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">Install</button>
+                </div>
+            `).join('');
+        }
+
+        // Filter and Render Apps with live search highlight
+      window.filterAndRenderApps = function() {
+    const category = (window.currentCategory || 'All').toString().trim();
+    const query = (window.currentSearchQuery || '').toString().trim().toLowerCase();
+
+    const allApps = Array.isArray(window.allAppsCache)
+        ? window.allAppsCache
+        : [];
+
+    let filtered = allApps;
+
+    // Category filter
+    if (category.toLowerCase() !== 'all') {
+        filtered = allApps.filter(function(app) {
+            const appCategory = app && app.category
+                ? app.category.toString().trim().toLowerCase()
+                : '';
+
+            return appCategory.includes(category.toLowerCase());
+        });
+ }
+    // Search filter
+    if (query) {
+        filtered = filtered.filter(function(app) {
+            const name = app && app.name
+                ? app.name.toString().toLowerCase()
+                : '';
+
+            const appCategory = app && app.category
+                ? app.category.toString().toLowerCase()
+                : '';
+
+            return name.includes(query) || appCategory.includes(query);
+        });
+    }
+
+    console.log(
+        'CATEGORY FILTER:',
+        category,
+        'TOTAL:',
+        allApps.length,
+        'RESULT:',
+        filtered.length
+    );
+
+    const sectionHeading = document.getElementById('sectionHeading');
+
+    if (sectionHeading) {
+        sectionHeading.textContent =
+            query
+                ? `Search: "${query}"`
+                : (category.toLowerCase() === 'all' ? 'All Apps' : category);
+    }
+
+    const appsGrid = document.getElementById('appsGrid');
+
+    if (!appsGrid) return;
+
+    if (filtered.length === 0) {
+        appsGrid.innerHTML = `
+            <div class="col-span-full py-16 text-center">
+                <div class="w-16 h-16 bg-mint-50 dark:bg-mint-900/20 text-mint-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+
+                <p class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                    No apps available in this category.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+   appsGrid.innerHTML = filtered.map(app => {
+
+    let displayName = app.name || "Unknown App";
+
+    if (query && app.name) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        displayName = app.name.replace(
+            regex,
+            `<span class="bg-mint-200 dark:bg-mint-900/60 text-mint-800 dark:text-mint-200 px-0.5 rounded">$1</span>`
+        );
+    }
+
+    return `
+        <div
+            class="app-card p-3.5 flex flex-col justify-between cursor-pointer"
+            onclick="openAppDetails('${app.id}')"
+        >
+
+            <div>
+                <div class="w-full h-28 bg-gray-50 dark:bg-gray-800 rounded-xl mb-3 p-2 flex items-center justify-center">
+                    <img
+                        src="${app.icon_url || ''}"
+                        alt="${app.name || 'App'}"
+                        class="w-full h-full hero-img-contain rounded-lg"
+                    >
+                </div>
+
+                <h5 class="font-bold text-xs text-gray-900 dark:text-white truncate">
+                    ${displayName}
+                </h5>
+
+                <p class="text-[10px] text-gray-400 mt-0.5">
+                    ${app.category || 'App'} • ⭐ ${app.rating || '4.9'}
+                </p>
+            </div>
+
+            <button
+                onclick="event.stopPropagation(); handleDownloadClick('${app.id}')"
+                class="w-full mt-3 bg-mint-50 dark:bg-mint-900/30 text-mint-700 dark:text-mint-400 hover:bg-mint-600 hover:text-white py-2 rounded-xl font-bold text-[11px] transition">
+                Install
+            </button>
+
+        </div>
+    `;
+}).join('');
+};
+        window.handleSliderClick = function(appId) {
+
+    if (!appId) {
+        console.error("Slider App ID missing");
+        return;
+    }
+
+    const user = auth.currentUser;
+
+    if (user) {
+        // User already logged in
+        window.location.href = `app.html?id=${encodeURIComponent(appId)}`;
+    } else {
+        // Save slider destination
+        localStorage.setItem(
+            'redirect_after_login',
+            `app.html?id=${encodeURIComponent(appId)}`
+        );
+
+        // Send user to login
+        window.location.href = 'user.html';
+    }
+};
+        // ===============================
+// OPEN APP DETAILS
+// ===============================
+window.openAppDetails = function(appId) {
+
+    if (!appId) {
+        console.error("App ID missing");
+        return;
+    }
+
+    window.location.href = `app.html?id=${encodeURIComponent(appId)}`;
+};
+        // Live Search & Autocomplete
+        function setupLiveSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const autocomplete = document.getElementById('searchAutocomplete');
+            if (!searchInput || !autocomplete) return;
+
+            searchInput.addEventListener('input', (e) => {
+                const q = e.target.value;
+                window.currentSearchQuery = q;
+                filterAndRenderApps();
+
+                if (!q.trim()) {
+                    autocomplete.classList.add('hidden');
+                    return;
+                }
+
+                const matches = (window.allAppsCache || []).filter(app => app.name.toLowerCase().includes(q.toLowerCase()) || app.category.toLowerCase().includes(q.toLowerCase())).slice(0, 5);
+
+                if (matches.length === 0) {
+                    autocomplete.classList.add('hidden');
+                    return;
+                }
+
+                autocomplete.innerHTML = matches.map(app => `
+                    <div onclick="window.location.href='app.html?id=${app.id}'" class="p-3 flex items-center gap-3 hover:bg-mint-50 dark:hover:bg-gray-700/50 cursor-pointer transition">
+                        <img src="${app.icon_url}" class="w-9 h-9 rounded-lg hero-img-contain bg-gray-100 dark:bg-gray-700 p-1">
+                        <div>
+                            <h5 class="font-bold text-xs text-gray-900 dark:text-white">${app.name}</h5>
+                            <p class="text-[10px] text-gray-400">${app.category} • ⭐ ${app.rating || '4.9'}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                autocomplete.classList.remove('hidden');
+            });
+        }
+
+window.handleDownloadClick = async function(appId) {
+
+    if (!appId) {
+        console.error("App ID missing");
+        return;
+    }
+
+    try {
+
+        const { data: app, error } = await supabaseClient
+            .from("apps")
+            .select("*")
+            .eq("id", appId)
+            .single();
+
+        if (error || !app) {
+            console.error("App loading error:", error);
+            alert("App information not found.");
+            return;
+        }
+
+        let downloadUrl = "";
+
+        if (app.telegram_message_id) {
+            downloadUrl =
+                `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
+        }
+        else if (app.apk_url) {
+            downloadUrl = app.apk_url;
+        }
+        else {
+            alert("APK download is currently unavailable.");
+            return;
+        }
+
+        // CHECK LOGIN
+        const user =
+            typeof auth !== "undefined"
+                ? auth.currentUser
+                : null;
+
+        // NOT LOGGED IN
+        if (!user) {
+
+            localStorage.setItem(
+                "download_after_login",
+                downloadUrl
+            );
+
+            localStorage.setItem(
+                "download_app_id",
+                String(app.id)
+            );
+
+            window.location.href =
+                "user.html?redirect=" +
+                encodeURIComponent(downloadUrl);
+
+            return;
+        }
+
+        // LOGGED IN → SAVE HISTORY
+        const { error: historyError } =
+            await supabaseClient
+                .from("downloads")
+                .insert({
+                    user_id: user.uid,
+                    app_id: app.id,
+                    app_name: app.name || "Unknown App",
+                    version: app.version || "Unknown",
+                    icon_url: app.icon_url || null,
+                    download_url: downloadUrl
+                });
+
+        if (historyError) {
+            console.error(
+                "Download history error:",
+                historyError
+            );
+        }
+
+        // DIRECT DOWNLOAD
+        window.location.href = downloadUrl;
+
+    } catch (error) {
+
+        console.error(
+            "Homepage download error:",
+            error
+        );
+
+        alert("Unable to start download.");
+    }
+};
+// ============================================
+// MOBILE APP INSTALL PROMPT
+// ============================================
+
+function showPaliaAPKInstallPrompt() {
+
+    // Only show on mobile devices
+    const isMobile =
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (!isMobile) {
+        return;
+    }
+
+    // Don't show again if user already dismissed it recently
+    const dismissedUntil =
+        localStorage.getItem("paliaapk_install_dismissed_until");
+
+    if (dismissedUntil &&
+        Date.now() < Number(dismissedUntil)) {
+        return;
+    }
+
+    const prompt =
+        document.getElementById("installAppPrompt");
+
+    if (!prompt) {
+        return;
+    }
+
+    prompt.classList.remove("hidden");
+    prompt.classList.add("flex");
+}
+
+
+// Install button
+document.getElementById("installAppBtn")?.addEventListener("click", function () {
+
+    /*
+     * IMPORTANT:
+     * Replace this URL with your actual PaliaAPK HUB APK download URL.
+     */
+ document.getElementById("installAppBtn")?.addEventListener("click", function () {
+
+    const apkUrl =
+        "https://paliaapk-telegram-api.onrender.com/download-apk/17";
+
+    window.location.href = apkUrl;
+});
+    if (!apkUrl || apkUrl === "YOUR_PALIAAPK_HUB_APK_URL") {
+        alert("PaliaAPK HUB APK download link is not configured yet.");
+        return;
+    }
+
+    window.location.href = apkUrl;
+});
+
+
+// Continue in browser
+document.getElementById("installLaterBtn")?.addEventListener("click", function () {
+
+    const prompt =
+        document.getElementById("installAppPrompt");
+
+    if (prompt) {
+        prompt.classList.add("hidden");
+        prompt.classList.remove("flex");
+    }
+
+    // Don't show again for 7 days
+    localStorage.setItem(
+        "paliaapk_install_dismissed_until",
+        Date.now() + (7 * 24 * 60 * 60 * 1000)
+    );
+});
+
+
+// Show after 2 seconds
+setTimeout(() => {
+    showPaliaAPKInstallPrompt();
+}, 2000);
+        document.addEventListener('DOMContentLoaded', initData);
+    </script>
+
+<script id="paliaInstalledVersionHelper">
+window.recordPaliaInstalledVersion = function(app) {
+    if (!app || !app.id) return;
+    try {
+        const versions = JSON.parse(localStorage.getItem('palia_installed_versions') || '{}');
+        versions[String(app.id)] = String(app.version || '');
+        localStorage.setItem('palia_installed_versions', JSON.stringify(versions));
+    } catch (e) {
+        console.warn('Could not save installed app version', e);
+    }
+};
+</script>
+
+<script id="headerUpdatesCounter">
+document.addEventListener('DOMContentLoaded', async function () {
+  try {
+    const countEl = document.getElementById('headerUpdateCount');
+    if (!countEl) return;
+
+    const client = window.supabaseClient || window._supabaseClient ||
+      (window.supabase && typeof window.supabase.from === 'function' ? window.supabase : null);
+    if (!client) return;
+
+    const { data, error } = await client.from('apps').select('id,version,updated_at');
+    if (error) return;
+
+    const installed = JSON.parse(localStorage.getItem('palia_installed_versions') || '{}');
+    const snapshot = JSON.parse(localStorage.getItem('palia_profile_versions') || '{}');
+
+    let count = 0;
+    (data || []).forEach(app => {
+      const id = String(app.id);
+      const current = String(app.version || app.updated_at || '');
+      if ((installed[id] && installed[id] !== current) ||
+          (snapshot[id] && snapshot[id] !== current)) count++;
+    });
+
+    countEl.textContent = count > 99 ? '99+' : String(count);
+    countEl.classList.toggle('hidden', count === 0);
+    countEl.classList.toggle('flex', count > 0);
+  } catch (e) {
+    console.warn('Header update counter:', e);
+  }
+});
+</script>
+
+
+
+
+<script id="paliaDatabaseNotifications">
+(function(){
+  const SNAP='palia_db_apps_snapshot_v5';
+  const NOTIFY='palia_db_notifications_v5';
+
+  const read=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
+  const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+  const id=a=>String(a.id);
+  const ver=a=>String(a.version || '');
+  const actualRow=a=>a && a.id != null && a.name;
+
+  function renderCount(){
+    const list=read(NOTIFY,[]);
+    const n=list.filter(x=>!x.read).length;
+    const b=document.getElementById('paliaNotificationCount');
+    const d=document.getElementById('paliaNotificationDot');
+    if(b){b.textContent=n>99?'99+':String(n);b.classList.toggle('hidden',n===0);b.classList.toggle('flex',n>0)}
+    if(d)d.classList.toggle('hidden',n===0);
+  }
+
+  // IMPORTANT: notifications can ONLY be generated from rows returned by
+  // the live Supabase apps query. No hard-coded/fake app data is used.
+  window.processDatabaseAppsForNotifications=function(apps){
+    if(!Array.isArray(apps)) return;
+    const rows=apps.filter(actualRow);
+    if(!rows.length) return;
+
+    const previous=read(SNAP,null);
+    const current={};
+
+    rows.forEach(a=>{
+      current[id(a)]={
+        id:a.id,
+        name:a.name,
+        version:ver(a),
+        icon_url:a.icon_url || '',
+        updated_at:a.updated_at || null
+      };
+    });
+
+    // First successful live DB read establishes the baseline only.
+    if(previous===null){
+      save(SNAP,current);
+      renderCount();
+      return;
+    }
+
+    const notifications=read(NOTIFY,[]);
+
+    rows.forEach(a=>{
+      const key=id(a);
+      const old=previous[key];
+      const currentVersion=ver(a);
+
+      // New row actually returned by Supabase.
+      if(!old){
+        const unique='db_new_'+key+'_'+currentVersion;
+        if(!notifications.some(n=>n.unique===unique)){
+          notifications.unshift({
+            unique,type:'new',
+            appId:a.id,name:a.name,version:a.version||'',
+            icon:a.icon_url||'',createdAt:Date.now(),read:false,
+            source:'supabase.apps'
+          });
+        }
+      }
+      // Existing row whose DB version actually changed.
+      else if(String(old.version)!==currentVersion){
+        const unique='db_update_'+key+'_'+currentVersion;
+        if(!notifications.some(n=>n.unique===unique)){
+          notifications.unshift({
+            unique,type:'update',
+            appId:a.id,name:a.name,version:a.version||'',
+            icon:a.icon_url||'',createdAt:Date.now(),read:false,
+            source:'supabase.apps'
+          });
+        }
+      }
+    });
+
+    save(NOTIFY,notifications.slice(0,100));
+    save(SNAP,current);
+    renderCount();
+  };
+
+  function openPanel(){
+    let p=document.getElementById('paliaDatabaseNotificationPanel');
+    if(p){p.remove();return}
+
+    const list=read(NOTIFY,[]);
+    p=document.createElement('div');
+    p.id='paliaDatabaseNotificationPanel';
+    p.className='fixed right-4 top-20 z-[99999] w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden';
+
+    let html='<div class="px-4 py-3 border-b flex items-center justify-between"><b class="text-gray-900">Notifications</b><button id="paliaDbReadAll" class="text-xs font-bold text-green-600">Mark all read</button></div>';
+
+    if(!list.length){
+      html+='<div class="p-6 text-center text-sm text-gray-500">No notifications from the apps table.</div>';
+    }else{
+      html+=list.map((n,i)=>`
+        <button type="button" data-db-notification="${i}"
+          class="w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-green-50 ${n.read?'':'bg-green-50/40'}">
+          <div class="flex gap-3 items-center">
+            <div class="w-11 h-11 rounded-xl border bg-white flex items-center justify-center overflow-hidden shrink-0">
+              ${n.icon?`<img src="${n.icon}" class="w-full h-full object-contain" alt="">`:`<i class="fa-solid ${n.type==='new'?'fa-plus':'fa-arrows-rotate'} text-green-600"></i>`}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="font-bold text-sm text-gray-900">${n.type==='new'?'New App Added':'App Updated'}</div>
+              <div class="text-xs text-gray-700 truncate">${n.name}</div>
+              <div class="text-[10px] text-green-600 font-semibold">${n.version?'Version '+n.version:''}</div>
+            </div>
+            ${n.read?'':'<span class="w-2 h-2 bg-red-500 rounded-full"></span>'}
+          </div>
+        </button>`).join('');
+    }
+
+    p.innerHTML=html;
+    document.body.appendChild(p);
+
+    p.querySelectorAll('[data-db-notification]').forEach(btn=>{
+      btn.onclick=()=>{
+        const i=Number(btn.dataset.dbNotification);
+        const items=read(NOTIFY,[]);
+        if(!items[i])return;
+        items[i].read=true;
+        save(NOTIFY,items);
+        renderCount();
+
+        // The ID came from the actual Supabase apps row.
+        window.location.href='app.html?id='+encodeURIComponent(items[i].appId);
+      };
+    });
+
+    const all=p.querySelector('#paliaDbReadAll');
+    if(all)all.onclick=()=>{
+      save(NOTIFY,read(NOTIFY,[]).map(n=>({...n,read:true})));
+      renderCount();
+      p.remove();
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    renderCount();
+    const bell=document.getElementById('paliaNotificationBtn');
+    if(bell){
+      bell.addEventListener('click',e=>{
+        e.preventDefault();
+        e.stopPropagation();
+        openPanel();
+      });
+    }
+  });
+})();
+</script>
+</body>
+</html>
