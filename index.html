@@ -1630,14 +1630,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 <script id="paliaDatabaseNotifications">
 (() => {
   const READ_KEY='palia_db_notification_reads_v6';
-  const client=()=>window.supabaseClient||window._supabaseClient||
-    (window.supabase&&typeof window.supabase.from==='function'?window.supabase:null);
+  const client=()=> (typeof supabaseClient !== 'undefined' && supabaseClient)
+    ? supabaseClient
+    : (window.supabaseClient || window._supabaseClient ||
+       (window.supabase&&typeof window.supabase.from==='function'?window.supabase:null));
   const read=()=>{try{return JSON.parse(localStorage.getItem(READ_KEY)||'{}')}catch(_){return{}}};
   const save=v=>{try{localStorage.setItem(READ_KEY,JSON.stringify(v))}catch(_){}};
 
   async function getRows(){
     const c=client();
-    if(!c) throw new Error('Supabase client is not initialized');
+    if(!c) throw new Error('Supabase client is not initialized. The Home page Supabase client has not finished loading yet.');
     const {data,error}=await c.from('apps')
       .select('id,name,version,icon_url,updated_at,created_at')
       .order('updated_at',{ascending:false});
@@ -1690,10 +1692,22 @@ document.addEventListener('DOMContentLoaded', async function () {
     }finally{if(bell)bell.disabled=false}
   }
 
-  document.addEventListener('DOMContentLoaded',async()=>{
+  document.addEventListener('DOMContentLoaded',()=>{
     const bell=document.getElementById('paliaNotificationBtn');
     if(bell)bell.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openBell()});
-    try{count((await getRows()).map(make))}catch(e){console.warn('Notification count:',e.message||e)}
+
+    let tries=0;
+    const waitForSupabase=()=>{
+      tries++;
+      try{
+        if(typeof supabaseClient !== 'undefined' && supabaseClient){
+          getRows().then(rows=>count(rows.map(make))).catch(e=>console.warn('Notification count:',e.message||e));
+          return;
+        }
+      }catch(_){}
+      if(tries<20)setTimeout(waitForSupabase,500);
+    };
+    waitForSupabase();
   });
 })();
 </script>
