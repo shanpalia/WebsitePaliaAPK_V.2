@@ -987,6 +987,27 @@ img{ max-width: 100%; display: block; }
 }
 </style>
 
+
+<style id="sequentialUploadWizardCSS">
+#sequentialUploadWizard{position:fixed;inset:0;background:rgba(15,23,42,.68);backdrop-filter:blur(5px);z-index:100000;display:none;align-items:center;justify-content:center;padding:16px}
+#sequentialUploadWizard.open{display:flex}
+.suw-card{width:min(520px,100%);background:#fff;border-radius:24px;box-shadow:0 25px 80px rgba(0,0,0,.28);overflow:hidden}
+.suw-head{padding:20px 22px;border-bottom:1px solid #e5e7eb}
+.suw-step{font-size:12px;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.08em}
+.suw-title{font-size:21px;font-weight:900;margin-top:5px;color:#111827}
+.suw-body{padding:22px}
+.suw-drop{border:2px dashed #cbd5e1;border-radius:18px;padding:28px 18px;text-align:center;cursor:pointer;background:#f8fafc}
+.suw-drop:hover{border-color:#10b981;background:#f0fdf4}
+.suw-drop i{font-size:32px;color:#10b981;margin-bottom:10px}
+.suw-file{font-weight:800;color:#111827;word-break:break-word}
+.suw-size{font-size:13px;color:#64748b;margin-top:5px}
+.suw-progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-top:18px}
+.suw-progress>div{height:100%;width:0;background:#10b981;transition:width .15s}
+.suw-remaining{font-size:12px;color:#64748b;margin-top:9px}
+.suw-foot{display:flex;gap:10px;padding:16px 22px;border-top:1px solid #e5e7eb}
+.suw-btn{flex:1;border:0;border-radius:12px;padding:12px;font-weight:800;cursor:pointer}
+.suw-next{background:#10b981;color:#fff}.suw-skip{background:#f1f5f9;color:#475569}.suw-cancel{background:#fee2e2;color:#b91c1c}
+</style>
 </head>
 <body>
 <div style="padding: 15px; background: #f8f9fa; margin-bottom: 20px;">
@@ -2113,7 +2134,11 @@ async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
       .then(function(){
         if(status === 'published') updatePublishProgress(95, 'Saving App Details (95%)');
         var payload = collectPayload(status, urls, slug);
-        return insertWithUniqueSlug(payload, 3);
+        return insertWithUniqueSlug(payload, 3).then(function(rows){
+          // The database trigger creates app_notifications AFTER the apps row is
+          // inserted, so its foreign key always receives the real apps.id.
+          return rows;
+        });
       })
       .then(function(){
         if(status === 'published'){
@@ -2174,8 +2199,13 @@ async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
       var checkedProvider = document.querySelector('input[name="storageProvider"]:checked');
       var providerValue = checkedProvider ? checkedProvider.value : '';
 
+      if(!(uploads.icon && uploads.icon.file) || !(uploads.apk && uploads.apk.file)){
+        if(window.openSequentialUploadWizard) {
+          window.openSequentialUploadWizard();
+          return;
+        }
+      }
 
-      // Warna Supabase ya Hybrid ke liye yahi se publish process shuru hoga
       submitApp('published', 'btnPublish', 'Publishing…');
     });
   }
@@ -2185,6 +2215,104 @@ async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
 })();
 </script>
 
+
+<div id="sequentialUploadWizard" aria-hidden="true">
+ <div class="suw-card">
+  <div class="suw-head">
+   <div class="suw-step" id="suwStep">Step 1 of 8</div>
+   <div class="suw-title" id="suwTitle">App Icon</div>
+  </div>
+  <div class="suw-body">
+   <div class="suw-drop" id="suwDrop">
+    <i class="fa-solid fa-cloud-arrow-up"></i>
+    <div class="suw-file" id="suwFile">Click to select file</div>
+    <div class="suw-size" id="suwSize">Size: —</div>
+    <div class="suw-progress"><div id="suwBar"></div></div>
+    <div class="suw-remaining" id="suwRemaining">Remaining: 7 files</div>
+   </div>
+   <input id="suwInput" type="file" hidden>
+  </div>
+  <div class="suw-foot">
+   <button type="button" class="suw-btn suw-cancel" id="suwCancel">Cancel</button>
+   <button type="button" class="suw-btn suw-skip" id="suwSkip">Skip</button>
+   <button type="button" class="suw-btn suw-next" id="suwNext">Next</button>
+  </div>
+ </div>
+</div>
+
+<script id="sequentialUploadWizardJS">
+(function(){
+ const steps=[
+  {id:'icon',title:'App Icon',type:'image',required:true,accept:'image/*'},
+  {id:'banner',title:'Banner',type:'image',required:false,accept:'image/*'},
+  {id:'apk',title:'APK File',type:'apk',required:true,accept:'.apk'},
+  {id:'screenshot1',title:'Screenshot 1',type:'image',required:false,accept:'image/*'},
+  {id:'screenshot2',title:'Screenshot 2',type:'image',required:false,accept:'image/*'},
+  {id:'screenshot3',title:'Screenshot 3',type:'image',required:false,accept:'image/*'},
+  {id:'screenshot4',title:'Screenshot 4',type:'image',required:false,accept:'image/*'},
+  {id:'screenshot5',title:'Screenshot 5',type:'image',required:false,accept:'image/*'}
+ ];
+ let idx=0,file=null;
+ const modal=document.getElementById('sequentialUploadWizard'),input=document.getElementById('suwInput');
+ const drop=document.getElementById('suwDrop'),bar=document.getElementById('suwBar');
+ const nameEl=document.getElementById('suwFile'),sizeEl=document.getElementById('suwSize');
+ const stepEl=document.getElementById('suwStep'),titleEl=document.getElementById('suwTitle'),remEl=document.getElementById('suwRemaining');
+ const next=document.getElementById('suwNext'),skip=document.getElementById('suwSkip'),cancel=document.getElementById('suwCancel');
+ const fmt=b=>b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB';
+
+ function openWizard(){
+   idx=0; file=null; modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); render();
+ }
+ function closeWizard(){modal.classList.remove('open');modal.setAttribute('aria-hidden','true');file=null}
+ function render(){
+   const st=steps[idx], done=steps.filter(x=>uploads[x.id]&&uploads[x.id].file).length;
+   stepEl.textContent='Step '+(idx+1)+' of '+steps.length;
+   titleEl.textContent=st.title+(st.required?'':' (Optional)');
+   input.accept=st.accept;
+   nameEl.textContent=uploads[st.id]?.file?.name || 'Click to select file';
+   sizeEl.textContent=uploads[st.id]?.file?'Size: '+fmt(uploads[st.id].file.size):'Size: —';
+   bar.style.width=uploads[st.id]?.file?'100%':'0%';
+   remEl.textContent='Remaining: '+(steps.length-done)+' files';
+   skip.style.display=st.required?'none':'block';
+   next.textContent=idx===steps.length-1?'Finish':'Next';
+ }
+ function choose(){
+   input.value=''; input.click();
+ }
+ input.addEventListener('change',()=>{
+   const f=input.files&&input.files[0]; if(!f)return;
+   const st=steps[idx];
+   if(st.type==='apk'&&!/\.apk$/i.test(f.name)){alert('Please select a valid APK file.');return}
+   if(st.type==='image'&&f.type.indexOf('image/')!==0){alert('Please select an image file.');return}
+   file=f; nameEl.textContent=f.name; sizeEl.textContent='Size: '+fmt(f.size); bar.style.width='0%';
+   const reader=new FileReader();
+   reader.onprogress=e=>{if(e.lengthComputable)bar.style.width=Math.round(e.loaded/e.total*100)+'%'};
+   reader.onload=()=>{bar.style.width='100%'};
+   reader.readAsArrayBuffer(f);
+ });
+ drop.addEventListener('click',choose);
+ next.addEventListener('click',()=>{
+   const st=steps[idx];
+   if(st.required&&!file&&!uploads[st.id]?.file){alert(st.title+' is required.');return}
+   if(file){
+     uploads[st.id]={file:file,dataUrl:null};
+     // Feed the selected file into the existing uploader input so the original
+     // preview/validation logic remains the single source of truth.
+     const root=document.querySelector('[data-uploader-id="'+st.id+'"]');
+     const inp=root&&root.querySelector('[data-role="input"]');
+     if(inp){try{const dt=new DataTransfer();dt.items.add(file);inp.files=dt.files;inp.dispatchEvent(new Event('change',{bubbles:true}))}catch(e){}}
+   }
+   file=null;
+   if(idx<steps.length-1){idx++;render()}else{closeWizard()}
+ });
+ skip.addEventListener('click',()=>{
+   file=null;
+   if(idx<steps.length-1){idx++;render()}else{closeWizard()}
+ });
+ cancel.addEventListener('click',closeWizard);
+ window.openSequentialUploadWizard=openWizard;
+})();
+</script>
 </body>
 </html>
 ```[cite: 3]
