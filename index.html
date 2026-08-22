@@ -230,6 +230,12 @@
             }
         }
     </style>
+
+<style id="paliaMobileAppPromptCSS">
+#paliaMobileAppPrompt{position:fixed;left:12px;right:12px;bottom:12px;z-index:9998;display:none}
+#paliaMobileAppPrompt .pm-card{background:#fff;border:1px solid #e5e7eb;border-radius:20px;box-shadow:0 18px 55px rgba(0,0,0,.20);padding:12px}
+.dark #paliaMobileAppPrompt .pm-card{background:#111827;border-color:#374151}
+</style>
 </head>
 <body class="flex flex-col min-h-full selection:bg-mint-100 selection:text-mint-700">
 
@@ -1443,5 +1449,61 @@ window.handleDownloadClick = async function(appId) {
 
         document.addEventListener('DOMContentLoaded', initData);
     </script>
+
+<div id="paliaMobileAppPrompt">
+  <div class="pm-card flex items-center gap-3">
+    <img id="paliaMobileAppPromptIcon" src="assets/palia-android-icon.png" class="w-12 h-12 rounded-xl object-contain bg-white shrink-0" alt="PaliaAPK HUB">
+    <div class="min-w-0 flex-1">
+      <p class="font-black text-sm text-gray-900 dark:text-white">Get PaliaAPK HUB App</p>
+      <p class="text-[11px] text-gray-500 dark:text-gray-300">Open PaliaAPK HUB faster with the Android app.</p>
+    </div>
+    <button id="paliaMobileAppPromptDownload" class="shrink-0 px-3 py-2 rounded-xl bg-green-600 text-white text-xs font-black">Download</button>
+    <button id="paliaMobileAppPromptClose" class="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500" aria-label="Close">×</button>
+  </div>
+</div>
+
+<script id="paliaMobileAppPromptJS">
+(function(){
+  function isAndroidMobile(){
+    return /Android/i.test(navigator.userAgent) && window.innerWidth <= 900;
+  }
+  function startDownload(url,name){
+    if(!url) return;
+    try{
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=name || 'PaliaAPK-HUB.apk';
+      a.rel='noopener';
+      a.style.display='none';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }catch(e){ window.open(url,'_blank','noopener'); }
+  }
+  async function init(){
+    if(!isAndroidMobile() || !window.supabaseClient) return;
+    const dismissed=sessionStorage.getItem('palia_mobile_prompt_dismissed');
+    if(dismissed) return;
+    try{
+      const {data,error}=await window.supabaseClient
+        .from('apps')
+        .select('id,name,apk_url,telegram_message_id,icon_url')
+        .ilike('name','%PaliaAPK HUB%')
+        .limit(1)
+        .maybeSingle();
+      if(error || !data) return; // Never show fake app download prompt.
+      let url=data.apk_url || (data.telegram_message_id ? `https://paliaapk-telegram-api.onrender.com/download-apk/${data.telegram_message_id}` : '');
+      if(!url) return;
+      const box=document.getElementById('paliaMobileAppPrompt');
+      const icon=document.getElementById('paliaMobileAppPromptIcon');
+      if(data.icon_url) icon.src=data.icon_url;
+      document.getElementById('paliaMobileAppPromptDownload').onclick=()=>startDownload(url,(data.name||'PaliaAPK-HUB')+'.apk');
+      document.getElementById('paliaMobileAppPromptClose').onclick=()=>{sessionStorage.setItem('palia_mobile_prompt_dismissed','1');box.style.display='none';};
+      box.style.display='block';
+    }catch(e){ console.warn('Mobile app prompt:',e); }
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(init,600));
+})();
+</script>
 </body>
 </html>

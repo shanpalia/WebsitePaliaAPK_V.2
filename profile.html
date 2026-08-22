@@ -444,7 +444,7 @@ const paliaSupabase = window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUP
                 try{
                     const {data, error} = await paliaSupabase
                         .from('apps')
-                        .select('id,name,version,previous_version,update_available,release_notes,icon_url,updated_at')
+                        .select('id,name,version,previous_version,update_available,release_notes,icon_url,apk_url,telegram_message_id,updated_at')
                         .eq('update_available', true)
                         .order('updated_at', {ascending:false});
 
@@ -468,24 +468,57 @@ const paliaSupabase = window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUP
                     }
 
                     list.innerHTML = apps.map(app => `
-                      <button type="button" data-update-app="${esc(app.id)}"
-                              class="w-full text-left flex items-center gap-3 p-3 mb-2 rounded-2xl border border-gray-100 hover:border-green-200 hover:bg-green-50 transition">
-                        <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden flex items-center justify-center shrink-0">
-                          ${app.icon_url ? `<img src="${esc(app.icon_url)}" class="w-full h-full object-cover" alt="">` :
-                          `<i class="fa-solid fa-android text-green-500 text-xl"></i>`}
-                        </div>
-                        <div class="min-w-0 flex-1">
-                          <p class="font-black text-sm text-gray-900 truncate">${esc(app.name)}</p>
-                          <p class="text-xs text-gray-500 mt-0.5">Version <b class="text-green-600">${esc(app.version || '—')}</b>${app.previous_version ? ` · Previous ${esc(app.previous_version)}` : ''}</p>
-                          ${app.release_notes ? `<p class="text-[11px] text-gray-500 mt-1 truncate">${esc(app.release_notes)}</p>` : ''}
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-gray-400 text-xs"></i>
-                      </button>`).join('');
+                      <div class="w-full flex items-center gap-3 p-3 mb-2 rounded-2xl border border-gray-100 hover:border-green-200 hover:bg-green-50 transition">
+                        <button type="button" data-update-app="${esc(app.id)}" class="flex items-center gap-3 min-w-0 flex-1 text-left">
+                          <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden flex items-center justify-center shrink-0">
+                            ${app.icon_url ? `<img src="${esc(app.icon_url)}" class="w-full h-full object-cover" alt="">` :
+                            `<i class="fa-solid fa-android text-green-500 text-xl"></i>`}
+                          </div>
+                          <div class="min-w-0">
+                            <p class="font-black text-sm text-gray-900 truncate">${esc(app.name)}</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Version <b class="text-green-600">${esc(app.version || '—')}</b>${app.previous_version ? ` · Previous ${esc(app.previous_version)}` : ''}</p>
+                            ${app.release_notes ? `<p class="text-[11px] text-gray-500 mt-1 truncate">${esc(app.release_notes)}</p>` : ''}
+                          </div>
+                        </button>
+                        <button type="button" data-update-download="${esc(app.id)}"
+                                class="shrink-0 px-3 py-2 rounded-xl bg-green-600 text-white text-xs font-black hover:bg-green-700">
+                          <i class="fa-solid fa-download mr-1"></i> Update
+                        </button>
+                      </div>`).join('');
 
                     list.querySelectorAll('[data-update-app]').forEach(el => {
                         el.addEventListener('click', () => {
                             const id = el.getAttribute('data-update-app');
                             if(id) window.location.href = 'app.html?id=' + encodeURIComponent(id);
+                        });
+                    });
+
+                    list.querySelectorAll('[data-update-download]').forEach(el => {
+                        el.addEventListener('click', async (event) => {
+                            event.stopPropagation();
+                            const id=el.getAttribute('data-update-download');
+                            const app=apps.find(x=>String(x.id)===String(id));
+                            if(!app) return;
+                            const url=app.apk_url || (app.telegram_message_id ? `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}` : '');
+                            if(!url){ alert('Update APK is not available for this app.'); return; }
+                            el.disabled=true; el.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Updating…';
+                            try{
+                                const r=await fetch(url,{mode:'cors'});
+                                if(!r.ok) throw new Error('HTTP '+r.status);
+                                const blob=await r.blob();
+                                const blobUrl=URL.createObjectURL(blob);
+                                const a=document.createElement('a');
+                                a.href=blobUrl;
+                                a.download=(app.name||'PaliaAPK-HUB').replace(/[^a-z0-9._-]+/gi,'_')+'.apk';
+                                document.body.appendChild(a); a.click(); a.remove();
+                                setTimeout(()=>URL.revokeObjectURL(blobUrl),60000);
+                            }catch(e){
+                                const frame=document.createElement('iframe');
+                                frame.style.display='none'; frame.src=url; document.body.appendChild(frame);
+                                setTimeout(()=>frame.remove(),120000);
+                            }finally{
+                                el.disabled=false; el.innerHTML='<i class="fa-solid fa-download mr-1"></i> Update';
+                            }
                         });
                     });
                 }catch(err){
