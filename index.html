@@ -181,9 +181,7 @@
             
             <!-- Logo Brand with Hidden Admin Trigger (5 clicks in 2 seconds) -->
             <div id="adminTriggerLogo" class="flex items-center gap-3 group focus:outline-none cursor-pointer" role="button" aria-label="PaliaAPK HUB Home">
-                <div class="gradient-bg w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg shadow-mint-600/20 group-hover:scale-105 transition-transform">
-                    <span class="text-white font-black text-xl">P</span>
-                </div>
+                <div class="bg-white w-11 h-11 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg shadow-mint-600/20 group-hover:scale-105 transition-transform"><img src="assets/palia-android-icon.png" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
                 <div>
                     <h1 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">
                         PaliaAPK <span class="text-mint-600">HUB</span>
@@ -208,29 +206,14 @@
                 <div class="relative">
                     <button id="notificationToggleBtn" class="relative w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-mint-50 text-gray-600 dark:text-gray-300 transition flex items-center justify-center border border-gray-200 dark:border-gray-700">
                         <i class="fa-solid fa-bell text-sm"></i>
-                        <span id="notificationBadge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center shadow">2</span>
+                        <span id="notificationBadge" class="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold items-center justify-center shadow hidden">0</span>
                     </button>
                     <div id="notificationDropdown" class="absolute right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl hidden z-50 p-3">
                         <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 dark:border-gray-700">
                             <h4 class="font-bold text-xs text-gray-900 dark:text-white uppercase tracking-wider">Notifications</h4>
                             <span class="text-[10px] text-mint-600 dark:text-mint-400 font-bold cursor-pointer hover:underline" onclick="markNotificationsRead()">Mark read</span>
                         </div>
-                        <div class="space-y-2 text-xs" id="notificationList">
-                            <div class="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 flex items-start gap-2.5">
-                                <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-shield-check text-xs"></i></div>
-                                <div>
-                                    <p class="font-bold text-gray-800 dark:text-gray-200">Security Update</p>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">All APK files scanned with zero malware guarantee.</p>
-                                </div>
-                            </div>
-                            <div class="p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 flex items-start gap-2.5">
-                                <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-rocket text-xs"></i></div>
-                                <div>
-                                    <p class="font-bold text-gray-800 dark:text-gray-200">New Apps Added</p>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Nova AI and PaliaCraft Launcher updated.</p>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="space-y-2 text-xs" id="notificationList"><div class="p-4 text-center text-xs text-gray-500 dark:text-gray-400">No notifications</div>
                     </div>
                 </div>
 
@@ -379,7 +362,7 @@
             <div class="grid grid-cols-1 md:grid-cols-5 gap-8 mb-8">
                 <div>
                     <div class="flex items-center gap-3 mb-4">
-                        <div class="gradient-bg w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm">P</div>
+                        <div class="bg-white w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"><img src="assets/palia-android-icon.png" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
                         <span class="font-black text-base text-gray-900 dark:text-white">PaliaAPK HUB</span>
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Your ultimate destination for verified, secure, and fast Android app downloads.</p>
@@ -592,19 +575,112 @@ recordSiteVisit();
             }
         });
 
-        // Notifications Dropdown Toggle & Marking Read
+        // Real notifications: read ONLY from public.app_notifications.
+        // No hard-coded/fake notifications and no is_read column is assumed.
         const notificationToggleBtn = document.getElementById('notificationToggleBtn');
         const notificationDropdown = document.getElementById('notificationDropdown');
         const notificationBadge = document.getElementById('notificationBadge');
+        const notificationList = document.getElementById('notificationList');
+        const NOTIFICATION_READ_KEY = 'paliaapk_read_notification_ids_v1';
 
-        notificationToggleBtn?.addEventListener('click', (e) => {
+        function getReadNotificationIds(){
+            try { return JSON.parse(localStorage.getItem(NOTIFICATION_READ_KEY) || '[]'); }
+            catch(e){ return []; }
+        }
+        function saveReadNotificationIds(ids){
+            try { localStorage.setItem(NOTIFICATION_READ_KEY, JSON.stringify(ids.slice(-200))); } catch(e){}
+        }
+        function notificationTime(v){
+            if(!v) return '';
+            const d=new Date(v);
+            return isNaN(d.getTime()) ? '' : d.toLocaleString([], {dateStyle:'medium',timeStyle:'short'});
+        }
+        function escapeNotificationText(v){
+            return String(v ?? '').replace(/[&<>"']/g, function(c){
+                return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+            });
+        }
+
+        async function loadRealNotifications(){
+            if(!notificationList || !supabaseClient) return;
+            try{
+                const {data, error} = await supabaseClient
+                    .from('app_notifications')
+                    .select('id,app_id,type,title,message,previous_version,new_version,created_at')
+                    .order('created_at', {ascending:false})
+                    .limit(30);
+
+                if(error) throw error;
+
+                const rows = Array.isArray(data) ? data : [];
+                const readIds = getReadNotificationIds();
+                const unread = rows.filter(n => !readIds.includes(n.id));
+
+                notificationBadge.textContent = String(unread.length);
+                notificationBadge.classList.toggle('hidden', unread.length === 0);
+                notificationBadge.style.display = unread.length ? 'flex' : 'none';
+
+                if(!rows.length){
+                    notificationList.innerHTML =
+                        '<div class="p-4 text-center text-xs text-gray-500 dark:text-gray-400">No notifications</div>';
+                    return;
+                }
+
+                notificationList.innerHTML = rows.map(function(n){
+                    const appId=escapeNotificationText(n.app_id);
+                    const title=escapeNotificationText(n.title || 'Notification');
+                    const message=escapeNotificationText(n.message || '');
+                    const time=escapeNotificationText(notificationTime(n.created_at));
+                    const unreadClass=readIds.includes(n.id) ? '' : 'ring-1 ring-mint-200 dark:ring-mint-800';
+                    return `<button type="button" data-notification-app="${appId}" data-notification-id="${escapeNotificationText(n.id)}"
+                        class="w-full text-left p-2 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-mint-50 dark:hover:bg-gray-700 flex items-start gap-2.5 ${unreadClass}">
+                        <div class="w-7 h-7 rounded-lg bg-mint-100 dark:bg-mint-900/40 text-mint-600 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="fa-solid ${n.type==='app_update' ? 'fa-arrows-rotate' : 'fa-bell'} text-xs"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-gray-800 dark:text-gray-200">${title}</p>
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400">${message}</p>
+                            ${time ? `<p class="text-[10px] text-gray-400 mt-1">${time}</p>` : ''}
+                        </div>
+                    </button>`;
+                }).join('');
+
+                notificationList.querySelectorAll('[data-notification-app]').forEach(function(el){
+                    el.addEventListener('click',function(){
+                        const id=el.getAttribute('data-notification-id');
+                        const appId=el.getAttribute('data-notification-app');
+                        const ids=getReadNotificationIds();
+                        if(id && !ids.includes(id)){ids.push(id);saveReadNotificationIds(ids);}
+                        if(appId) window.location.href='app.html?id='+encodeURIComponent(appId);
+                    });
+                });
+            }catch(err){
+                console.error('REAL NOTIFICATIONS ERROR:',err);
+                notificationBadge.textContent='0';
+                notificationBadge.classList.add('hidden');
+                notificationBadge.style.display='none';
+                notificationList.innerHTML =
+                    '<div class="p-4 text-center text-xs text-gray-500 dark:text-gray-400">No notifications</div>';
+            }
+        }
+
+        notificationToggleBtn?.addEventListener('click', async (e) => {
             e.stopPropagation();
             notificationDropdown?.classList.toggle('hidden');
+            if(!notificationDropdown?.classList.contains('hidden')) await loadRealNotifications();
         });
 
-        window.markNotificationsRead = function() {
-            if (notificationBadge) notificationBadge.style.display = 'none';
+        window.markNotificationsRead = function(){
+            if(!notificationList) return;
+            const ids=[...notificationList.querySelectorAll('[data-notification-id]')].map(x=>x.getAttribute('data-notification-id')).filter(Boolean);
+            saveReadNotificationIds([...getReadNotificationIds(),...ids]);
+            notificationBadge.textContent='0';
+            notificationBadge.classList.add('hidden');
+            notificationBadge.style.display='none';
+            notificationList.querySelectorAll('[data-notification-app]').forEach(x=>x.classList.remove('ring-1','ring-mint-200','dark:ring-mint-800'));
         };
+
+        loadRealNotifications();
 
         // Profile Avatar Dropdown Toggle
         const profileAvatarBtn = document.getElementById('profileAvatarBtn');
