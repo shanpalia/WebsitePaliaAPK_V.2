@@ -200,7 +200,7 @@
             </div>
 
             <!-- Right Actions & Controls: Notifications, Dark Mode, Profile/Login -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 sm:gap-3 shrink-0 flex-nowrap">
                 
                 <!-- Notification Dropdown -->
                 <div class="relative">
@@ -681,6 +681,8 @@ recordSiteVisit();
         };
 
         loadRealNotifications();
+        window.addEventListener('focus', loadRealNotifications);
+        document.addEventListener('visibilitychange', function(){ if(!document.hidden) loadRealNotifications(); });
 
         // Profile Avatar Dropdown Toggle
         const profileAvatarBtn = document.getElementById('profileAvatarBtn');
@@ -757,14 +759,6 @@ async function initData() {
         }
     }
 }
-        function loadFallbacks() {
-            window.allAppsCache = [
-                { id: 1, name: 'PaliaCraft Launcher', category: 'Games', downloads: '1.2M', rating: 4.9, size: '48 MB', version: 'v2.1', icon_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150', banner_url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800', screenshots: ['https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300'], featured: true, top_chart: true, recently_updated: true },
-                { id: 2, name: 'CyberShield Browser', category: 'Tools', downloads: '850K', rating: 4.8, size: '32 MB', version: 'v1.5', icon_url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=150', banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800', screenshots: ['https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300'], featured: true, top_chart: true, recently_updated: false },
-                { id: 3, name: 'Nova AI Assistant', category: 'AI', downloads: '2.5M', rating: 4.9, size: '64 MB', version: 'v3.0', icon_url: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=150', banner_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', screenshots: ['https://images.unsplash.com/photo-1677442136019-21780efad99a?w=300'], featured: false, top_chart: true, recently_updated: true }
-            ];
-            renderPageData(window.allAppsCache);
-        }
 
         function renderPageData(apps) {
             const featuredApps = apps.filter(a => a.featured || a.is_featured);
@@ -1294,8 +1288,28 @@ window.handleDownloadClick = async function(appId) {
             }
         }
 
-        // Start APK download
-        window.location.href = downloadUrl;
+        // Start APK download without leaving PaliaAPK HUB.
+        try {
+            const response = await fetch(downloadUrl, { method: 'GET', mode: 'cors' });
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = ((app.name || 'PaliaAPK').replace(/[^a-z0-9._-]+/gi, '_')) + '.apk';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+        } catch (downloadError) {
+            console.warn('Blob download unavailable; using hidden iframe:', downloadError);
+            const frame = document.createElement('iframe');
+            frame.style.display = 'none';
+            frame.src = downloadUrl;
+            document.body.appendChild(frame);
+            setTimeout(() => frame.remove(), 120000);
+        }
 
     } catch (error) {
 

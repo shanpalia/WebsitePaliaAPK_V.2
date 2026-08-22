@@ -384,8 +384,29 @@ if (downloadBtn) {
             }
         }
 
-        // Start APK download
-        window.location.href = downloadUrl;
+        // Start APK download WITHOUT redirecting the PaliaAPK HUB page.
+        // Prefer a Blob download; fallback to a hidden iframe for attachment responses.
+        try {
+            const response = await fetch(downloadUrl, { method: 'GET', mode: 'cors' });
+            if (!response.ok) throw new Error('HTTP ' + response.status);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = ((app.name || 'PaliaAPK').replace(/[^a-z0-9._-]+/gi, '_')) + '.apk';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+        } catch (downloadError) {
+            console.warn('Blob download unavailable; using non-navigating iframe:', downloadError);
+            const frame = document.createElement('iframe');
+            frame.style.display = 'none';
+            frame.src = downloadUrl;
+            document.body.appendChild(frame);
+            setTimeout(() => frame.remove(), 120000);
+        }
     };
 }
                 // Description
