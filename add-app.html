@@ -987,10 +987,7 @@ img{ max-width: 100%; display: block; }
 }
 </style>
 
-<style id="paliaSequentialWizardCSS">
-#paliaSequentialWizard{position:fixed;inset:0;background:rgba(15,23,42,.68);backdrop-filter:blur(5px);z-index:100000;display:none;align-items:center;justify-content:center;padding:16px}
-#paliaSequentialWizard.open{display:flex}.psw-card{width:min(520px,100%);background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 25px 80px rgba(0,0,0,.3)}.psw-head{padding:20px;border-bottom:1px solid #e5e7eb}.psw-step{font-size:11px;font-weight:900;color:#10b981;text-transform:uppercase}.psw-title{font-size:21px;font-weight:900;color:#111827;margin-top:4px}.psw-body{padding:22px}.psw-drop{border:2px dashed #cbd5e1;border-radius:16px;padding:28px;text-align:center;cursor:pointer;background:#f8fafc}.psw-drop:hover{border-color:#10b981;background:#f0fdf4}.psw-file{font-weight:800;margin-top:8px;word-break:break-word}.psw-size{font-size:13px;color:#64748b;margin-top:5px}.psw-progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-top:16px}.psw-progress>div{height:100%;width:0;background:#10b981}.psw-rem{font-size:12px;color:#64748b;margin-top:8px}.psw-foot{display:flex;gap:8px;padding:16px 20px;border-top:1px solid #e5e7eb}.psw-btn{flex:1;border:0;border-radius:11px;padding:11px;font-weight:800;cursor:pointer}.psw-cancel{background:#fee2e2;color:#b91c1c}.psw-skip{background:#f1f5f9;color:#475569}.psw-next{background:#10b981;color:#fff}
-</style></head>
+</head>
 <body>
 <div style="padding: 15px; background: #f8f9fa; margin-bottom: 20px;">
     <a href="dashboard.html" style="display: inline-block; padding: 10px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px; font-family: sans-serif; font-size: 14px;">
@@ -1994,7 +1991,7 @@ var BUCKETS = {
     }
     showToast('success', 'App published', currentFieldValue('fName') + ' was successfully published to the catalog.');
     window.setTimeout(function(){
-      window.location.href = 'dashboard.html';
+      window.location.href = 'manage-app.html';
     }, 2000);
   }
 
@@ -2178,12 +2175,8 @@ async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
       var providerValue = checkedProvider ? checkedProvider.value : '';
 
 
-      // Warna Supabase ya Hybrid ke liye yahi se publish process shuru hoga
-      if(window.openPaliaSequentialWizard){
-        window.openPaliaSequentialWizard();
-      } else {
-        submitApp('published', 'btnPublish', 'Publishing…');
-      }
+      // Publish directly with the files already selected in the original uploaders.
+      submitApp('published', 'btnPublish', 'Publishing…');
     });
   }
   renderTags();
@@ -2192,121 +2185,6 @@ async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
 })();
 </script>
 
-<div id="paliaSequentialWizard" aria-hidden="true"><div class="psw-card"><div class="psw-head"><div class="psw-step" id="pswStep"></div><div class="psw-title" id="pswTitle"></div></div><div class="psw-body"><div class="psw-drop" id="pswDrop"><i class="fa-solid fa-cloud-arrow-up text-3xl text-emerald-500"></i><div class="psw-file" id="pswFile">Click to select file</div><div class="psw-size" id="pswSize">Size: —</div><div class="psw-progress"><div id="pswBar"></div></div><div class="psw-rem" id="pswRem"></div></div><input id="pswInput" type="file" hidden></div><div class="psw-foot"><button type="button" class="psw-btn psw-cancel" id="pswCancel">Cancel</button><button type="button" class="psw-btn psw-skip" id="pswSkip">Skip</button><button type="button" class="psw-btn psw-next" id="pswNext">Next</button></div></div></div><script id="paliaSequentialWizardJS">
-(function(){
-  const steps=[
-    ['icon','App Icon',true,'image/*'],
-    ['banner','Banner',false,'image/*'],
-    ['apk','APK File',true,'.apk'],
-    ['screenshot1','Screenshot 1',false,'image/*'],
-    ['screenshot2','Screenshot 2',false,'image/*'],
-    ['screenshot3','Screenshot 3',false,'image/*'],
-    ['screenshot4','Screenshot 4',false,'image/*'],
-    ['screenshot5','Screenshot 5',false,'image/*']
-  ];
-  let i=0,file=null;
-  const M=document.getElementById('paliaSequentialWizard');
-  const I=document.getElementById('pswInput');
-  const D=document.getElementById('pswDrop');
-  const B=document.getElementById('pswBar');
-  const F=document.getElementById('pswFile');
-  const S=document.getElementById('pswSize');
-  const R=document.getElementById('pswRem');
-  const T=document.getElementById('pswStep');
-  const H=document.getElementById('pswTitle');
-  const N=document.getElementById('pswNext');
-  const K=document.getElementById('pswSkip');
-
-  function fmt(n){
-    return n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB';
-  }
-  function existing(id){
-    try { return window.uploads && window.uploads[id] && window.uploads[id].file; }
-    catch(e){ return null; }
-  }
-  function render(){
-    const x=steps[i], saved=existing(x[0]), active=file||saved;
-    T.textContent='Step '+(i+1)+' of '+steps.length;
-    H.textContent=x[1]+(x[2]?'':' (Optional)');
-    I.accept=x[3];
-    F.textContent=active ? active.name : 'Click to select file';
-    S.textContent=active ? 'Size: '+fmt(active.size) : 'Size: —';
-    B.style.width=active?'100%':'0%';
-    R.textContent='Remaining: '+(steps.length-i-1)+' steps';
-    K.style.display=x[2]?'none':'block';
-    N.textContent=i===steps.length-1?'Finish':'Next';
-  }
-  function open(){
-    i=0; file=null; M.classList.add('open'); M.setAttribute('aria-hidden','false'); render();
-  }
-  function close(){
-    M.classList.remove('open'); M.setAttribute('aria-hidden','true'); file=null;
-  }
-  function choose(){ I.value=''; I.click(); }
-  D.onclick=choose;
-
-  I.onchange=function(){
-    const f=I.files&&I.files[0];
-    if(!f)return;
-    const x=steps[i];
-    if(x[0]==='apk' && !/\.apk$/i.test(f.name)){alert('Please select a valid APK file.');return;}
-    if(x[0]!=='apk' && f.type.indexOf('image/')!==0){alert('Please select an image file.');return;}
-    file=f;
-    F.textContent=f.name;
-    S.textContent='Size: '+fmt(f.size);
-    B.style.width='0%';
-    const r=new FileReader();
-    r.onprogress=e=>{if(e.lengthComputable)B.style.width=Math.round(e.loaded/e.total*100)+'%';};
-    r.onload=()=>B.style.width='100%';
-    r.readAsArrayBuffer(f);
-  };
-
-  function saveCurrent(){
-    if(!file)return;
-    // Use the SAME uploads object used by the original add-app uploader.
-    window.uploads=window.uploads||{};
-    window.uploads[steps[i][0]]={file:file,dataUrl:null};
-
-    const root=document.querySelector('[data-uploader-id="'+steps[i][0]+'"]');
-    const inp=root&&root.querySelector('[data-role="input"]');
-    if(inp){
-      try{
-        const dt=new DataTransfer();
-        dt.items.add(file);
-        inp.files=dt.files;
-        inp.dispatchEvent(new Event('change',{bubbles:true}));
-      }catch(e){}
-    }
-    file=null;
-  }
-
-  N.onclick=function(){
-    const x=steps[i];
-    const saved=existing(x[0]);
-    if(x[2]&&!file&&!saved){alert(x[1]+' is required.');return;}
-    if(file)saveCurrent();
-
-    if(i<steps.length-1){
-      i++;
-      render();
-    }else{
-      close();
-      // All selected files are now already in the original uploader's uploads object.
-      // Start the ORIGINAL publish function automatically; no second file request.
-      if(typeof submitApp==='function'){
-        submitApp('published','btnPublish','Publishing…');
-      }
-    }
-  };
-
-  K.onclick=function(){
-    file=null;
-    if(i<steps.length-1){i++;render();}else close();
-  };
-  document.getElementById('pswCancel').onclick=close;
-  window.openPaliaSequentialWizard=open;
-  document.addEventListener('DOMContentLoaded',render);
-})();
-</script></body>
+</body>
 </html>
 ```[cite: 3]
