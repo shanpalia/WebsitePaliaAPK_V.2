@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+    <!-- PaliaAPK HUB social sharing preview -->
+    <meta property="og:site_name" content="PaliaAPK HUB">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="PaliaAPK HUB | Premium Android Store & Verified APKs">
+    <meta property="og:description" content="Discover apps, games and verified Android APKs on PaliaAPK HUB.">
+    <meta property="og:image" content="/WebsitePaliaAPK_V.2/assets/paliaapk-hub-share.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="PaliaAPK HUB | Premium Android Store & Verified APKs">
+    <meta name="twitter:description" content="Discover apps, games and verified Android APKs on PaliaAPK HUB.">
+    <meta name="twitter:image" content="/WebsitePaliaAPK_V.2/assets/paliaapk-hub-share.png">
+
 
 <script id="paliaDarkModeController">
 (function () {
@@ -151,9 +164,20 @@
             <!-- ACCOUNT INFORMATION -->
             <div class="p-6">
 
-                <h3 class="text-lg font-black text-gray-900 mb-5">
-                    Account Information
-                </h3>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+                    <h3 class="text-lg font-black text-gray-900">
+                        Account Information
+                    </h3>
+                    <button id="profileUpdatesBtnTop" type="button"
+                            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl
+                                   bg-green-600 text-white text-sm font-black shadow-md hover:bg-green-700 transition">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        App Updates
+                        <span id="profileUpdatesCountTop"
+                              class="hidden min-w-5 h-5 px-1 rounded-full bg-red-500 text-white
+                                     items-center justify-center text-[10px]">0</span>
+                    </button>
+                </div>
 
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -472,11 +496,37 @@ const paliaSupabase = window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUP
                 }
             }
 
-            btn?.addEventListener('click', async () => {
+            const topBtn = document.getElementById('profileUpdatesBtnTop');
+            const topCount = document.getElementById('profileUpdatesCountTop');
+
+            async function refreshTopCount(){
+                if(!topCount || !paliaSupabase) return;
+                try{
+                    const {data,error}=await paliaSupabase.from('apps').select('id').eq('update_available',true);
+                    if(error) throw error;
+                    const n=Array.isArray(data)?data.length:0;
+                    topCount.textContent=String(n);
+                    topCount.classList.toggle('hidden', n===0);
+                    topCount.classList.toggle('inline-flex', n>0);
+                }catch(e){
+                    topCount.classList.add('hidden');
+                }
+            }
+
+            topBtn?.addEventListener('click', async () => {
                 modal?.classList.remove('hidden');
                 modal?.classList.add('flex');
                 await loadUpdates();
             });
+            if(window.location.hash === '#updates'){
+                setTimeout(async () => {
+                    modal?.classList.remove('hidden');
+                    modal?.classList.add('flex');
+                    await loadUpdates();
+                }, 150);
+            }
+
+            refreshTopCount();
             closeBtn?.addEventListener('click', closeModal);
             modal?.addEventListener('click', e => { if(e.target === modal) closeModal(); });
         })();
