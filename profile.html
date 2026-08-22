@@ -337,6 +337,34 @@
     </main>
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const PALIA_SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
+const PALIA_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
+const paliaSupabase = window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUPABASE_ANON_KEY);
+</script>
+
+<!-- AVAILABLE UPDATES MODAL -->
+<div id="profileUpdatesModal"
+     class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+  <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <div>
+        <h3 class="font-black text-gray-900">Available Updates</h3>
+        <p class="text-xs text-gray-500 mt-1">Live data from PaliaAPK HUB</p>
+      </div>
+      <button id="closeProfileUpdates" class="w-9 h-9 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div id="profileUpdatesList" class="p-5 max-h-[65vh] overflow-y-auto">
+      <div class="py-10 text-center text-sm text-gray-500">
+        <i class="fa-solid fa-spinner fa-spin mr-2"></i>Checking for updates...
+      </div>
+    </div>
+  </div>
+</div>
+
     <!-- FIREBASE LOGIC -->
     <script>
 
@@ -362,6 +390,96 @@
 
         const auth = firebase.auth();
 
+
+
+        // ===============================
+        // LIVE APP UPDATES
+        // ===============================
+        (function(){
+            const btn = document.getElementById('profileUpdatesBtn');
+            const modal = document.getElementById('profileUpdatesModal');
+            const closeBtn = document.getElementById('closeProfileUpdates');
+            const list = document.getElementById('profileUpdatesList');
+            const count = document.getElementById('profileUpdatesCount');
+
+            function esc(v){
+                return String(v ?? '').replace(/[&<>"']/g, c => ({
+                    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+                }[c]));
+            }
+
+            function closeModal(){
+                modal?.classList.add('hidden');
+                modal?.classList.remove('flex');
+            }
+
+            async function loadUpdates(){
+                if(!list || !paliaSupabase) return;
+                list.innerHTML = '<div class="py-10 text-center text-sm text-gray-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Checking for updates...</div>';
+
+                try{
+                    const {data, error} = await paliaSupabase
+                        .from('apps')
+                        .select('id,name,version,previous_version,update_available,release_notes,icon_url,updated_at')
+                        .eq('update_available', true)
+                        .order('updated_at', {ascending:false});
+
+                    if(error) throw error;
+
+                    const apps = Array.isArray(data) ? data : [];
+                    count.textContent = String(apps.length);
+                    count.classList.toggle('hidden', apps.length === 0);
+                    count.classList.toggle('inline-flex', apps.length > 0);
+
+                    if(!apps.length){
+                        list.innerHTML = `
+                          <div class="py-10 text-center">
+                            <div class="w-14 h-14 mx-auto rounded-2xl bg-green-50 text-green-600 flex items-center justify-center text-xl">
+                              <i class="fa-solid fa-check"></i>
+                            </div>
+                            <p class="mt-3 font-black text-gray-800">You're up to date</p>
+                            <p class="text-xs text-gray-500 mt-1">No app update is currently available.</p>
+                          </div>`;
+                        return;
+                    }
+
+                    list.innerHTML = apps.map(app => `
+                      <button type="button" data-update-app="${esc(app.id)}"
+                              class="w-full text-left flex items-center gap-3 p-3 mb-2 rounded-2xl border border-gray-100 hover:border-green-200 hover:bg-green-50 transition">
+                        <div class="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden flex items-center justify-center shrink-0">
+                          ${app.icon_url ? `<img src="${esc(app.icon_url)}" class="w-full h-full object-cover" alt="">` :
+                          `<i class="fa-solid fa-android text-green-500 text-xl"></i>`}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <p class="font-black text-sm text-gray-900 truncate">${esc(app.name)}</p>
+                          <p class="text-xs text-gray-500 mt-0.5">Version <b class="text-green-600">${esc(app.version || '—')}</b>${app.previous_version ? ` · Previous ${esc(app.previous_version)}` : ''}</p>
+                          ${app.release_notes ? `<p class="text-[11px] text-gray-500 mt-1 truncate">${esc(app.release_notes)}</p>` : ''}
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-400 text-xs"></i>
+                      </button>`).join('');
+
+                    list.querySelectorAll('[data-update-app]').forEach(el => {
+                        el.addEventListener('click', () => {
+                            const id = el.getAttribute('data-update-app');
+                            if(id) window.location.href = 'app.html?id=' + encodeURIComponent(id);
+                        });
+                    });
+                }catch(err){
+                    console.error('Profile updates error:', err);
+                    count.textContent='0';
+                    count.classList.add('hidden');
+                    list.innerHTML = '<div class="py-10 text-center text-sm text-red-500">Unable to load updates. Please try again.</div>';
+                }
+            }
+
+            btn?.addEventListener('click', async () => {
+                modal?.classList.remove('hidden');
+                modal?.classList.add('flex');
+                await loadUpdates();
+            });
+            closeBtn?.addEventListener('click', closeModal);
+            modal?.addEventListener('click', e => { if(e.target === modal) closeModal(); });
+        })();
 
         // ===============================
         // AUTH STATE
