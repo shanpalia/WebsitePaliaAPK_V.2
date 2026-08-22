@@ -1950,17 +1950,13 @@ var BUCKETS = {
     };
   }
 
+  // The real public.apps schema has no slug column.
+  // Insert only columns that actually exist and return the real UUID.
   function insertWithUniqueSlug(payload, attemptsLeft){
-    return sb.from('apps').insert([payload]).select().then(function(res){
-      if(res.error){
-        var isDupSlug = res.error.code === '23505' && attemptsLeft > 0;
-        if(isDupSlug){
-          payload.slug = payload.slug + '-' + randomSuffix();
-          return insertWithUniqueSlug(payload, attemptsLeft - 1);
-        }
-        throw res.error;
-      }
-      return res.data;
+    delete payload.slug;
+    return sb.from('apps').insert([payload]).select('*').single().then(function(res){
+      if(res.error) throw res.error;
+      return [res.data];
     });
   }
 
@@ -2061,8 +2057,6 @@ async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
     } else {
       setSubmitting(true, btnId, loadingLabel);
     }
-
-    var slug = slugify(currentFieldValue('fName')) + '-' + randomSuffix();
     var urls = { icon: null, banner: null, apk: null, screenshots: [] };
 
     var uploadChain = Promise.resolve();
@@ -2112,23 +2106,8 @@ async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
     uploadChain
       .then(function(){
         if(status === 'published') updatePublishProgress(95, 'Saving App Details (95%)');
-        var payload = collectPayload(status, urls, slug);
-        return insertWithUniqueSlug(payload, 3).then(function(rows){
-          if(status !== 'published') return rows;
-          var appRow = Array.isArray(rows) ? rows[0] : rows;
-          if(!appRow || !appRow.id) throw new Error('App was saved but its database ID was not returned.');
-          // Create the notification AFTER the apps row exists. This avoids the FK error.
-          return sb.from('app_notifications').insert([{
-            app_id: appRow.id,
-            type: 'new',
-            title: 'New App Added',
-            message: (appRow.name || payload.name || 'New app') + ' is now available',
-            is_read: false
-          }]).then(function(nres){
-            if(nres.error) throw nres.error;
-            return rows;
-          });
-        });
+        var payload = collectPayload(status, urls, null);
+        return insertWithUniqueSlug(payload, 3);
       })
       .then(function(){
         if(status === 'published'){
