@@ -1991,7 +1991,7 @@ var BUCKETS = {
     }
     showToast('success', 'App published', currentFieldValue('fName') + ' was successfully published to the catalog.');
     window.setTimeout(function(){
-      window.location.href = 'manage-app.html';
+      window.location.href = 'dashboard.html';
     }, 2000);
   }
 
@@ -2113,7 +2113,22 @@ async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
       .then(function(){
         if(status === 'published') updatePublishProgress(95, 'Saving App Details (95%)');
         var payload = collectPayload(status, urls, slug);
-        return insertWithUniqueSlug(payload, 3);
+        return insertWithUniqueSlug(payload, 3).then(function(rows){
+          if(status !== 'published') return rows;
+          var appRow = Array.isArray(rows) ? rows[0] : rows;
+          if(!appRow || !appRow.id) throw new Error('App was saved but its database ID was not returned.');
+          // Create the notification AFTER the apps row exists. This avoids the FK error.
+          return sb.from('app_notifications').insert([{
+            app_id: appRow.id,
+            type: 'new',
+            title: 'New App Added',
+            message: (appRow.name || payload.name || 'New app') + ' is now available',
+            is_read: false
+          }]).then(function(nres){
+            if(nres.error) throw nres.error;
+            return rows;
+          });
+        });
       })
       .then(function(){
         if(status === 'published'){
@@ -2175,7 +2190,7 @@ async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
       var providerValue = checkedProvider ? checkedProvider.value : '';
 
 
-      // Publish directly with the files already selected in the original uploaders.
+      // Warna Supabase ya Hybrid ke liye yahi se publish process shuru hoga
       submitApp('published', 'btnPublish', 'Publishing…');
     });
   }
