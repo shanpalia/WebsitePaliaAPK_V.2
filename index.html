@@ -914,7 +914,7 @@ window.toggleAllCategories = function () {
                                         <span>${app.downloads || '1M+ downloads'}</span>
                                     </p>
                                     <div class="pt-1">
-                                       <button onclick="event.stopPropagation(); handleDownloadClick('${app.id}')" class="download-btn text-xs flex items-center gap-2">
+                                       <button onclick="event.stopPropagation(); handleDownloadClick('${app.id}')" class="download-btn text-xs flex items-center gap-2" data-app-id="${app.id}">
                                             <i class="fa-solid fa-download"></i> Download (${app.apk_size || 'Unknown Size'})
                                         </button>
                                     </div>
@@ -1284,7 +1284,11 @@ window.openAppDetails = function(appId) {
        // ===============================
 // HOMEPAGE DOWNLOAD
 // ===============================
-window.handleDownloadClick = async function(appId) {
+window.handleDownloadClick = async function(appId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
 
     if (!appId) {
         console.error("App ID missing");
@@ -1357,28 +1361,40 @@ window.handleDownloadClick = async function(appId) {
             }
         }
 
-        // Start APK download without leaving PaliaAPK HUB.
+        // Download without navigating the PaliaAPK HUB page.
+        // Same-origin/CORS: Blob download. Cross-origin Render/Telegram endpoint:
+        // hidden iframe, so the top-level page never navigates to Render.
         try {
-            const response = await fetch(downloadUrl, { method: 'GET', mode: 'cors' });
+            const response = await fetch(downloadUrl, {
+                method: 'GET',
+                mode: 'cors',
+                credentials: 'omit'
+            });
             if (!response.ok) throw new Error('HTTP ' + response.status);
             const blob = await response.blob();
+            if (!blob.size) throw new Error('Empty APK response');
+
             const blobUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = blobUrl;
-            a.download = ((app.name || 'PaliaAPK').replace(/[^a-z0-9._-]+/gi, '_')) + '.apk';
+            a.download = ((app.name || 'PaliaAPK-HUB').replace(/[^a-z0-9._-]+/gi, '_')) + '.apk';
+            a.rel = 'noopener';
             a.style.display = 'none';
             document.body.appendChild(a);
             a.click();
             a.remove();
             setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
         } catch (downloadError) {
-            console.warn('Blob download unavailable; using hidden iframe:', downloadError);
+            console.warn('APK blob download unavailable; using hidden iframe:', downloadError);
             const frame = document.createElement('iframe');
-            frame.style.display = 'none';
+            frame.setAttribute('aria-hidden', 'true');
+            frame.style.cssText = 'position:fixed;width:1px;height:1px;border:0;left:-9999px;top:-9999px;';
             frame.src = downloadUrl;
             document.body.appendChild(frame);
             setTimeout(() => frame.remove(), 120000);
         }
+
+        return false;
 
     } catch (error) {
 
@@ -1482,13 +1498,14 @@ window.handleDownloadClick = async function(appId) {
   }
   async function init(){
     if(!isAndroidMobile() || !window.supabaseClient) return;
+    // Show again on a fresh page session; only suppress after the user closes it.
     const dismissed=sessionStorage.getItem('palia_mobile_prompt_dismissed');
     if(dismissed) return;
     try{
       const {data,error}=await window.supabaseClient
         .from('apps')
         .select('id,name,apk_url,telegram_message_id,icon_url')
-        .ilike('name','%PaliaAPK HUB%')
+        .or('name.ilike.%PaliaAPK HUB%,name.ilike.%ShanPalia APK Hub%')
         .limit(1)
         .maybeSingle();
       if(error || !data) return; // Never show fake app download prompt.
@@ -1505,5 +1522,16 @@ window.handleDownloadClick = async function(appId) {
   document.addEventListener('DOMContentLoaded',()=>setTimeout(init,600));
 })();
 </script>
+
+document.addEventListener('click', function(e){
+    const btn=e.target.closest && e.target.closest('.download-btn');
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const appId=btn.getAttribute('data-app-id');
+    if(appId && typeof window.handleDownloadClick==='function'){
+        window.handleDownloadClick(appId,e);
+    }
+}, true);
 </body>
 </html>
