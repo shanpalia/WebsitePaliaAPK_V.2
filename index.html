@@ -527,6 +527,7 @@
         const SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
         const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        window.paliaSupabaseClient = supabaseClient;
 
         window.allAppsCache = [];
         window.currentCategory = 'All';
@@ -1480,46 +1481,97 @@ window.handleDownloadClick = async function(appId, event) {
 
 <script id="paliaMobileAppPromptJS">
 (function(){
-  function isAndroidMobile(){
-    return /Android/i.test(navigator.userAgent) && window.innerWidth <= 900;
+  function isMobile(){
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 900;
   }
-  function startDownload(url,name){
+
+  function downloadFromTable(url,name){
     if(!url) return;
-    try{
-      const a=document.createElement('a');
-      a.href=url;
-      a.download=name || 'PaliaAPK-HUB.apk';
-      a.rel='noopener';
-      a.style.display='none';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }catch(e){ window.open(url,'_blank','noopener'); }
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=name || 'PaliaAPK-HUB.apk';
+    a.target='_blank';
+    a.rel='noopener';
+    a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
+
   async function init(){
-    if(!isAndroidMobile() || !window.supabaseClient) return;
-    // Show again on a fresh page session; only suppress after the user closes it.
-    const dismissed=sessionStorage.getItem('palia_mobile_prompt_dismissed');
-    if(dismissed) return;
+    if(!isMobile()) return;
+
+    const client=window.paliaSupabaseClient;
+    if(!client){
+      console.warn('PaliaAPK HUB mobile prompt: Supabase client not ready');
+      return;
+    }
+
+    const box=document.getElementById('paliaMobileAppPrompt');
+    const btn=document.getElementById('paliaMobileAppPromptDownload');
+    const close=document.getElementById('paliaMobileAppPromptClose');
+    const icon=document.getElementById('paliaMobileAppPromptIcon');
+    if(!box || !btn) return;
+
     try{
-      const {data,error}=await window.supabaseClient
+      // Get the real PaliaAPK HUB app directly from public.apps.
+      // No hard-coded APK URL is used.
+      const {data,error}=await client
         .from('apps')
-        .select('id,name,apk_url,telegram_message_id,icon_url')
-        .or('name.ilike.%PaliaAPK HUB%,name.ilike.%ShanPalia APK Hub%')
-        .limit(1)
-        .maybeSingle();
-      if(error || !data) return; // Never show fake app download prompt.
-      let url=data.apk_url || (data.telegram_message_id ? `https://paliaapk-telegram-api.onrender.com/download-apk/${data.telegram_message_id}` : '');
-      if(!url) return;
-      const box=document.getElementById('paliaMobileAppPrompt');
-      const icon=document.getElementById('paliaMobileAppPromptIcon');
-      if(data.icon_url) icon.src=data.icon_url;
-      document.getElementById('paliaMobileAppPromptDownload').onclick=()=>startDownload(url,(data.name||'PaliaAPK-HUB')+'.apk');
-      document.getElementById('paliaMobileAppPromptClose').onclick=()=>{sessionStorage.setItem('palia_mobile_prompt_dismissed','1');box.style.display='none';};
+        .select('id,name,apk_url,icon_url,telegram_message_id,version')
+        .ilike('name','%PaliaAPK HUB%')
+        .order('updated_at',{ascending:false})
+        .limit(1);
+
+      if(error){
+        console.error('PaliaAPK HUB app lookup failed:',error);
+        return;
+      }
+
+      const app=Array.isArray(data) && data.length ? data[0] : null;
+      if(!app) return;
+
+      // Prefer the actual apk_url stored in Supabase.
+      // telegram_message_id is only a fallback if the table does not have a direct URL.
+      const url=app.apk_url ||
+        (app.telegram_message_id
+          ? 'https://paliaapk-telegram-api.onrender.com/download-apk/'+encodeURIComponent(app.telegram_message_id)
+          : '');
+
+      if(!url){
+        console.warn('PaliaAPK HUB row exists but no APK URL is stored.');
+        return;
+      }
+
+      if(app.icon_url) icon.src=app.icon_url;
+
+      btn.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        downloadFromTable(url,(app.name || 'PaliaAPK-HUB')+'.apk');
+      };
+
+      close.onclick=function(){
+        box.style.display='none';
+      };
+
       box.style.display='block';
-    }catch(e){ console.warn('Mobile app prompt:',e); }
+    }catch(err){
+      console.error('PaliaAPK HUB mobile popup error:',err);
+    }
   }
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(init,600));
+
+  // Supabase is initialized before this script, but retry briefly in case CDN/client loads late.
+  window.addEventListener('load',function(){
+    let tries=0;
+    const timer=setInterval(function(){
+      tries++;
+      if(window.paliaSupabaseClient || tries>=20){
+        clearInterval(timer);
+        init();
+      }
+    },250);
+  });
 })();
 </script>
 
