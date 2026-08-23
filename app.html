@@ -460,12 +460,8 @@ if (downloadBtn) {
             a.remove();
             setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
         } catch (downloadError) {
-            console.warn('Blob download unavailable; using non-navigating iframe:', downloadError);
-            const frame = document.createElement('iframe');
-            frame.style.display = 'none';
-            frame.src = downloadUrl;
-            document.body.appendChild(frame);
-            setTimeout(() => frame.remove(), 120000);
+            console.error('APK download failed without redirect:', downloadError);
+            alert('APK download could not start. The APK server must allow CORS and return the APK file. PaliaAPK HUB was not redirected.');
         }
     };
 }

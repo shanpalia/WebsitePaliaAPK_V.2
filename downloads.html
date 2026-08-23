@@ -244,11 +244,12 @@ async function loadDownloads() {
                     </div>
 
                     ${item.download_url ? `
-                    <a href="${escapeHtml(item.download_url)}"
+                    <button type="button" data-redownload-url="${escapeHtml(item.download_url)}"
+                       data-redownload-name="${escapeHtml(name || 'PaliaAPK-HUB')}.apk"
                        class="flex-shrink-0 w-11 h-11 rounded-xl bg-green-50 text-green-600 flex items-center justify-center hover:bg-green-100"
                        title="Download again">
                         <i class="fa-solid fa-download"></i>
-                    </a>` : ""}
+                    </button>` : ""}
                 </div>
             `;
 
@@ -276,5 +277,51 @@ function escapeHtml(value) {
 }
 </script>
 
+
+<script id="paliaSafeRedownloads">
+document.addEventListener('click', async function(e){
+    const btn=e.target.closest && e.target.closest('[data-redownload-url]');
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const url=btn.getAttribute('data-redownload-url');
+    const name=btn.getAttribute('data-redownload-name') || 'PaliaAPK-HUB.apk';
+    if(!url) return;
+
+    const old=btn.innerHTML;
+    btn.disabled=true;
+    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i>';
+
+    try{
+        const response=await fetch(url,{
+            method:'GET',
+            mode:'cors',
+            credentials:'omit',
+            redirect:'follow',
+            cache:'no-store'
+        });
+        if(!response.ok) throw new Error('HTTP '+response.status);
+        const blob=await response.blob();
+        if(!blob.size) throw new Error('Empty APK response');
+
+        const blobUrl=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=blobUrl;
+        a.download=name;
+        a.rel='noopener';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(()=>URL.revokeObjectURL(blobUrl),120000);
+    }catch(err){
+        console.error('APK re-download failed without redirect:',err);
+        alert('APK download could not start. PaliaAPK HUB was not redirected.');
+    }finally{
+        btn.disabled=false;
+        btn.innerHTML=old;
+    }
+},true);
+</script>
 </body>
 </html>

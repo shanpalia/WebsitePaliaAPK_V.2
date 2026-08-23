@@ -428,19 +428,36 @@
                     const safeName = (app.name || 'App').replace(/[^a-zA-Z0-9 _-]/g, '').trim();
                     const filename = `${safeName}.apk`;
 
-                    finalDownloadBtn.onclick = (e) => {
+                    finalDownloadBtn.onclick = async (e) => {
                         e.preventDefault();
-                        if (app.apk_url) {
-                            // Trigger file download via temporary anchor or direct assignment
+                        e.stopPropagation();
+                        if (!app.apk_url) {
+                            alert('APK download URL is invalid.');
+                            return;
+                        }
+                        try {
+                            const response = await fetch(app.apk_url, {
+                                method: 'GET',
+                                mode: 'cors',
+                                credentials: 'omit',
+                                redirect: 'follow',
+                                cache: 'no-store'
+                            });
+                            if (!response.ok) throw new Error('HTTP ' + response.status);
+                            const blob = await response.blob();
+                            if (!blob.size) throw new Error('Empty APK response');
+                            const blobUrl = URL.createObjectURL(blob);
                             const a = document.createElement('a');
-                            a.href = app.apk_url;
+                            a.href = blobUrl;
                             a.download = filename;
-                            // For cross-origin URLs where download attribute may fail, open or redirect fallback
+                            a.rel = 'noopener';
                             document.body.appendChild(a);
                             a.click();
-                            document.body.removeChild(a);
-                        } else {
-                            alert('APK download URL is invalid.');
+                            a.remove();
+                            setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
+                        } catch (err) {
+                            console.error('APK download failed without redirect:', err);
+                            alert('APK download could not start. PaliaAPK HUB was not redirected.');
                         }
                     };
                 }

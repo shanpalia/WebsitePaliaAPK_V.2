@@ -1386,13 +1386,8 @@ window.handleDownloadClick = async function(appId, event) {
             a.remove();
             setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
         } catch (downloadError) {
-            console.warn('APK blob download unavailable; using hidden iframe:', downloadError);
-            const frame = document.createElement('iframe');
-            frame.setAttribute('aria-hidden', 'true');
-            frame.style.cssText = 'position:fixed;width:1px;height:1px;border:0;left:-9999px;top:-9999px;';
-            frame.src = downloadUrl;
-            document.body.appendChild(frame);
-            setTimeout(() => frame.remove(), 120000);
+            console.error('APK download failed without redirect:', downloadError);
+            alert('APK download could not start. The APK server must allow CORS and return the APK file. PaliaAPK HUB was not redirected.');
         }
 
         return false;
@@ -1485,17 +1480,55 @@ window.handleDownloadClick = async function(appId, event) {
     return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 900;
   }
 
-  function downloadFromTable(url,name){
+  async function downloadFromTable(url,name,button){
     if(!url) return;
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=name || 'PaliaAPK-HUB.apk';
-    a.target='_blank';
-    a.rel='noopener';
-    a.style.display='none';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+
+    const original = button ? button.innerHTML : '';
+    if(button){
+      button.disabled=true;
+      button.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Downloading…';
+    }
+
+    try{
+      // IMPORTANT: Fetch the APK as a Blob. The browser stays on PaliaAPK HUB.
+      // If the Render endpoint redirects to the actual APK and permits CORS,
+      // fetch follows that redirect internally and downloads the APK.
+      const response = await fetch(url, {
+        method:'GET',
+        mode:'cors',
+        credentials:'omit',
+        redirect:'follow',
+        cache:'no-store'
+      });
+
+      if(!response.ok) throw new Error('APK server returned HTTP '+response.status);
+
+      const blob = await response.blob();
+      if(!blob.size) throw new Error('APK response is empty');
+
+      const blobUrl = URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=blobUrl;
+      a.download=name || 'PaliaAPK-HUB.apk';
+      a.rel='noopener';
+      a.style.display='none';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      setTimeout(()=>URL.revokeObjectURL(blobUrl),120000);
+    }catch(error){
+      console.error('PaliaAPK HUB APK download failed:',error);
+
+      // NEVER use window.open(), target=_blank, iframe or window.location here.
+      // Those can expose the Render URL to the user.
+      alert('APK download could not start. The APK server must allow CORS and return the APK file. PaliaAPK HUB was not redirected.');
+    }finally{
+      if(button){
+        button.disabled=false;
+        button.innerHTML=original;
+      }
+    }
   }
 
   async function init(){
@@ -1548,7 +1581,7 @@ window.handleDownloadClick = async function(appId, event) {
       btn.onclick=function(e){
         e.preventDefault();
         e.stopPropagation();
-        downloadFromTable(url,(app.name || 'PaliaAPK-HUB')+'.apk');
+        downloadFromTable(url,(app.name || 'PaliaAPK-HUB')+'.apk',btn);
       };
 
       close.onclick=function(){
