@@ -1620,6 +1620,7 @@ window.handleDownloadClick = async function(appId, event) {
 })();
 </script>
 
+<script>
 document.addEventListener('click', function(e){
     const btn=e.target.closest && e.target.closest('.download-btn');
     if(!btn) return;
@@ -1630,5 +1631,6 @@ document.addEventListener('click', function(e){
         window.handleDownloadClick(appId,e);
     }
 }, true);
+</script>
 </body>
 </html>
