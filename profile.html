@@ -513,9 +513,8 @@ const paliaSupabase = window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUP
                                 document.body.appendChild(a); a.click(); a.remove();
                                 setTimeout(()=>URL.revokeObjectURL(blobUrl),60000);
                             }catch(e){
-                                const frame=document.createElement('iframe');
-                                frame.style.display='none'; frame.src=url; document.body.appendChild(frame);
-                                setTimeout(()=>frame.remove(),120000);
+                                console.error('Update APK download failed without redirect:',e);
+                                alert('Update download could not start. Please try again. PaliaAPK HUB was not redirected.');
                             }finally{
                                 el.disabled=false; el.innerHTML='<i class="fa-solid fa-download mr-1"></i> Update';
                             }

@@ -1655,7 +1655,9 @@ document.addEventListener('click', function(e){
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
   function openAppOrWebsite(apkUrl, version){
     var target='paliaapkhub://update?version='+encodeURIComponent(version||'')+'&url='+encodeURIComponent(apkUrl||'');
-    var fallback=apkUrl || 'downloads.html';
+    // Never navigate the browser to the Render/Telegram endpoint.
+    // If the native app is not installed, stay on PaliaAPK HUB and open its Downloads page.
+    var fallback='downloads.html';
     var started=Date.now();
     try{ window.location.href=target; }catch(e){}
     setTimeout(function(){
