@@ -1315,7 +1315,7 @@ window.handleDownloadClick = async function(appId, event) {
         // Use the same-origin APK directly so the browser never redirects to Render.
         const isPaliaHub = String(app.name || "").toLowerCase().includes("paliaapk hub");
         if (isPaliaHub) {
-            downloadUrl = new URL('/WebsitePaliaAPK_V.2/PaliaAPK-HUB.apk', window.location.origin).href;
+            downloadUrl = 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
         }
         // Direct APK for other apps
         else if (app.apk_url) {
@@ -1355,18 +1355,10 @@ window.handleDownloadClick = async function(appId, event) {
             }
         }
 
-        // PaliaAPK HUB is hosted with this GitHub Pages website.
-        // Use a normal same-origin download link so Facebook/mobile browsers
-        // do not navigate to Render and do not require CORS/blob support.
+        // PaliaAPK HUB: open the direct APK file.
+        // Do not use fetch/blob or an HTML download route in Facebook's browser.
         if (isPaliaHub && downloadUrl) {
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = 'PaliaAPK-HUB.apk';
-            a.rel = 'noopener';
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
+            window.open(downloadUrl, '_blank', 'noopener');
         } else if (downloadUrl) {
             window.open(downloadUrl, '_blank', 'noopener');
         }
@@ -1471,39 +1463,26 @@ window.handleDownloadClick = async function(appId, event) {
     }
 
     try{
-      // IMPORTANT: Fetch the APK as a Blob. The browser stays on PaliaAPK HUB.
-      // If the Render endpoint redirects to the actual APK and permits CORS,
-      // fetch follows that redirect internally and downloads the APK.
-      const response = await fetch(url, {
-        method:'GET',
-        mode:'cors',
-        credentials:'omit',
-        redirect:'follow',
-        cache:'no-store'
-      });
-
-      if(!response.ok) throw new Error('APK server returned HTTP '+response.status);
-
-      const blob = await response.blob();
-      if(!blob.size) throw new Error('APK response is empty');
-
-      const blobUrl = URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=blobUrl;
-      a.download=name || 'PaliaAPK-HUB.apk';
-      a.rel='noopener';
-      a.style.display='none';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      setTimeout(()=>URL.revokeObjectURL(blobUrl),120000);
+      // PaliaAPK HUB uses a direct GitHub Raw APK file. Do not fetch/blob it:
+      // Facebook's in-app browser can block cross-origin Blob downloads.
+      // Opening the raw APK URL lets Android/Facebook handle the file download
+      // without ever opening the Render API page.
+      const isPaliaHubUrl = /raw\.githubusercontent\.com\/shanpalia\/WebsitePaliaAPK_V\.2\/main\/PaliaAPK-HUB\.apk/i.test(url);
+      if(isPaliaHubUrl){
+        window.open(url, '_blank', 'noopener');
+      }else{
+        const a=document.createElement('a');
+        a.href=url;
+        a.download=name || 'PaliaAPK-HUB.apk';
+        a.rel='noopener';
+        a.style.display='none';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
     }catch(error){
       console.error('PaliaAPK HUB APK download failed:',error);
-
-      // NEVER use window.open(), target=_blank, iframe or window.location here.
-      // Those can expose the Render URL to the user.
-      alert('APK download could not start. The APK server must allow CORS and return the APK file. PaliaAPK HUB was not redirected.');
+      alert('APK download could not start. Please tap Download again.');
     }finally{
       if(button){
         button.disabled=false;
@@ -1548,7 +1527,7 @@ window.handleDownloadClick = async function(appId, event) {
       // Prefer the actual apk_url stored in Supabase.
       // telegram_message_id is only a fallback if the table does not have a direct URL.
       const url = String(app.name || '').toLowerCase().includes('paliaapk hub')
-        ? new URL('/WebsitePaliaAPK_V.2/PaliaAPK-HUB.apk', window.location.origin).href
+        ? 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk'
         : (app.apk_url || '');
 
       if(!url){
@@ -1664,7 +1643,7 @@ document.addEventListener('click', function(e){
       if(app.error || !app.data || !app.data[0]) return;
       var a=app.data[0];
       var apk=String(a.name||'').toLowerCase().indexOf('paliaapk hub')>=0
-        ? new URL('/WebsitePaliaAPK_V.2/PaliaAPK-HUB.apk', window.location.origin).href
+        ? 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk'
         : (a.apk_url || '');
       var stamp=String(note.id||note.created_at||a.version||'');
       if(localStorage.getItem(shownKey)===stamp) return;

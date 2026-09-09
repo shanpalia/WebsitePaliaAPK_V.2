@@ -407,7 +407,7 @@ if (downloadBtn) {
             // PaliaAPK HUB APK is hosted directly with this GitHub Pages site.
             // Use normal navigation so Facebook/in-app browsers can download it
             // without CORS/blob handling or any Render redirect.
-            downloadUrl = new URL('./PaliaAPK-HUB.apk', window.location.href).href;
+            downloadUrl = 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
         } else if (app.apk_url) {
             downloadUrl = app.apk_url;
         } else {
@@ -439,7 +439,7 @@ if (downloadBtn) {
         }
 
         // Direct APK navigation: no Render, no fetch(), no blob/CORS dependency.
-        window.location.assign(downloadUrl);
+        window.open(downloadUrl, '_blank', 'noopener');
     };
 }
                 // Description
