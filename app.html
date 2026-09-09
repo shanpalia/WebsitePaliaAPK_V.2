@@ -405,7 +405,11 @@ if (downloadBtn) {
 
         let downloadUrl = "";
 
-        if (app.apk_url) {
+        if (String(app.name || '').toLowerCase().includes('paliaapk hub')) {
+
+            downloadUrl = new URL('/WebsitePaliaAPK_V.2/PaliaAPK-HUB.apk', window.location.origin).href;
+
+        } else if (app.apk_url) {
 
             downloadUrl = app.apk_url;
 

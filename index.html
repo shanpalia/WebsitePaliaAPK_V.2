@@ -1315,7 +1315,7 @@ window.handleDownloadClick = async function(appId, event) {
         // Use the same-origin APK directly so the browser never redirects to Render.
         const isPaliaHub = String(app.name || "").toLowerCase().includes("paliaapk hub");
         if (isPaliaHub) {
-            downloadUrl = new URL("PaliaAPK-HUB.apk", window.location.href).href;
+            downloadUrl = new URL('/WebsitePaliaAPK_V.2/PaliaAPK-HUB.apk', window.location.origin).href;
         }
         // Direct APK for other apps
         else if (app.apk_url) {
@@ -1355,32 +1355,20 @@ window.handleDownloadClick = async function(appId, event) {
             }
         }
 
-        // Download without navigating the PaliaAPK HUB page.
-        // Same-origin/CORS: Blob download. Cross-origin Render/Telegram endpoint:
-        // hidden iframe, so the top-level page never navigates to Render.
-        try {
-            const response = await fetch(downloadUrl, {
-                method: 'GET',
-                mode: 'cors',
-                credentials: 'omit'
-            });
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            const blob = await response.blob();
-            if (!blob.size) throw new Error('Empty APK response');
-
-            const blobUrl = URL.createObjectURL(blob);
+        // PaliaAPK HUB is hosted with this GitHub Pages website.
+        // Use a normal same-origin download link so Facebook/mobile browsers
+        // do not navigate to Render and do not require CORS/blob support.
+        if (isPaliaHub && downloadUrl) {
             const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = ((app.name || 'PaliaAPK-HUB').replace(/[^a-z0-9._-]+/gi, '_')) + '.apk';
+            a.href = downloadUrl;
+            a.download = 'PaliaAPK-HUB.apk';
             a.rel = 'noopener';
             a.style.display = 'none';
             document.body.appendChild(a);
             a.click();
             a.remove();
-            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
-        } catch (downloadError) {
-            console.error('APK download failed without redirect:', downloadError);
-            alert('APK download could not start. The APK server must allow CORS and return the APK file. PaliaAPK HUB was not redirected.');
+        } else if (downloadUrl) {
+            window.open(downloadUrl, '_blank', 'noopener');
         }
 
         return false;
@@ -1560,7 +1548,7 @@ window.handleDownloadClick = async function(appId, event) {
       // Prefer the actual apk_url stored in Supabase.
       // telegram_message_id is only a fallback if the table does not have a direct URL.
       const url = String(app.name || '').toLowerCase().includes('paliaapk hub')
-        ? new URL('PaliaAPK-HUB.apk', window.location.href).href
+        ? new URL('/WebsitePaliaAPK_V.2/PaliaAPK-HUB.apk', window.location.origin).href
         : (app.apk_url || '');
 
       if(!url){
@@ -1676,7 +1664,7 @@ document.addEventListener('click', function(e){
       if(app.error || !app.data || !app.data[0]) return;
       var a=app.data[0];
       var apk=String(a.name||'').toLowerCase().indexOf('paliaapk hub')>=0
-        ? new URL('PaliaAPK-HUB.apk', window.location.href).href
+        ? new URL('/WebsitePaliaAPK_V.2/PaliaAPK-HUB.apk', window.location.origin).href
         : (a.apk_url || '');
       var stamp=String(note.id||note.created_at||a.version||'');
       if(localStorage.getItem(shownKey)===stamp) return;
