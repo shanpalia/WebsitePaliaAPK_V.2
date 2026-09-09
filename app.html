@@ -401,20 +401,16 @@ if (downloadBtn) {
         e.preventDefault();
         e.stopPropagation();
 
-        e.preventDefault();
-
         let downloadUrl = "";
 
         if (String(app.name || '').toLowerCase().includes('paliaapk hub')) {
-
-            downloadUrl = new URL('/WebsitePaliaAPK_V.2/PaliaAPK-HUB.apk', window.location.origin).href;
-
+            // PaliaAPK HUB APK is hosted directly with this GitHub Pages site.
+            // Use normal navigation so Facebook/in-app browsers can download it
+            // without CORS/blob handling or any Render redirect.
+            downloadUrl = new URL('./PaliaAPK-HUB.apk', window.location.href).href;
         } else if (app.apk_url) {
-
             downloadUrl = app.apk_url;
-
         } else {
-
             alert("APK download is currently unavailable.");
             return;
         }
@@ -423,7 +419,6 @@ if (downloadBtn) {
         const user = auth.currentUser;
 
         if (user) {
-
             const result = await _supabase
                 .from("downloads")
                 .insert({
@@ -443,25 +438,8 @@ if (downloadBtn) {
             }
         }
 
-        // Start APK download WITHOUT redirecting the PaliaAPK HUB page.
-        // Prefer a Blob download; fallback to a hidden iframe for attachment responses.
-        try {
-            const response = await fetch(downloadUrl, { method: 'GET', mode: 'cors' });
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = ((app.name || 'PaliaAPK').replace(/[^a-z0-9._-]+/gi, '_')) + '.apk';
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
-        } catch (downloadError) {
-            console.error('APK download failed without redirect:', downloadError);
-            alert('APK download could not start. The APK server must allow CORS and return the APK file. PaliaAPK HUB was not redirected.');
-        }
+        // Direct APK navigation: no Render, no fetch(), no blob/CORS dependency.
+        window.location.assign(downloadUrl);
     };
 }
                 // Description
