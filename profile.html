@@ -499,7 +499,7 @@ const paliaSupabase = window.supabase.createClient(PALIA_SUPABASE_URL, PALIA_SUP
                             const id=el.getAttribute('data-update-download');
                             const app=apps.find(x=>String(x.id)===String(id));
                             if(!app) return;
-                            const url=app.apk_url || (app.telegram_message_id ? `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}` : '');
+                            const url=app.apk_url || '';
                             if(!url){ alert('Update APK is not available for this app.'); return; }
                             el.disabled=true; el.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Updating…';
                             try{

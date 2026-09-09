@@ -405,12 +405,7 @@ if (downloadBtn) {
 
         let downloadUrl = "";
 
-        if (app.telegram_message_id) {
-
-            downloadUrl =
-                `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
-
-        } else if (app.apk_url) {
+        if (app.apk_url) {
 
             downloadUrl = app.apk_url;
 

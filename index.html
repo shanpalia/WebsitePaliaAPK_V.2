@@ -1311,23 +1311,17 @@ window.handleDownloadClick = async function(appId, event) {
 
         let downloadUrl = "";
 
-        // Telegram APK
-        if (app.telegram_message_id) {
-
-            downloadUrl =
-                `https://paliaapk-telegram-api.onrender.com/download-apk/${app.telegram_message_id}`;
-
+        // PaliaAPK HUB itself is bundled with this GitHub Pages website.
+        // Use the same-origin APK directly so the browser never redirects to Render.
+        const isPaliaHub = String(app.name || "").toLowerCase().includes("paliaapk hub");
+        if (isPaliaHub) {
+            downloadUrl = new URL("PaliaAPK-HUB.apk", window.location.href).href;
         }
-
-        // Direct APK
+        // Direct APK for other apps
         else if (app.apk_url) {
-
             downloadUrl = app.apk_url;
-
         }
-
         else {
-
             alert("APK download is currently unavailable.");
             return;
         }
@@ -1565,10 +1559,9 @@ window.handleDownloadClick = async function(appId, event) {
 
       // Prefer the actual apk_url stored in Supabase.
       // telegram_message_id is only a fallback if the table does not have a direct URL.
-      const url=app.apk_url ||
-        (app.telegram_message_id
-          ? 'https://paliaapk-telegram-api.onrender.com/download-apk/'+encodeURIComponent(app.telegram_message_id)
-          : '');
+      const url = String(app.name || '').toLowerCase().includes('paliaapk hub')
+        ? new URL('PaliaAPK-HUB.apk', window.location.href).href
+        : (app.apk_url || '');
 
       if(!url){
         console.warn('PaliaAPK HUB row exists but no APK URL is stored.');
@@ -1682,7 +1675,9 @@ document.addEventListener('click', function(e){
       var app=await client.from('apps').select('id,name,version,apk_url,icon_url,telegram_message_id').ilike('name','%PaliaAPK HUB%').order('updated_at',{ascending:false}).limit(1);
       if(app.error || !app.data || !app.data[0]) return;
       var a=app.data[0];
-      var apk=a.apk_url || (a.telegram_message_id ? 'https://paliaapk-telegram-api.onrender.com/download-apk/'+encodeURIComponent(a.telegram_message_id) : '');
+      var apk=String(a.name||'').toLowerCase().indexOf('paliaapk hub')>=0
+        ? new URL('PaliaAPK-HUB.apk', window.location.href).href
+        : (a.apk_url || '');
       var stamp=String(note.id||note.created_at||a.version||'');
       if(localStorage.getItem(shownKey)===stamp) return;
       var box=document.getElementById('paliaHubUpdateToast');
