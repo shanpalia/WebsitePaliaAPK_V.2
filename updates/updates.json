@@ -8,6 +8,38 @@
       "download_url": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
       "release_notes": "Initial release",
       "force_update": false
+    },
+    {
+      "app_name": "MusicMe",
+      "package_name": "com.aistudio.musicme.player",
+      "latest_version": "1.0",
+      "download_url": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
+      "release_notes": "",
+      "force_update": false
+    },
+    {
+      "app_name": "Vibe Player",
+      "package_name": "com.aistudio.vibeplayer.kqwzx",
+      "latest_version": "1.0",
+      "download_url": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
+      "release_notes": "",
+      "force_update": false
+    },
+    {
+      "app_name": "Banking Point",
+      "package_name": "com.shanpalia.bankingpoint",
+      "latest_version": "1.0",
+      "download_url": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
+      "release_notes": "",
+      "force_update": false
+    },
+    {
+      "app_name": "WhosLine",
+      "package_name": "com.aistudio.whosline.palia",
+      "latest_version": "1.0",
+      "download_url": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
+      "release_notes": "",
+      "force_update": false
     }
   ]
 }
