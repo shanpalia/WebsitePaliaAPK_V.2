@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-20T00:00:00Z",
+  "generated_at": "2026-09-20T16:33:41.651Z",
   "apps": [
     {
       "app_name": "Apna Translator",
       "package_name": "com.palia.apnatranslator",
-      "latest_version": "1.0.0",
+      "latest_version": "1.1.0",
       "download_url": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
-      "release_notes": "Initial release",
+      "release_notes": "Multilingual offline speech recognition with on-device Whisper. Supports the app's 13 languages after the one-time model download.",
       "force_update": false
     },
     {
