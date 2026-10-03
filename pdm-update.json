@@ -1,0 +1,9 @@
+{
+  "appName": "Palia Download Manager",
+  "packageName": "com.shanpalia.pdm",
+  "version": "1.1.0",
+  "versionCode": 11,
+  "downloadUrl": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
+  "notes": "Latest PDM version",
+  "available": true
+}
