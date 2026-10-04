@@ -1,0 +1,9 @@
+{
+  "app_name": "RentFlow",
+  "version": "1.0.1",
+  "build": 3,
+  "releaseNotes": "Professional dashboard, improved rental flow, customer reports, invoices, receive flow and settings.",
+  "downloadUrl": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
+  "forceUpdate": false,
+  "updated_at": "2026-10-04"
+}
