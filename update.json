@@ -1,0 +1,11 @@
+{
+  "app": "Palia Share",
+  "version": "1.0.0",
+  "build": 1,
+  "download_url": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
+  "changelog": [
+    "Initial Palia Share release",
+    "Fast local file sharing",
+    "Improved settings and update system"
+  ]
+}
