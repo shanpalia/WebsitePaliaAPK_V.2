@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "versionCode": 1,
+  "appName": "Voice Studio",
+  "storeUrl": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
+  "releaseNotes": [
+    "Initial Voice Studio release",
+    "Multilingual translation interface",
+    "Speak-to-Type and Text-to-Voice foundation",
+    "PaliaAPK HUB update checker"
+  ]
+}
