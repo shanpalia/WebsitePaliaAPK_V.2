@@ -1,15 +1,14 @@
 {
-  "version": "1.1.0",
-  "versionCode": 2,
+  "version": "1.2.0",
+  "versionCode": 3,
   "appName": "Voice Studio",
   "storeUrl": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
   "releaseNotes": [
-    "Premium Voice Studio UI redesign",
-    "Branded app icon and splash screen",
-    "Improved Speak-to-Type with language-aware recognition",
-    "Male and Female voice preview with system voice selection and pitch fallback",
-    "Voice-to-Voice translate and speak flow",
-    "Expanded language support",
-    "Improved history and audio sharing"
+    "Professional branded splash screen and app presentation",
+    "PaliaAPK HUB website link added to Settings",
+    "Speak-to-Type now continues until the user presses Stop",
+    "Improved speech recognition recovery after silence",
+    "Improved voice selection and audio sharing",
+    "Updated Voice Studio UI and stability"
   ]
 }
