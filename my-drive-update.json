@@ -1,0 +1,10 @@
+{
+  "app": "My Drive",
+  "version": "1.0.0",
+  "build": 1,
+  "download_url": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
+  "changelog": [
+    "Initial My Drive release",
+    "Cloud storage, backup and restore foundation"
+  ]
+}
