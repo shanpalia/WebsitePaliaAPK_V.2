@@ -1,10 +1,13 @@
 {
   "app": "My Drive",
-  "version": "1.0.0",
-  "build": 1,
+  "version": "1.1.0",
+  "build": 2,
   "download_url": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
   "changelog": [
-    "Initial My Drive release",
-    "Cloud storage, backup and restore foundation"
+    "Firebase Authentication login and signup",
+    "Real Firebase Cloud Storage upload and file listing",
+    "Photo backup and cloud restore",
+    "Secure per-user storage path",
+    "Settings update checker and PaliaAPK HUB branding"
   ]
 }
