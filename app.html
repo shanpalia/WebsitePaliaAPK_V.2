@@ -415,31 +415,34 @@ if (downloadBtn) {
             return;
         }
 
-        // Save download history
+        // Telegram post links are not direct APK files. Never launch Telegram from this button.
+        if (/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(downloadUrl)) {
+            alert("This app currently has a Telegram post link, not a direct APK file. To download without opening Telegram, the admin must connect a secure Telegram Bot backend or replace this URL with a direct .apk download link.");
+            return;
+        }
+
+        // Save download history, but a history error must never block the file download.
         const user = auth.currentUser;
-
         if (user) {
-            const result = await _supabase
-                .from("downloads")
-                .insert({
-                    user_id: user.uid,
-                    app_id: app.id,
-                    app_name: app.name || "Unknown App",
-                    version: app.version || "Unknown",
-                    icon_url: app.icon_url || null,
-                    download_url: downloadUrl
-                });
-
-            if (result.error) {
-                console.error(
-                    "Download history error:",
-                    result.error
-                );
+            try {
+                const result = await _supabase
+                    .from("downloads")
+                    .insert({
+                        user_id: user.uid,
+                        app_id: app.id,
+                        app_name: app.name || "Unknown App",
+                        version: app.version || "Unknown",
+                        icon_url: app.icon_url || null,
+                        download_url: downloadUrl
+                    });
+                if (result.error) console.error("Download history error:", result.error);
+            } catch (historyError) {
+                console.error("Download history error:", historyError);
             }
         }
 
-        // Direct APK navigation: no Render, no fetch(), no blob/CORS dependency.
-        window.open(downloadUrl, '_blank', 'noopener');
+        // Use same-tab navigation for direct file URLs; do not open a second tab.
+        window.location.href = downloadUrl;
     };
 }
                 // Description
