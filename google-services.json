@@ -51,11 +51,19 @@
           }
         },
         {
-          "client_id": "270953807883-cvivabhortom1u4f1mfdvdtbkl6qt936.apps.googleusercontent.com",
+          "client_id": "270953807883-nd4t5laulsksij901ipp1hjtarhe1d7d.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.shanpalia.paliaapkhub",
-            "certificate_hash": "baf813e5f8f1c20f9e7375449aa6c8c369c3dfb8"
+            "certificate_hash": "e9364df1fd917ab0f1757599fc167b1e01216f47"
+          }
+        },
+        {
+          "client_id": "270953807883-og12evll477g6goqp1eu754i3hplp8fh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.shanpalia.paliaapkhub",
+            "certificate_hash": "4a8fa0835608111fda69874effc6c21844a3c301"
           }
         },
         {
