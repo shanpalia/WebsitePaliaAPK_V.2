@@ -1285,106 +1285,64 @@ window.openAppDetails = function(appId) {
 // HOMEPAGE DOWNLOAD
 // ===============================
 window.handleDownloadClick = async function(appId, event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    if (!appId) { alert("App information not found."); return false; }
 
-    // Require Firebase login before any APK download starts.
-    const currentUser = (typeof auth !== "undefined") ? auth.currentUser : null;
-    if (!currentUser) {
-        try {
-            localStorage.setItem("redirect_after_login", window.location.href);
-        } catch (storageError) {
-            console.warn("Could not save return URL:", storageError);
-        }
-        alert("Please log in to PaliaAPK HUB before downloading.");
-        window.location.href = "user.html";
+    // Let Firebase restore its persisted session before deciding the user is logged out.
+    let user = (typeof auth !== "undefined") ? auth.currentUser : null;
+    if (!user && typeof auth !== "undefined") {
+        user = await new Promise(resolve => {
+            let done = false, unsubscribe = null;
+            const timer = setTimeout(() => {
+                if (!done) { done = true; if (unsubscribe) unsubscribe(); resolve(auth.currentUser || null); }
+            }, 2000);
+            unsubscribe = auth.onAuthStateChanged(u => {
+                if (!done && u) { done = true; clearTimeout(timer); unsubscribe(); resolve(u); }
+            });
+        });
+    }
+    if (!user) {
+        const returnTo = window.location.pathname + window.location.search + window.location.hash;
+        window.location.href = "user.html?redirect=" + encodeURIComponent(returnTo);
         return false;
-    }
-
-    if (!appId) {
-        console.error("App ID missing");
-        return;
     }
 
     try {
-
-        const { data: app, error } = await supabaseClient
-            .from("apps")
-            .select("*")
-            .eq("id", appId)
-            .single();
-
-        if (error || !app) {
-            console.error("App loading error:", error);
-            alert("App information not found.");
-            return;
-        }
+        const { data: app, error } = await supabaseClient.from("apps").select("*").eq("id", appId).single();
+        if (error || !app) { alert("App information not found."); return false; }
 
         let downloadUrl = "";
-
-        // Route Telegram-hosted APKs through Render so Telegram app links are never opened.
-        const TELEGRAM_API_BASE = "https://paliaapk-telegram-api.onrender.com";
         const isPaliaHub = String(app.name || "").toLowerCase().includes("paliaapk hub");
-
         if (isPaliaHub) {
-            downloadUrl = 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
+            downloadUrl = "https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk";
         } else if (app.telegram_message_id) {
-            // This must be the numeric Telegram channel message ID, not a file_id.
-            downloadUrl = `${TELEGRAM_API_BASE}/download-apk/${encodeURIComponent(app.telegram_message_id)}`;
-        } else if (app.apk_url && !/t\.me\//i.test(app.apk_url)) {
-            // Use a stored URL only when it is not a Telegram web/app link.
-            downloadUrl = app.apk_url;
+            downloadUrl = "https://paliaapk-telegram-api.onrender.com/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
+        } else if (app.apk_url && !/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(String(app.apk_url).trim())) {
+            downloadUrl = String(app.apk_url).trim();
         } else {
-            alert("Direct APK download is not configured for this app yet.");
-            return;
+            alert("Download is not configured. Add the Telegram message ID or a direct APK file URL.");
+            return false;
+        }
+        if (/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(downloadUrl)) {
+            alert("Download blocked: this is a Telegram post URL, not an APK file URL.");
+            return false;
         }
 
-        // Firebase logged-in user
-        const user =
-            typeof auth !== "undefined"
-                ? auth.currentUser
-                : null;
+        try {
+            const { error: historyError } = await supabaseClient.from("downloads").insert({
+                user_id: user.uid, app_id: app.id, app_name: app.name || "Unknown App",
+                version: app.version || "Unknown", icon_url: app.icon_url || null, download_url: downloadUrl
+            });
+            if (historyError) console.warn("Download history error:", historyError);
+        } catch (historyError) { console.warn("Download history error:", historyError); }
 
-        // Save download history
-        if (user) {
-
-            const { error: historyError } =
-                await supabaseClient
-                    .from("downloads")
-                    .insert({
-                        user_id: user.uid,
-                        app_id: app.id,
-                        app_name: app.name || "Unknown App",
-                        version: app.version || "Unknown",
-                        icon_url: app.icon_url || null,
-                        download_url: downloadUrl
-                    });
-
-            if (historyError) {
-                console.error(
-                    "Download history error:",
-                    historyError
-                );
-            }
-        }
-
-        // PaliaAPK HUB: open the direct APK file.
-        // Do not use fetch/blob or an HTML download route in Facebook's browser.
-        if (isPaliaHub && downloadUrl) {
-            window.open(downloadUrl, '_blank', 'noopener');
-        } else if (downloadUrl) {
-            window.open(downloadUrl, '_blank', 'noopener');
-        }
-
+        // Same-tab download. Do not open a Telegram post or a second browser tab.
+        window.location.href = downloadUrl;
         return false;
-
     } catch (error) {
-
         console.error("Homepage download error:", error);
-        alert("Unable to start download.");
-
+        alert("Unable to start download. Please try again.");
+        return false;
     }
 };
 
