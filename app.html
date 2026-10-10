@@ -391,60 +391,80 @@ const auth = firebase.auth();
                 document.getElementById('appVersion').textContent = app.version || '1.0';
 
 // ===============================
-// DOWNLOAD APK
+// DOWNLOAD APK — login required, never open Telegram
 // ===============================
 const downloadBtn = document.getElementById("downloadBtn");
-
 if (downloadBtn) {
-
     downloadBtn.onclick = async function(e) {
         e.preventDefault();
         e.stopPropagation();
 
+        // Wait for Firebase to restore its saved login session before redirecting.
+        let user = auth.currentUser;
+        if (!user) {
+            user = await new Promise(resolve => {
+                let finished = false;
+                let unsubscribe = null;
+                const timer = setTimeout(() => {
+                    if (!finished) { finished = true; if (unsubscribe) unsubscribe(); resolve(auth.currentUser || null); }
+                }, 2000);
+                unsubscribe = auth.onAuthStateChanged(u => {
+                    if (!finished && u) { finished = true; clearTimeout(timer); unsubscribe(); resolve(u); }
+                });
+            });
+        }
+        if (!user) {
+            const returnTo = "app.html?id=" + encodeURIComponent(String(app.id)) + "&resumeDownload=1";
+            try { sessionStorage.setItem("palia_pending_download_app_id", String(app.id)); } catch (_) {}
+            window.location.href = "user.html?redirect=" + encodeURIComponent(returnTo);
+            return;
+        }
+
         let downloadUrl = "";
-
-        if (String(app.name || '').toLowerCase().includes('paliaapk hub')) {
-            // PaliaAPK HUB APK is hosted directly with this GitHub Pages site.
-            // Use normal navigation so Facebook/in-app browsers can download it
-            // without CORS/blob handling or any Render redirect.
-            downloadUrl = 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
-        } else if (app.apk_url) {
-            downloadUrl = app.apk_url;
+        if (app.telegram_message_id) {
+            downloadUrl = "https://paliaapk-telegram-api.onrender.com/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
+        } else if (app.apk_url && !/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(String(app.apk_url).trim())) {
+            downloadUrl = String(app.apk_url).trim();
+        } else if (String(app.name || "").toLowerCase().includes("paliaapk hub")) {
+            downloadUrl = "https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk";
         } else {
-            alert("APK download is currently unavailable.");
+            alert("Direct APK download is not configured. Add the Telegram message ID or a direct APK file URL.");
             return;
         }
 
-        // Telegram post links are not direct APK files. Never launch Telegram from this button.
+        try {
+            const result = await _supabase.from("downloads").insert({
+                user_id: user.uid,
+                app_id: app.id,
+                app_name: app.name || "Unknown App",
+                version: app.version || "Unknown",
+                icon_url: app.icon_url || null,
+                download_url: downloadUrl
+            });
+            if (result.error) console.warn("Download history error:", result.error);
+        } catch (error) {
+            console.warn("Download history error:", error);
+        }
+
+        // Telegram URLs are never navigated to. Render must respond with APK bytes.
         if (/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(downloadUrl)) {
-            alert("This app currently has a Telegram post link, not a direct APK file. To download without opening Telegram, the admin must connect a secure Telegram Bot backend or replace this URL with a direct .apk download link.");
+            alert("Download blocked: this is a Telegram post URL, not an APK file.");
             return;
         }
-
-        // Save download history, but a history error must never block the file download.
-        const user = auth.currentUser;
-        if (user) {
-            try {
-                const result = await _supabase
-                    .from("downloads")
-                    .insert({
-                        user_id: user.uid,
-                        app_id: app.id,
-                        app_name: app.name || "Unknown App",
-                        version: app.version || "Unknown",
-                        icon_url: app.icon_url || null,
-                        download_url: downloadUrl
-                    });
-                if (result.error) console.error("Download history error:", result.error);
-            } catch (historyError) {
-                console.error("Download history error:", historyError);
-            }
-        }
-
-        // Use same-tab navigation for direct file URLs; do not open a second tab.
         window.location.href = downloadUrl;
     };
 }
+                // Resume a protected download only after Firebase login succeeds.
+                if (new URLSearchParams(window.location.search).get("resumeDownload") === "1") {
+                    const pendingId = sessionStorage.getItem("palia_pending_download_app_id");
+                    if (!pendingId || String(pendingId) === String(app.id)) {
+                        sessionStorage.removeItem("palia_pending_download_app_id");
+                        auth.onAuthStateChanged(user => {
+                            if (user) setTimeout(() => downloadBtn && downloadBtn.click(), 400);
+                        });
+                    }
+                }
+
                 // Description
                 document.getElementById('appDescription').textContent = app.description || 'No description available.';
 
