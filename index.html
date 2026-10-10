@@ -1290,6 +1290,19 @@ window.handleDownloadClick = async function(appId, event) {
         event.stopPropagation();
     }
 
+    // Require Firebase login before any APK download starts.
+    const currentUser = (typeof auth !== "undefined") ? auth.currentUser : null;
+    if (!currentUser) {
+        try {
+            localStorage.setItem("redirect_after_login", window.location.href);
+        } catch (storageError) {
+            console.warn("Could not save return URL:", storageError);
+        }
+        alert("Please log in to PaliaAPK HUB before downloading.");
+        window.location.href = "user.html";
+        return false;
+    }
+
     if (!appId) {
         console.error("App ID missing");
         return;
