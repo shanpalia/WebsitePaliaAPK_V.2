@@ -1311,18 +1311,20 @@ window.handleDownloadClick = async function(appId, event) {
 
         let downloadUrl = "";
 
-        // PaliaAPK HUB itself is bundled with this GitHub Pages website.
-        // Use the same-origin APK directly so the browser never redirects to Render.
+        // Route Telegram-hosted APKs through Render so Telegram app links are never opened.
+        const TELEGRAM_API_BASE = "https://paliaapk-telegram-api.onrender.com";
         const isPaliaHub = String(app.name || "").toLowerCase().includes("paliaapk hub");
+
         if (isPaliaHub) {
             downloadUrl = 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk';
-        }
-        // Direct APK for other apps
-        else if (app.apk_url) {
+        } else if (app.telegram_message_id) {
+            // This must be the numeric Telegram channel message ID, not a file_id.
+            downloadUrl = `${TELEGRAM_API_BASE}/download-apk/${encodeURIComponent(app.telegram_message_id)}`;
+        } else if (app.apk_url && !/t\.me\//i.test(app.apk_url)) {
+            // Use a stored URL only when it is not a Telegram web/app link.
             downloadUrl = app.apk_url;
-        }
-        else {
-            alert("APK download is currently unavailable.");
+        } else {
+            alert("Direct APK download is not configured for this app yet.");
             return;
         }
 
