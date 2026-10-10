@@ -2003,6 +2003,7 @@ var BUCKETS = {
       telegram_message_id: urls.telegram_message_id || null,
       screenshots: urls.screenshots,
       downloads: 0,
+      update_available: status === 'published',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
