@@ -1315,10 +1315,13 @@ window.handleDownloadClick = async function(appId, event) {
         const isPaliaHub = String(app.name || "").toLowerCase().includes("paliaapk hub");
         if (isPaliaHub) {
             downloadUrl = "https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk";
-        } else if (app.telegram_message_id) {
-            downloadUrl = "https://paliaapk-telegram-api.onrender.com/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
         } else if (app.apk_url && !/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(String(app.apk_url).trim())) {
+            // Prefer a direct APK/storage URL over the Telegram proxy. A direct URL avoids
+            // a backend redirect that may hand control to the Telegram app.
             downloadUrl = String(app.apk_url).trim();
+        } else if (app.telegram_message_id) {
+            // Only use the proxy when no usable direct APK URL is saved.
+            downloadUrl = "https://paliaapk-telegram-api.onrender.com/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
         } else {
             alert("Download is not configured. Add the Telegram message ID or a direct APK file URL.");
             return false;
