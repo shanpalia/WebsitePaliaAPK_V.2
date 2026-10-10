@@ -421,10 +421,12 @@ if (downloadBtn) {
         }
 
         let downloadUrl = "";
-        if (app.telegram_message_id) {
-            downloadUrl = "https://paliaapk-telegram-api.onrender.com/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
-        } else if (app.apk_url && !/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(String(app.apk_url).trim())) {
+        if (app.apk_url && !/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(String(app.apk_url).trim())) {
+            // Prefer a direct APK/storage URL over the Telegram proxy.
             downloadUrl = String(app.apk_url).trim();
+        } else if (app.telegram_message_id) {
+            // Use the proxy only when no usable direct APK URL is saved.
+            downloadUrl = "https://paliaapk-telegram-api.onrender.com/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
         } else if (String(app.name || "").toLowerCase().includes("paliaapk hub")) {
             downloadUrl = "https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk";
         } else {
