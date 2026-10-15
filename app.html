@@ -63,8 +63,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">PaliaAPK HUB</title>
-    <meta id="metaDesc" name="description" content="Download latest APKs safely on PaliaAPK HUB.">
+    <title id="pageTitle">PaliaAPK HUB — Android App Details and Download</title>
+    <meta id="metaDesc" name="description" content="View Android app details, category, developer information and download options on PaliaAPK HUB.">
+    <link id="canonicalUrl" rel="canonical" href="https://paliaapkhub.com/">
+    <meta name="robots" content="index,follow,max-image-preview:large">
+    <script type="application/ld+json" id="appStructuredData">{}</script>
     
     <!-- Open Graph / SEO -->
     <meta property="og:title" id="ogTitle" content="PaliaAPK HUB">
@@ -374,6 +377,26 @@ const auth = firebase.auth();
                 document.getElementById('twTitle').content = `${app.name} APK Download`;
                 document.getElementById('twDesc').content = app.description ? app.description.substring(0, 150) : '';
                 document.getElementById('twImage').content = app.icon_url || '';
+
+                // Give each app URL its own canonical and structured data for search engines.
+                const appCanonical = 'https://paliaapkhub.com/app.html?id=' + encodeURIComponent(String(app.id));
+                document.getElementById('canonicalUrl').href = appCanonical;
+                const appStructuredData = {
+                    '@context': 'https://schema.org',
+                    '@type': 'SoftwareApplication',
+                    name: app.name || 'Android app',
+                    url: appCanonical,
+                    applicationCategory: app.category || 'UtilitiesApplication',
+                    operatingSystem: 'Android',
+                    description: app.description || (String(app.name || 'This app') + ' details and download information on PaliaAPK HUB.'),
+                    publisher: {
+                        '@type': 'Organization',
+                        name: 'PaliaAPK HUB',
+                        url: 'https://paliaapkhub.com/'
+                    }
+                };
+                if (app.icon_url) appStructuredData.image = app.icon_url;
+                document.getElementById('appStructuredData').textContent = JSON.stringify(appStructuredData);
 
                 // Populate Hero
                 if (app.banner_url) {
