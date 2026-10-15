@@ -511,14 +511,14 @@ async function syncUserToSupabase(user) {
             }
         }
     </script>
+    <script>
+    // Clear saved login fields when returning to the user login page.
     window.addEventListener("pageshow", function () {
-
-    const email = document.getElementById("loginEmail");
-    const password = document.getElementById("loginPassword");
-
-    if (email) email.value = "";
-    if (password) password.value = "";
-
-});
+        const email = document.getElementById("loginEmail");
+        const password = document.getElementById("loginPassword");
+        if (email) email.value = "";
+        if (password) password.value = "";
+    });
+    </script>
 </body>
 </html>
