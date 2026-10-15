@@ -9,16 +9,10 @@
   "theme_color": "#16a34a",
   "icons": [
     {
-      "src": "/assets/palia-android-icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
+      "src": "/assets/palia-android-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
-    },
-    {
-      "src": "/assets/palia-android-icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
     }
   ]
 }
