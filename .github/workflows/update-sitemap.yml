@@ -1,0 +1,83 @@
+name: Update PaliaAPK HUB sitemap
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout website
+        uses: actions/checkout@v4
+
+      - name: Generate sitemap from public Supabase apps
+        env:
+          SUPABASE_URL: https://ralinnuegsbuvlhwpzln.supabase.co
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          python - <<'PY'
+          import json, os, sys, urllib.request, urllib.parse, xml.etree.ElementTree as ET
+          from datetime import datetime, timezone
+
+          base = os.environ["SUPABASE_URL"].rstrip("/")
+          key = os.environ.get("SUPABASE_ANON_KEY", "").strip()
+          if not key:
+              sys.exit("Missing SUPABASE_ANON_KEY repository secret; refusing to overwrite sitemap.")
+
+          url = base + "/rest/v1/apps?select=id,updated_at&order=updated_at.desc"
+          req = urllib.request.Request(url, headers={
+              "apikey": key,
+              "Authorization": "Bearer " + key,
+              "Accept": "application/json"
+          })
+          try:
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  apps = json.load(response)
+          except Exception as exc:
+              sys.exit("Supabase query failed; keeping existing sitemap. " + str(exc))
+
+          if not isinstance(apps, list):
+              sys.exit("Unexpected Supabase response; keeping existing sitemap.")
+          if not apps:
+              sys.exit("Supabase returned zero apps; keeping existing sitemap.")
+
+          ns = "http://www.sitemaps.org/schemas/sitemap/0.9"
+          ET.register_namespace("", ns)
+          root = ET.Element("{" + ns + "}urlset")
+          urls = [("https://paliaapkhub.com/", None)]
+          seen = set()
+          for app in apps:
+              app_id = app.get("id")
+              if app_id is None:
+                  continue
+              loc = "https://paliaapkhub.com/app.html?id=" + urllib.parse.quote(str(app_id), safe="")
+              if loc not in seen:
+                  urls.append((loc, app.get("updated_at")))
+                  seen.add(loc)
+
+          for loc, lastmod in urls:
+              node = ET.SubElement(root, "{" + ns + "}url")
+              ET.SubElement(node, "{" + ns + "}loc").text = loc
+              if lastmod:
+                  ET.SubElement(node, "{" + ns + "}lastmod").text = str(lastmod)[:10]
+
+          ET.ElementTree(root).write("sitemap.xml", encoding="utf-8", xml_declaration=True)
+          print("Generated sitemap with", len(urls), "URLs.")
+          PY
+
+      - name: Commit sitemap if changed
+        run: |
+          if git diff --quiet -- sitemap.xml; then
+            echo "Sitemap unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sitemap.xml
+          git commit -m "Update sitemap from published app records"
+          git push
