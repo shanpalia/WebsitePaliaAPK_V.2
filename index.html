@@ -1520,23 +1520,14 @@ window.handleDownloadClick = async function(appId, event) {
       const app=Array.isArray(data) && data.length ? data[0] : null;
       if(!app) return;
 
-      // Prefer the actual apk_url stored in Supabase.
-      // telegram_message_id is only a fallback if the table does not have a direct URL.
-      const url = String(app.name || '').toLowerCase().includes('paliaapk hub')
-        ? 'https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk'
-        : (app.apk_url || '');
-
-      if(!url){
-        console.warn('PaliaAPK HUB row exists but no APK URL is stored.');
-        return;
-      }
-
+      // The homepage app-store suggestion opens the website Downloads page,
+      // rather than sending users directly to the GitHub APK URL.
       if(app.icon_url) icon.src=app.icon_url;
 
       btn.onclick=function(e){
         e.preventDefault();
         e.stopPropagation();
-        downloadFromTable(url,(app.name || 'PaliaAPK-HUB')+'.apk',btn);
+        window.location.href='downloads.html';
       };
 
       close.onclick=function(){
