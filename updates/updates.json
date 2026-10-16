@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-10-15T16:35:52.635Z",
+  "generated_at": "2026-10-16T01:25:23.889Z",
   "apps": [
     {
       "app_name": "Apna Translator",
       "package_name": "com.palia.apnatranslator",
-      "latest_version": "1.2.0",
+      "latest_version": "1.3.0",
       "download_url": "https://paliaapkhub.com/",
-      "release_notes": "Bundled multilingual offline speech model in the APK; no separate per-language speech model download. Update checks use PaliaAPKHUB.com.",
+      "release_notes": "Smaller multilingual Whisper tiny model is downloaded once and cached for offline speech recognition; core offline language packs are repaired on startup.",
       "force_update": false
     },
     {
