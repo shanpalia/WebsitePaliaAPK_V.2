@@ -444,12 +444,26 @@ if (downloadBtn) {
         }
 
         let downloadUrl = "";
-        if (app.apk_url && !/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(String(app.apk_url).trim())) {
-            // Prefer a direct APK/storage URL over the Telegram proxy.
-            downloadUrl = String(app.apk_url).trim();
+        const savedApkUrl = String(app.apk_url || "").trim();
+        const telegramApiBase = "https://paliaapk-telegram-api.onrender.com";
+        const isTelegramPostUrl = /^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(savedApkUrl);
+        let savedUrlIsTelegramApi = false;
+        let savedUrlIsDownloadEndpoint = false;
+        try {
+            const parsedSavedUrl = new URL(savedApkUrl);
+            savedUrlIsTelegramApi = parsedSavedUrl.hostname.toLowerCase() === "paliaapk-telegram-api.onrender.com";
+            savedUrlIsDownloadEndpoint = savedUrlIsTelegramApi && /^\/download-apk\/\d+\/?$/.test(parsedSavedUrl.pathname);
+        } catch (_) {}
+
+        // The API base URL itself is NOT an APK. If an old database record saved
+        // the Render homepage/root, rebuild the actual download endpoint from the
+        // Telegram message ID rather than opening the Render service page.
+        if (savedApkUrl && !isTelegramPostUrl && !savedUrlIsTelegramApi) {
+            downloadUrl = savedApkUrl;
         } else if (app.telegram_message_id) {
-            // Use the proxy only when no usable direct APK URL is saved.
-            downloadUrl = "https://paliaapk-telegram-api.onrender.com/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
+            downloadUrl = telegramApiBase + "/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
+        } else if (savedUrlIsDownloadEndpoint) {
+            downloadUrl = savedApkUrl;
         } else if (String(app.name || "").toLowerCase().includes("paliaapk hub")) {
             downloadUrl = "https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk";
         } else {
