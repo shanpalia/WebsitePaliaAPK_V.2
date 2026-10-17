@@ -1305,70 +1305,20 @@ window.openAppDetails = function(appId) {
        // ===============================
 // HOMEPAGE DOWNLOAD
 // ===============================
-window.handleDownloadClick = async function(appId, event) {
-    if (event) { event.preventDefault(); event.stopPropagation(); }
-    if (!appId) { alert("App information not found."); return false; }
-
-    // Let Firebase restore its persisted session before deciding the user is logged out.
-    let user = (typeof auth !== "undefined") ? auth.currentUser : null;
-    if (!user && typeof auth !== "undefined") {
-        user = await new Promise(resolve => {
-            let done = false, unsubscribe = null;
-            const timer = setTimeout(() => {
-                if (!done) { done = true; if (unsubscribe) unsubscribe(); resolve(auth.currentUser || null); }
-            }, 2000);
-            unsubscribe = auth.onAuthStateChanged(u => {
-                if (!done && u) { done = true; clearTimeout(timer); unsubscribe(); resolve(u); }
-            });
-        });
+window.handleDownloadClick = function(appId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
     }
-    if (!user) {
-        const returnTo = window.location.pathname + window.location.search + window.location.hash;
-        window.location.href = "user.html?redirect=" + encodeURIComponent(returnTo);
+    if (!appId) {
+        console.error("App ID missing");
         return false;
     }
-
-    try {
-        const { data: app, error } = await supabaseClient.from("apps").select("*").eq("id", appId).single();
-        if (error || !app) { alert("App information not found."); return false; }
-
-        let downloadUrl = "";
-        const isPaliaHub = String(app.name || "").toLowerCase().includes("paliaapk hub");
-        if (isPaliaHub) {
-            downloadUrl = "https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk";
-        } else if (app.apk_url && !/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(String(app.apk_url).trim())) {
-            // Prefer a direct APK/storage URL over the Telegram proxy. A direct URL avoids
-            // a backend redirect that may hand control to the Telegram app.
-            downloadUrl = String(app.apk_url).trim();
-        } else if (app.telegram_message_id) {
-            // Only use the proxy when no usable direct APK URL is saved.
-            downloadUrl = "https://paliaapk-telegram-api.onrender.com/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
-        } else {
-            alert("Download is not configured. Add the Telegram message ID or a direct APK file URL.");
-            return false;
-        }
-        if (/^(tg:|https?:\/\/(www\.)?(t\.me|telegram\.me)\/)/i.test(downloadUrl)) {
-            alert("Download blocked: this is a Telegram post URL, not an APK file URL.");
-            return false;
-        }
-
-        try {
-            const { error: historyError } = await supabaseClient.from("downloads").insert({
-                user_id: user.uid, app_id: app.id, app_name: app.name || "Unknown App",
-                version: app.version || "Unknown", icon_url: app.icon_url || null, download_url: downloadUrl
-            });
-            if (historyError) console.warn("Download history error:", historyError);
-        } catch (historyError) { console.warn("Download history error:", historyError); }
-
-        // Same-tab download. Do not open a Telegram post or a second browser tab.
-        window.location.href = downloadUrl;
-        return false;
-    } catch (error) {
-        console.error("Homepage download error:", error);
-        alert("Unable to start download. Please try again.");
-        return false;
-    }
-};
+    // Store cards' Download and Install buttons should always open the app details page.
+    // Downloading starts only from the dedicated app details page.
+    window.location.href = "app.html?id=" + encodeURIComponent(String(appId));
+    return false;
+}
 
         // Share Website Feature (Native Android API, Desktop Clipboard, Fallback Dialog)
         window.triggerShareWebsite = function() {
@@ -1528,7 +1478,8 @@ window.handleDownloadClick = async function(appId, event) {
       btn.onclick=function(e){
         e.preventDefault();
         e.stopPropagation();
-        window.location.href='downloads.html';
+        // Open the PaliaAPK HUB app details page instead of a raw APK or downloads route.
+        window.location.href='app.html?id=' + encodeURIComponent(String(app.id));
       };
 
       close.onclick=function(){
