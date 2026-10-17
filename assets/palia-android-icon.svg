@@ -1,21 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#ffffff"/>
-  <g stroke="#16803d" stroke-width="18" stroke-linecap="round" fill="none">
-    <path d="M174 111 145 69"/>
-    <path d="M338 111 367 69"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0753ff"/>
+      <stop offset=".52" stop-color="#075be8"/>
+      <stop offset="1" stop-color="#13edb1"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#55dfff"/>
+      <stop offset=".5" stop-color="#087cff"/>
+      <stop offset="1" stop-color="#65ffd0"/>
+    </linearGradient>
+    <linearGradient id="letter" x1="0" y1="0" x2=".7" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#bdeaff"/>
+    </linearGradient>
+    <linearGradient id="mint" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a7ffce"/>
+      <stop offset="1" stop-color="#00e7ae"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#001b80" flood-opacity=".45"/>
+    </filter>
+  </defs>
+  <rect x="20" y="20" width="472" height="472" rx="112" fill="url(#bg)" stroke="url(#rim)" stroke-width="10"/>
+  <path d="M58 155C102 54 261 35 380 81" fill="none" stroke="#6be9ff" stroke-opacity=".4" stroke-width="18" stroke-linecap="round"/>
+  <path d="M68 397C151 469 342 469 438 378" fill="none" stroke="#61ffd2" stroke-opacity=".55" stroke-width="16" stroke-linecap="round"/>
+  <path d="M155 112H319C387 112 423 149 423 207C423 268 382 302 317 302H218L183 403H111L151 277C159 252 178 237 205 237H315C339 237 353 225 353 206C353 187 340 176 317 176H155Z" fill="url(#letter)" filter="url(#shadow)"/>
+  <path d="M253 320h35v-36c0-10 8-18 18-18h12c10 0 18 8 18 18v36h25c13 0 20 15 11 25l-51 55c-7 8-19 8-26 0l-51-55c-9-10-2-25 11-25Z" fill="url(#mint)" stroke="#e1fff5" stroke-width="4" stroke-linejoin="round" filter="url(#shadow)"/>
+  <path d="M235 405c-1 15 10 25 25 25h86c15 0 26-10 25-25" fill="none" stroke="#d9fff6" stroke-width="13" stroke-linecap="round"/>
+  <g stroke="#dffbff" stroke-width="3" filter="url(#shadow)">
+    <rect x="367" y="300" width="61" height="61" rx="15" fill="#52e9ff" transform="rotate(9 397 330)"/>
+    <rect x="356" y="369" width="61" height="61" rx="15" fill="#668cff" transform="rotate(9 386 399)"/>
+    <rect x="421" y="345" width="54" height="54" rx="14" fill="#43f0b4" transform="rotate(9 448 372)"/>
   </g>
-  <g fill="#22c55e">
-    <rect x="118" y="123" width="276" height="210" rx="92"/>
-    <rect x="93" y="208" width="48" height="124" rx="24"/>
-    <rect x="371" y="208" width="48" height="124" rx="24"/>
-    <rect x="157" y="305" width="58" height="108" rx="27"/>
-    <rect x="297" y="305" width="58" height="108" rx="27"/>
-  </g>
-  <circle cx="205" cy="205" r="14" fill="#ffffff"/>
-  <circle cx="307" cy="205" r="14" fill="#ffffff"/>
-  <circle cx="205" cy="205" r="7" fill="#14532d"/>
-  <circle cx="307" cy="205" r="7" fill="#14532d"/>
-  <path d="M218 257 Q256 284 294 257" fill="none" stroke="#14532d" stroke-width="12" stroke-linecap="round"/>
-  <path d="M140 376h232" stroke="#16a34a" stroke-width="12" stroke-linecap="round"/>
-  <path d="M181 442h150" stroke="#16a34a" stroke-width="10" stroke-linecap="round"/>
 </svg>
