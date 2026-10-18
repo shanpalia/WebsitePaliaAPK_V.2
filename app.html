@@ -111,11 +111,11 @@
     <header class="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <a href="index.html" class="w-10 h-10 rounded-xl bg-mint-50 text-mint-600 flex items-center justify-center hover:bg-mint-100 transition" aria-label="Back">
+                <a href="/" class="w-10 h-10 rounded-xl bg-mint-50 text-mint-600 flex items-center justify-center hover:bg-mint-100 transition" aria-label="Back">
                     <i class="fa-solid fa-arrow-left text-lg"></i>
                 </a>
-                <a href="index.html" class="flex items-center gap-2">
-                    <div class="w-9 h-9 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-md shadow-mint-500/20"><img src="assets/palia-android-icon.png" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
+                <a href="/" class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-md shadow-mint-500/20"><img src="/assets/paliaapk-hub-icon.png" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
                     <span class="font-bold text-lg tracking-tight text-gray-900 hidden sm:inline">PaliaAPK<span class="text-mint-600">HUB</span></span>
                 </a>
             </div>
@@ -305,12 +305,12 @@
     <footer class="bg-white border-t border-gray-100 mt-16 py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
             <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center overflow-hidden"><img src="assets/palia-android-icon.png" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
+                <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center overflow-hidden"><img src="/assets/paliaapk-hub-icon.png" alt="PaliaAPK HUB" class="w-full h-full object-contain"></div>
                 <span class="font-bold text-gray-900">PaliaAPK HUB</span>
             </div>
             <p>&copy; 2026 PaliaAPK HUB. All rights reserved.</p>
             <div class="flex items-center gap-4">
-                <a href="index.html" class="hover:text-mint-600 transition">Home</a>
+                <a href="/" class="hover:text-mint-600 transition">Home</a>
                 <a href="dashboard.html" class="hover:text-mint-600 transition">Dashboard</a>
             </div>
         </div>
@@ -735,7 +735,7 @@ bookmarkBtn.addEventListener("click", async function () {
             if (e.key === 'Enter') {
                 const query = e.target.value.trim();
                 if (query) {
-                    window.location.href = `index.html?search=${encodeURIComponent(query)}`;
+                    window.location.href = `/?search=${encodeURIComponent(query)}`;
                 }
             }
         });
