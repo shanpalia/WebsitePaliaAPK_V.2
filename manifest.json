@@ -9,9 +9,9 @@
   "theme_color": "#16a34a",
   "icons": [
     {
-      "src": "/assets/palia-android-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/assets/paliaapk-hub-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
