@@ -458,14 +458,16 @@ if (downloadBtn) {
         // The API base URL itself is NOT an APK. If an old database record saved
         // the Render homepage/root, rebuild the actual download endpoint from the
         // Telegram message ID rather than opening the Render service page.
-        if (savedApkUrl && !isTelegramPostUrl && !savedUrlIsTelegramApi) {
+        // PaliaAPK HUB itself must download from the repository APK file,
+        // regardless of any legacy Render URL or Telegram message ID in Supabase.
+        if (String(app.name || "").toLowerCase().includes("paliaapk hub")) {
+            downloadUrl = "https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk";
+        } else if (savedApkUrl && !isTelegramPostUrl && !savedUrlIsTelegramApi) {
             downloadUrl = savedApkUrl;
         } else if (app.telegram_message_id) {
             downloadUrl = telegramApiBase + "/download-apk/" + encodeURIComponent(String(app.telegram_message_id));
         } else if (savedUrlIsDownloadEndpoint) {
             downloadUrl = savedApkUrl;
-        } else if (String(app.name || "").toLowerCase().includes("paliaapk hub")) {
-            downloadUrl = "https://raw.githubusercontent.com/shanpalia/WebsitePaliaAPK_V.2/main/PaliaAPK-HUB.apk";
         } else {
             alert("Direct APK download is not configured. Add the Telegram message ID or a direct APK file URL.");
             return;
