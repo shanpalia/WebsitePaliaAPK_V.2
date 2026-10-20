@@ -1689,7 +1689,11 @@ var telegramMessageId = null;
   }
 
   function uploadAsset(bucket, folder, file){
-    return optimizeImageForUpload(file).then(function(optimizedFile){
+    // Keep banners original-quality: do not recompress banner artwork or text.
+    var imageWork = bucket === BUCKETS.banner
+      ? Promise.resolve(file)
+      : optimizeImageForUpload(file);
+    return imageWork.then(function(optimizedFile){
       var path = folder + '/' + Date.now() + '-' + randomSuffix() + '.' + fileExtension(optimizedFile.name);
       return sb.storage.from(bucket).upload(path, optimizedFile, {
         cacheControl: '3600', upsert: false, contentType: optimizedFile.type || undefined
