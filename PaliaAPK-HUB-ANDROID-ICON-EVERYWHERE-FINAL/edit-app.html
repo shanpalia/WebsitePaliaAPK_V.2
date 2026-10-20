@@ -1661,7 +1661,7 @@ var telegramMessageId = null;
 
   // Compress uploaded raster images before Storage upload; preserve transparency and fall back safely.
   function optimizeImageForUpload(file){
-    if(!file || !file.type || !file.type.startsWith('image/') || /image\\/(gif|svg\\+xml)/i.test(file.type)) return Promise.resolve(file);
+    if(!file || !file.type || !file.type.startsWith('image/') || file.type === 'image/gif' || file.type === 'image/svg+xml') return Promise.resolve(file);
     return new Promise(function(resolve){
       var img = new Image();
       var objectUrl = URL.createObjectURL(file);
