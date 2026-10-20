@@ -1230,6 +1230,8 @@ if (appsSection) {
                     <img
                         src="${app.icon_url || ''}"
                         alt="${app.name || 'App'}"
+                        loading="lazy"
+                        decoding="async"
                         class="w-full h-full hero-img-contain rounded-lg"
                     >
                 </div>
@@ -1290,7 +1292,7 @@ window.openAppDetails = function(appId) {
 
                 autocomplete.innerHTML = matches.map(app => `
                     <div onclick="window.location.href='app.html?id=${app.id}'" class="p-3 flex items-center gap-3 hover:bg-mint-50 dark:hover:bg-gray-700/50 cursor-pointer transition">
-                        <img src="${app.icon_url}" class="w-9 h-9 rounded-lg hero-img-contain bg-gray-100 dark:bg-gray-700 p-1">
+                        <img src="${app.icon_url}" loading="lazy" decoding="async" class="w-9 h-9 rounded-lg hero-img-contain bg-gray-100 dark:bg-gray-700 p-1">
                         <div>
                             <h5 class="font-bold text-xs text-gray-900 dark:text-white">${app.name}</h5>
                             <p class="text-[10px] text-gray-400">${app.category} • ⭐ ${app.rating || '4.9'}</p>
