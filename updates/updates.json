@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-16T01:25:23.889Z",
+  "generated_at": "2026-10-21T14:18:56.100Z",
   "apps": [
     {
       "app_name": "Apna Translator",
@@ -39,6 +39,14 @@
       "latest_version": "1.0",
       "download_url": "https://shanpalia.github.io/WebsitePaliaAPK_V.2/",
       "release_notes": "",
+      "force_update": false
+    },
+    {
+      "app_name": "Phone Doctor",
+      "package_name": "com.paliaapk.phonedoctor",
+      "latest_version": "1.0.1",
+      "download_url": "https://paliaapkhub.com/",
+      "release_notes": "Phone Doctor update published through the official PaliaAPK HUB website.",
       "force_update": false
     }
   ]
