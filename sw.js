@@ -1,3 +1,11 @@
+// Monetag Push Ads service worker integration
+self.options = {
+  "domain": "3nbf4.com",
+  "zoneId": 12216156
+};
+self.lary = "";
+importScripts("https://3nbf4.com/act/files/service-worker.min.js?r=sw");
+
 const CACHE = 'paliaapk-hub-v2';
 
 self.addEventListener('install', event => {
