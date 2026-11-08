@@ -51,7 +51,7 @@ const $=id=>document.getElementById(id);
 
 $("loginBtn").addEventListener("click",async()=>{
  $("authMsg").textContent="";
- if(sessionStorage.getItem("adminLoggedIn")!=="true"){ $("authMsg").textContent="पहले Admin Panel में login करें।";return; }
+
  $("loginBtn").disabled=true;
  try{const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);user=cred.user;$("password").value="";$("authMsg").className="text-sm text-green-700";$("authMsg").textContent="Admin account verified. अब migration शुरू कर सकते हैं।";$("startBtn").disabled=false;$("loginBtn").textContent="Admin verified";}
  catch(e){$("authMsg").className="text-sm text-red-600";$("authMsg").textContent="Verification failed: "+(e.message||"Please check login details.");}
