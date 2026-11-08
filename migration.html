@@ -42,7 +42,7 @@ input{width:100%;border:1px solid #d8e5dc;border-radius:11px;padding:12px;margin
 </main>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 const firebaseConfig={apiKey:"AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",authDomain:"shanpalia-apk-hub.firebaseapp.com",projectId:"shanpalia-apk-hub",storageBucket:"shanpalia-apk-hub.firebasestorage.app",messagingSenderId:"270953807883",appId:"1:270953807883:web:c900f4409938f16477870e",measurementId:"G-7BMQEGPY8C"};
 const auth=getAuth(initializeApp(firebaseConfig));
 const API="https://paliaapk-api.shanpalia786.workers.dev";
@@ -53,7 +53,7 @@ $("loginBtn").addEventListener("click",async()=>{
  $("authMsg").textContent="";
 
  $("loginBtn").disabled=true;
- try{const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);user=cred.user;$("password").value="";$("authMsg").className="text-sm text-green-700";$("authMsg").textContent="Admin account verified. अब migration शुरू कर सकते हैं।";$("startBtn").disabled=false;$("loginBtn").textContent="Admin verified";}
+ try{const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);user=cred.user;await user.reload();user=auth.currentUser;await user.getIdToken(true);$("password").value="";if(!user.emailVerified){await signOut(auth);user=null;throw new Error("Firebase account में Email Verified अभी false है। Firebase Console → Authentication → Users में email verify करें, फिर दोबारा login करें।");}$("authMsg").className="text-sm text-green-700";$("authMsg").textContent="Admin account verified and refreshed. अब migration शुरू कर सकते हैं।";$("startBtn").disabled=false;$("loginBtn").textContent="Admin verified";}
  catch(e){$("authMsg").className="text-sm text-red-600";$("authMsg").textContent="Verification failed: "+(e.message||"Please check login details.");}
  finally{$("loginBtn").disabled=!!user;}
 });
