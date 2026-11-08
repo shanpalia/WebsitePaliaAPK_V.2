@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image Migration | PaliaAPK HUB</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{font-family:Inter,system-ui,sans-serif;background:#f4faf6;color:#17211b}
+.card{background:#fff;border:1px solid #e2eee6;border-radius:20px;box-shadow:0 8px 24px rgba(15,60,38,.05)}
+.btn{background:#16a34a;color:#fff;border-radius:12px;padding:13px 18px;font-weight:750}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+input{width:100%;border:1px solid #d8e5dc;border-radius:11px;padding:12px;margin-top:6px}
+</style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+<main class="mx-auto max-w-3xl space-y-5">
+<header class="flex items-center justify-between gap-3">
+<div><p class="text-xs font-bold tracking-widest text-green-700">PALIAAPK HUB • ADMIN</p><h1 class="text-2xl md:text-3xl font-black mt-1">Image Migration</h1><p class="text-sm text-slate-500 mt-1">Supabase Storage → Cloudflare R2</p></div>
+<a href="dashboard.html" class="rounded-xl border border-green-200 bg-white px-4 py-3 text-sm font-bold text-green-800">← Dashboard</a>
+</header>
+<section class="card p-5">
+<h2 class="font-bold text-green-800">Safe image copy</h2>
+<p class="text-sm leading-6 text-slate-600 mt-2">यह प्रक्रिया Supabase के image buckets से Cloudflare R2 में images की copy बनाती है। Supabase originals delete नहीं होंगे। APK files इस migration में शामिल नहीं हैं। Website image URLs अपने-आप switch नहीं होंगे।</p>
+<p class="mt-3 text-xs text-slate-500">पहले Admin Dashboard में login होना जरूरी है। सुरक्षित migration authorization के लिए Firebase admin account से इस पेज पर दोबारा sign-in करें। Password केवल Firebase को भेजा जाएगा; इसे कहीं save नहीं किया जाता।</p>
+</section>
+<section id="authCard" class="card p-5 space-y-3">
+<h2 class="font-bold">Admin verification</h2>
+<div><label class="text-sm font-semibold">Admin email</label><input id="email" type="email" autocomplete="username" placeholder="Admin email"></div>
+<div><label class="text-sm font-semibold">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Firebase admin password"></div>
+<button id="loginBtn" class="btn w-full">Verify admin account</button>
+<p id="authMsg" class="text-sm text-red-600" role="status"></p>
+</section>
+<section class="card p-5">
+<div class="flex justify-between items-center gap-4"><div><p class="text-sm text-slate-500">Copied images</p><p class="text-3xl font-black"><span id="copied">0</span><span class="text-base font-medium text-slate-400"> / approx. 273</span></p></div><span class="rounded-xl bg-green-50 p-3 text-2xl">☁️</span></div>
+<div class="h-3 bg-slate-100 rounded-full overflow-hidden mt-4"><div id="bar" class="h-full bg-green-500 rounded-full" style="width:0%"></div></div>
+<p id="percent" class="text-xs text-slate-500 mt-2">0% copied</p>
+<div id="status" class="text-sm text-slate-600 mt-4" aria-live="polite">Admin verification के बाद migration शुरू करें।</div>
+<button id="startBtn" class="btn w-full mt-5" disabled>Start image migration</button>
+<p class="text-xs text-slate-500 mt-3">हर click में अधिकतम 5 images copy होंगी। पूरा होने तक Continue दबाएँ। Page बंद होने पर भी पहले से copy हुई files R2 में रहेंगी।</p>
+</section>
+<section class="card p-5"><h2 class="font-bold mb-2">Activity log</h2><ul id="logs" class="space-y-2 text-sm text-slate-600"><li>अभी कोई migration batch नहीं चला है।</li></ul></section>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+const firebaseConfig={apiKey:"AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",authDomain:"shanpalia-apk-hub.firebaseapp.com",projectId:"shanpalia-apk-hub",storageBucket:"shanpalia-apk-hub.firebasestorage.app",messagingSenderId:"270953807883",appId:"1:270953807883:web:c900f4409938f16477870e",measurementId:"G-7BMQEGPY8C"};
+const auth=getAuth(initializeApp(firebaseConfig));
+const API="https://paliaapk-api.shanpalia786.workers.dev";
+let user=null, cursor={bucketIndex:0,offset:0},copied=0,busy=false,done=false;
+const $=id=>document.getElementById(id);
+if(sessionStorage.getItem("adminLoggedIn")!=="true"){ $("status").textContent="पहले Admin Panel में login करें।"; $("startBtn").disabled=true; }
+$("loginBtn").addEventListener("click",async()=>{
+ $("authMsg").textContent="";
+ if(sessionStorage.getItem("adminLoggedIn")!=="true"){ $("authMsg").textContent="पहले Admin Panel में login करें।";return; }
+ $("loginBtn").disabled=true;
+ try{const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);user=cred.user;$("password").value="";$("authMsg").className="text-sm text-green-700";$("authMsg").textContent="Admin account verified. अब migration शुरू कर सकते हैं।";$("startBtn").disabled=false;$("loginBtn").textContent="Admin verified";}
+ catch(e){$("authMsg").className="text-sm text-red-600";$("authMsg").textContent="Verification failed: "+(e.message||"Please check login details.");}
+ finally{$("loginBtn").disabled=!!user;}
+});
+function log(line){const li=document.createElement("li");li.textContent="• "+line;$("logs").prepend(li);}
+function update(){const pct=Math.min(100,Math.round(copied/273*100));$("copied").textContent=copied;$("bar").style.width=pct+"%";$("percent").textContent=pct+"% copied (approximate count)";}
+$("startBtn").addEventListener("click",async()=>{
+ if(!user||busy||done)return;
+ busy=true;$("startBtn").disabled=true;
+ try{
+  const token=await user.getIdToken(true);
+  const response=await fetch(API+"/admin/migrate-supabase-images",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({...cursor,limit:5}),cache:"no-store"});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok||!data.success)throw new Error(data.error?(data.error+(data.detail?": "+data.detail:"")):"Migration request failed (HTTP "+response.status+")");
+  const amount=Number(data.copied||0);copied+=amount;update();
+  log((data.bucket||"Storage bucket")+": "+amount+" copied, "+Number(data.skipped||0)+" skipped"+(data.failed?.length?", "+data.failed.length+" failed":""));
+  cursor=data.next||null;done=!!(data.done||!cursor);
+  $("status").textContent=done?"Migration listing complete. R2 bucket verify करें; अभी website URLs switch नहीं हुए हैं.":"Batch complete. अगला batch चलाने के लिए Continue दबाएँ.";
+  $("startBtn").textContent=done?"Migration complete":"Continue migration (next batch)";
+ }catch(e){$("status").textContent="Error: "+e.message;log("ERROR: "+e.message);}
+ finally{busy=false;$("startBtn").disabled=done||!user;}
+});
+</script>
+</body></html>
