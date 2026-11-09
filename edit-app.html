@@ -2021,6 +2021,15 @@ async function replaceTelegramApk(
         let lastShownPercent = -1;
 
         xhr.open("POST", "https://paliaapk-telegram-api.onrender.com/replace-apk", true);
+        xhr.timeout = 180000;
+
+        xhr.upload.addEventListener("loadstart", function() {
+            showSubmitAlert("Connecting to Telegram", "Connection started. Preparing to send the APK...");
+        });
+
+        xhr.upload.addEventListener("loadend", function() {
+            showSubmitAlert("APK sent", "Upload transfer finished. Waiting for Telegram to process the APK...");
+        });
 
         xhr.upload.addEventListener("progress", function(event) {
             if (!event.lengthComputable) {
@@ -2055,8 +2064,11 @@ async function replaceTelegramApk(
             resolve(result);
         });
 
+        xhr.addEventListener("timeout", function() {
+            reject(new Error("Telegram server did not finish the APK upload within 3 minutes. Check the Telegram API service on Render and try again."));
+        });
         xhr.addEventListener("error", function() {
-            reject(new Error("Network error while uploading APK to Telegram. Please check your connection and try again."));
+            reject(new Error("Could not connect to the Telegram API server. Check whether the Render service is awake and try again."));
         });
         xhr.addEventListener("abort", function() {
             reject(new Error("APK upload was cancelled."));
