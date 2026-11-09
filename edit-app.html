@@ -1253,10 +1253,32 @@ img{ max-width: 100%; display: block; }
     await adminUser.reload();
     return await adminUser.getIdToken(true);
   }
+  async function compressPaliaImage(file, folder){
+    if(!file || !file.type || !file.type.startsWith("image/")) return file;
+    var maxSide = folder === "icons" ? 512 : 1600;
+    var quality = 0.82;
+    var bitmap;
+    try { bitmap = await createImageBitmap(file); }
+    catch(e) { return file; }
+    try {
+      var scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+      var width = Math.max(1, Math.round(bitmap.width * scale));
+      var height = Math.max(1, Math.round(bitmap.height * scale));
+      var canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      var ctx = canvas.getContext("2d", {alpha:true});
+      ctx.drawImage(bitmap, 0, 0, width, height);
+      var blob = await new Promise(function(resolve){ canvas.toBlob(resolve, "image/webp", quality); });
+      if(!blob || blob.size >= file.size) return file;
+      var baseName = file.name.replace(/\.[^.]+$/, "") || "image";
+      return new File([blob], baseName + ".webp", {type:"image/webp", lastModified:Date.now()});
+    } finally { bitmap.close && bitmap.close(); }
+  }
   async function uploadPaliaR2File(file, folder){
     var token = await getPaliaAdminToken();
+    var optimizedFile = await compressPaliaImage(file, folder);
     var form = new FormData();
-    form.append("file", file, file.name);
+    form.append("file", optimizedFile, optimizedFile.name);
     form.append("folder", folder);
     var response = await fetch(PALIA_R2_API + "/admin/upload", {method:"POST",headers:{Authorization:"Bearer "+token},body:form});
     var result = await response.json().catch(function(){return {};});
