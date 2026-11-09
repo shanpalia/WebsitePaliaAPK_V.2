@@ -36,7 +36,7 @@ input{width:100%;border:1px solid #d8e5dc;border-radius:11px;padding:12px;margin
 <p id="percent" class="text-xs text-slate-500 mt-2">0% copied</p>
 <div id="status" class="text-sm text-slate-600 mt-4" aria-live="polite">Admin verification के बाद migration शुरू करें।</div>
 <button id="startBtn" class="btn w-full mt-5" disabled>Start image migration</button>
-<p class="text-xs text-slate-500 mt-3">हर click में अधिकतम 5 images copy होंगी। पूरा होने तक Continue दबाएँ। Page बंद होने पर भी पहले से copy हुई files R2 में रहेंगी।</p>
+<p class="text-xs text-slate-500 mt-3">Start दबाने के बाद migration अपने-आप batches में चलती रहेगी। Page खुला रखें; पहले से copy हुई files दोबारा copy नहीं होंगी।</p>
 </section>
 <section class="card p-5"><h2 class="font-bold mb-2">Activity log</h2><ul id="logs" class="space-y-2 text-sm text-slate-600"><li>अभी कोई migration batch नहीं चला है।</li></ul></section>
 </main>
@@ -49,31 +49,28 @@ const API="https://paliaapk-api.shanpalia786.workers.dev";
 let user=null, cursor={bucketIndex:0,offset:0},copied=0,busy=false,done=false;
 const $=id=>document.getElementById(id);
 
-$("loginBtn").addEventListener("click",async()=>{
- $("authMsg").textContent="";
-
- $("loginBtn").disabled=true;
- try{const cred=await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value);user=cred.user;await user.reload();user=auth.currentUser;await user.getIdToken(true);$("password").value="";$("authMsg").className="text-sm text-green-700";$("authMsg").textContent="Firebase admin login successful. अब migration शुरू कर सकते हैं।";$("startBtn").disabled=false;$("loginBtn").textContent="Admin signed in";}
- catch(e){$("authMsg").className="text-sm text-red-600";$("authMsg").textContent="Verification failed: "+(e.message||"Please check login details.");}
- finally{$("loginBtn").disabled=!!user;}
-});
-function log(line){const li=document.createElement("li");li.textContent="• "+line;$("logs").prepend(li);}
-function update(){const pct=Math.min(100,Math.round(copied/273*100));$("copied").textContent=copied;$("bar").style.width=pct+"%";$("percent").textContent=pct+"% copied (approximate count)";}
-$("startBtn").addEventListener("click",async()=>{
+async function runMigration(){
  if(!user||busy||done)return;
- busy=true;$("startBtn").disabled=true;
+ busy=true;$("startBtn").disabled=true;$("startBtn").textContent="Migration running…";
+ $("status").textContent="Migration अपने-आप चल रही है। कृपया page खुला रखें।";
  try{
-  const token=await user.getIdToken(true);
-  const response=await fetch(API+"/admin/migrate-supabase-images",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({...cursor,limit:5}),cache:"no-store"});
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok||!data.success)throw new Error(data.error?(data.error+(data.detail?": "+data.detail:"")):"Migration request failed (HTTP "+response.status+")");
-  const amount=Number(data.copied||0);copied+=amount;update();
-  log((data.bucket||"Storage bucket")+": "+amount+" copied, "+Number(data.skipped||0)+" skipped"+(data.failed?.length?", "+data.failed.length+" failed":""));
-  cursor=data.next||null;done=!!(data.done||!cursor);
-  $("status").textContent=done?"Migration listing complete. R2 bucket verify करें; अभी website URLs switch नहीं हुए हैं.":"Batch complete. अगला batch चलाने के लिए Continue दबाएँ.";
-  $("startBtn").textContent=done?"Migration complete":"Continue migration (next batch)";
- }catch(e){$("status").textContent="Error: "+e.message;log("ERROR: "+e.message);}
- finally{busy=false;$("startBtn").disabled=done||!user;}
-});
+  while(!done){
+   await user.reload();user=auth.currentUser;
+   if(!user)throw new Error("Admin session expired. फिर से login करें।");
+   const token=await user.getIdToken(true);
+   const response=await fetch(API+"/admin/migrate-supabase-images",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({...cursor,limit:5}),cache:"no-store"});
+   const data=await response.json().catch(()=>({}));
+   if(!response.ok||!data.success)throw new Error(data.error?(data.error+(data.detail?": "+data.detail:"")):"Migration request failed (HTTP "+response.status+")");
+   const amount=Number(data.copied||0);copied+=amount;update();
+   log((data.bucket||"Storage bucket")+": "+amount+" copied, "+Number(data.skipped||0)+" already present/skipped"+(data.scanned!==undefined?", "+Number(data.scanned)+" scanned":"")+(data.failed?.length?", "+data.failed.length+" failed":""));
+   cursor=data.next||null;done=!!(data.done||!cursor);
+   if(done){$("status").textContent="Migration listing complete. R2 bucket verify करें; website URLs अभी switch नहीं हुए हैं.";log("All bucket listings completed.");break;}
+   $("status").textContent="Automatic migration running… copied "+copied+" new images. अगला batch अपने-आप शुरू होगा।";
+   await new Promise(resolve=>setTimeout(resolve,350));
+  }
+ }catch(e){$("status").textContent="Error: "+e.message+" — फिर Start दबाकर यहीं से resume कर सकते हैं।";log("ERROR: "+e.message);}
+ finally{busy=false;$("startBtn").disabled=done||!user;$("startBtn").textContent=done?"Migration complete":"Resume automatic migration";}
+}
+$("startBtn").addEventListener("click",runMigration);
 </script>
 </body></html>
