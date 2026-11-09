@@ -2004,84 +2004,68 @@ async function replaceTelegramApk(
     apkFile,
     appData
 ) {
-
-    if (!messageId) {
-        throw new Error(
-            "Telegram message ID is missing."
-        );
-    }
-
-    if (!apkFile) {
-        throw new Error(
-            "APK file is missing."
-        );
-    }
+    if (!messageId) throw new Error("Telegram message ID is missing.");
+    if (!apkFile) throw new Error("APK file is missing.");
 
     const formData = new FormData();
-
-    // IMPORTANT:
-    // Backend expects "file"
     formData.append("file", apkFile);
+    formData.append("messageId", String(messageId));
+    formData.append("appName", appData.name || "");
+    formData.append("version", appData.version || "");
+    formData.append("developer", appData.developer || "");
+    formData.append("description", appData.description || "");
 
-    formData.append(
-        "messageId",
-        String(messageId)
-    );
+    // XMLHttpRequest exposes real upload progress; fetch() does not.
+    const data = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        let lastShownPercent = -1;
 
-    formData.append(
-        "appName",
-        appData.name || ""
-    );
+        xhr.open("POST", "https://paliaapk-telegram-api.onrender.com/replace-apk", true);
 
-    formData.append(
-        "version",
-        appData.version || ""
-    );
+        xhr.upload.addEventListener("progress", function(event) {
+            if (!event.lengthComputable) {
+                showSubmitAlert("Uploading APK", "Uploading " + formatBytes(event.loaded) + " of " + formatBytes(apkFile.size) + "...");
+                return;
+            }
 
-    formData.append(
-        "developer",
-        appData.developer || ""
-    );
+            const percent = Math.min(100, Math.round((event.loaded / event.total) * 100));
+            if (percent !== lastShownPercent && (percent === 100 || percent % 5 === 0)) {
+                lastShownPercent = percent;
+                showSubmitAlert(
+                    "Uploading APK",
+                    "Uploading to Telegram: " + percent + "% (" +
+                    formatBytes(event.loaded) + " / " + formatBytes(event.total) + ")"
+                );
+            }
+        });
 
-    formData.append(
-        "description",
-        appData.description || ""
-    );
+        xhr.addEventListener("load", function() {
+            let result;
+            try {
+                result = JSON.parse(xhr.responseText || "{}");
+            } catch (error) {
+                reject(new Error("Telegram APK API returned an invalid response: " + (xhr.responseText || "Empty response")));
+                return;
+            }
+            if (xhr.status < 200 || xhr.status >= 300 || !result.success) {
+                reject(new Error(result.error || "Telegram APK replacement failed (HTTP " + xhr.status + ")."));
+                return;
+            }
+            showSubmitAlert("Processing APK", "Upload complete. Telegram is processing the APK...");
+            resolve(result);
+        });
 
-    const response = await fetch(
-        "https://paliaapk-telegram-api.onrender.com/replace-apk",
-        {
-            method: "POST",
-            body: formData
-        }
-    );
+        xhr.addEventListener("error", function() {
+            reject(new Error("Network error while uploading APK to Telegram. Please check your connection and try again."));
+        });
+        xhr.addEventListener("abort", function() {
+            reject(new Error("APK upload was cancelled."));
+        });
 
-    const responseText =
-        await response.text();
+        xhr.send(formData);
+    });
 
-    let data;
-
-    try {
-        data = JSON.parse(responseText);
-    } catch (error) {
-        throw new Error(
-            "Telegram APK API returned invalid response: " +
-            responseText
-        );
-    }
-
-    if (!response.ok || !data.success) {
-        throw new Error(
-            data.error ||
-            "Telegram APK replacement failed."
-        );
-    }
-
-    console.log(
-        "Telegram APK replaced:",
-        data
-    );
-
+    console.log("Telegram APK replaced:", data);
     return data;
 }
 // ===============================
