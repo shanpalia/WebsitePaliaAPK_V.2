@@ -1453,6 +1453,9 @@ img{ max-width: 100%; display: block; }
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
 
 <script type="module">
 import { uploadApkToTelegram } from "./telegram-publisher.js";
@@ -1865,6 +1868,28 @@ import { uploadApkToTelegram } from "./telegram-publisher.js";
     return valid;
   }
 
+
+  var PALIA_FIREBASE_CONFIG = {apiKey:"AIzaSyCn7GUkOaFO4l0x1zM5mwW4hFkW2ISxR10",authDomain:"shanpalia-apk-hub.firebaseapp.com",projectId:"shanpalia-apk-hub",storageBucket:"shanpalia-apk-hub.firebasestorage.app",messagingSenderId:"270953807883",appId:"1:270953807883:web:c900f4409938f16477870e"};
+  if (window.firebase && !firebase.apps.length) firebase.initializeApp(PALIA_FIREBASE_CONFIG);
+  var paliaAdminAuth = window.firebase ? firebase.auth() : null;
+  var PALIA_R2_API = "https://paliaapk-api.shanpalia786.workers.dev";
+  async function getPaliaAdminToken(){
+    var adminUser = paliaAdminAuth && paliaAdminAuth.currentUser;
+    if(!adminUser) throw new Error("Admin session नहीं मिली। Dashboard में दोबारा login करें और फिर कोशिश करें।");
+    await adminUser.reload();
+    return await adminUser.getIdToken(true);
+  }
+  async function uploadPaliaR2File(file, folder){
+    var token = await getPaliaAdminToken();
+    var form = new FormData();
+    form.append("file", file, file.name);
+    form.append("folder", folder);
+    var response = await fetch(PALIA_R2_API + "/admin/upload", {method:"POST",headers:{Authorization:"Bearer "+token},body:form});
+    var result = await response.json().catch(function(){return {};});
+    if(!response.ok || !result.success || !result.url) throw new Error(result.error || "Cloudflare R2 upload failed (HTTP "+response.status+")");
+    return result.url;
+  }
+
   var SUPABASE_URL = 'https://ralinnuegsbuvlhwpzln.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhbGlubnVlZ3NidXZsaHdwemxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyOTU2NDIsImV4cCI6MjA5NTg3MTY0Mn0.hIec6UxRx5gzSMTi5oJ3_xXw3d1QKCmKsPF-stBwIFE';
 
@@ -1924,42 +1949,8 @@ var BUCKETS = {
   }
 
   function uploadAsset(bucket, folder, file){
-
-    var path =
-        folder + "/" +
-        Date.now() + "-" +
-        randomSuffix() + "." +
-        fileExtension(file.name);
-
-    return sb.storage
-        .from(bucket)
-        .upload(path, file, {
-            cacheControl: "3600",
-            upsert: false
-        })
-        .then(function(res){
-
-            console.log("UPLOAD RESPONSE:", res);
-
-            if (res.error) {
-                console.error("UPLOAD ERROR:", res.error);
-                throw res.error;
-            }
-
-            console.log("BUCKET:", bucket);
-            console.log("PATH:", path);
-
-            var pub =
-                sb.storage
-                .from(bucket)
-                .getPublicUrl(path);
-
-            console.log("PUBLIC URL:", pub.data.publicUrl);
-
-            return pub.data.publicUrl;
-
-        });
-
+    var r2Folder = bucket === BUCKETS.screenshot ? "screenshots" : "icons";
+    return uploadPaliaR2File(file, r2Folder);
 }
 
   var submitBtnLabels = {
@@ -2132,6 +2123,15 @@ async function uploadApkToTelegram({ apkFile, appName, version, developer }) {
         return uploadAsset(BUCKETS.banner, 'banners', uploads.banner.file).then(function(url){ urls.banner = url; });
       });
     }
+   ["screenshot1","screenshot2","screenshot3","screenshot4","screenshot5"].forEach(function(id, index){
+      if(uploads[id] && uploads[id].file){
+        uploadChain = uploadChain.then(function(){
+          var pct = 35 + index * 8;
+          if(status === "published") updatePublishProgress(pct, "Uploading Screenshot " + (index + 1) + " (" + pct + "%)");
+          return uploadAsset(BUCKETS.screenshot, "screenshots", uploads[id].file).then(function(url){ urls.screenshots.push(url); });
+        });
+      }
+    });
    if (uploads.apk && uploads.apk.file) {
 
     uploadChain = uploadChain.then(async function () {
