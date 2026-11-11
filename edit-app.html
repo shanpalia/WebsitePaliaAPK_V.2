@@ -1247,9 +1247,18 @@ img{ max-width: 100%; display: block; }
   if (window.firebase && !firebase.apps.length) firebase.initializeApp(PALIA_FIREBASE_CONFIG);
   var paliaAdminAuth = window.firebase ? firebase.auth() : null;
   var PALIA_R2_API = "https://paliaapk-api.shanpalia786.workers.dev";
+  var paliaAuthReady = paliaAdminAuth ? new Promise(function(resolve) {
+    var unsubscribe = paliaAdminAuth.onAuthStateChanged(function(user) {
+      unsubscribe();
+      resolve(user || null);
+    }, function() {
+      unsubscribe();
+      resolve(null);
+    });
+  }) : Promise.resolve(null);
   async function getPaliaAdminToken(){
-    var adminUser = paliaAdminAuth && paliaAdminAuth.currentUser;
-    if(!adminUser) throw new Error("Admin session नहीं मिली। Dashboard में दोबारा login करें और फिर कोशिश करें।");
+    var adminUser = await paliaAuthReady;
+    if(!adminUser) throw new Error("Firebase admin session नहीं मिली। Admin login page से दोबारा login करें।");
     await adminUser.reload();
     return await adminUser.getIdToken(true);
   }
