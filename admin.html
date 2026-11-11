@@ -90,8 +90,8 @@
 
 sessionStorage.setItem("adminLoggedIn","true");
 
-// Firebase admin user ko turant logout kar do
-await auth.signOut();
+// Keep the Firebase session active so protected Cloudflare uploads
+// can obtain a short-lived Firebase ID token on admin pages.
 
 window.location.replace("dashboard.html"); // Yahan se aap main admin panel par jayenge
             } catch (error) {
