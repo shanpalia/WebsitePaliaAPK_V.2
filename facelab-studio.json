@@ -5,6 +5,7 @@
   "version_code": 1,
   "minimum_version_code": 1,
   "apk_url": "",
-  "release_notes": "Initial FaceLab Studio release",
+  "release_notes": "Preview build preparation. AI video processing is not yet enabled.",
+  "release_status": "build_pending",
   "force_update": false
 }
